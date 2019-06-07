@@ -5,13 +5,12 @@ format parser from gase
 
 import os
 import re
-from lxml import etree
 import glob
 
 from io import StringIO
+
 import numpy as np
 import pandas as pd
-from .filetype import filetype
 
 # try:
 #     from gase import Atoms
@@ -21,22 +20,15 @@ from .filetype import filetype
 #     HAS_GASE = False
 
 import atomtools
-
+from .filetype import filetype
 from .ext_types import ExtList, ExtDict
-from .ext_methods import astype, xml_parameters, datablock_to_numpy, datablock_to_numpy, get_depth_dict
+from .ext_methods import astype, xml_parameters, datablock_to_numpy,\
+                         datablock_to_numpy, get_depth_dict, FileFinder
 
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASEDIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def get_filestring_and_format(fileobj, file_format=None):
-    if hasattr(fileobj, 'read'):
-        fileobj = fileobj.read()
-    elif isinstance(fileobj, str):
-        if os.path.exists(fileobj):
-            file_format = file_format or filetype(fileobj)
-            fileobj = open(fileobj).read()
-    return fileobj.lstrip(), file_format
 
 
 def read(fileobj, format=None, get_dict=False, warning=False, debug=False):
@@ -50,34 +42,10 @@ def read(fileobj, format=None, get_dict=False, warning=False, debug=False):
     arrays = ExtDict()
     process_primitive_data(arrays, file_string, formats, warning, debug)
     process_synthesized_data(arrays, formats, debug)
-    return arrays, 
+    return arrays
     # if not HAS_GASE or get_dict:
     #     return arrays
     # return assemble_atoms(arrays, formats.get('calculator', None))
-
-
-class FileFinder(object):
-    """docstring for FileFinder"""
-    SUPPOTED_FILETYPE = ['plain_text', 'lxml']
-    def __init__(self, fileobj, file_format='plain_text'):
-        super(FileFinder, self).__init__()
-        self.fileobj = fileobj
-        self.file_format = file_format
-        file_string, file_format = get_filestring_and_format(fileobj, file_format)
-        if not file_format in self.SUPPOTED_FILETYPE:
-            raise NotImplementedError('only {0} are supported'.format(self.SUPPOTED_FILETYPE))
-        # assert isinstance(filename, str) and os.path.exists(filename), '{0} not exists'.format(filename)
-        if file_format == 'plain_text':
-            self.fileobj = file_string
-        elif file_format == 'lxml':
-            self.fileobj = etree.HTML(file_string.encode())
-
-    def find_pattern(self, pattern):
-        assert isinstance(pattern, str)
-        if self.file_format == 'plain_text':
-            return re.findall(pattern, self.fileobj)
-        elif self.file_format == 'lxml':
-            return self.fileobj.xpath(pattern)
 
 def process_primitive_data(arrays, file_string, formats, warning=False, debug=False):
     warning = warning or debug
@@ -206,8 +174,10 @@ def get_obj_value(obj, key, dict_sep=' '):
 def template(atoms, template_file=None, format=None, print_mode=False):
     from .format_string import FORMAT_STRING
     if template_file is None:
-        template_file = glob.glob('{0}/base_format/{1}.*'.format(BASE_DIR, format))[0]
-    template_file, format = get_filestring_and_format(template_file, format)
+        template_file = glob.glob('{0}/base_format/{1}.*'.format(BASEDIR, format))[0]
+    # template_file, format = get_filestring_and_format(template_file, format)
+    template_file_content = atomtools.file.get_file_content(template_file)
+    format = format or filetype(template_file)
     assert format is not None
     reader_formats = FORMAT_STRING[format]['reader_formats']
     for pattern, pattern_property in reader_formats.items():
@@ -243,7 +213,7 @@ def get_template(fileobj, format=None):
 def test():
     from .format_string import FORMAT_STRING
     for _filetype in FORMAT_STRING:
-        filename = glob.glob('{0}/base_format/{1}.*'.format(BASE_DIR, _filetype))[0]
+        filename = glob.glob('{0}/base_format/{1}.*'.format(BASEDIR, _filetype))[0]
         print('\n', _filetype)
         _dict = read(filename, format=_filetype, get_dict=True, warning=True)
         print(_dict)

@@ -1,6 +1,8 @@
 """
 format parser from gase
 """
+
+
 import os
 import re
 from lxml import etree
@@ -42,11 +44,13 @@ def astype(typestring):
     else:
         raise NotImplementedError('{0} not implemented'.format(typestring))
 
-def update_items_with_node(root, item_xpath=None, default_type='float', sdict=dict()):
+def update_items_with_node(root, item_xpath=None,
+        default_type='float', sdict=dict()):
     item_xpath = item_xpath or ['./i', './v']
     if isinstance(item_xpath, str):
         item_xpath = [item_xpath]
-    assert isinstance(item_xpath, (list, tuple)), 'xpath {0} should be a list'.format(item_xpath)
+    assert isinstance(item_xpath, (list, tuple)),
+        'xpath {0} should be a list'.format(item_xpath)
     item_xpath = '|'.join(item_xpath)
     for item_node in root.xpath(item_xpath):
         item_name = item_node.get('name')
@@ -54,7 +58,8 @@ def update_items_with_node(root, item_xpath=None, default_type='float', sdict=di
         if item_node.tag == 'i':
             value = astype(item_type)(item_node.text)
         elif item_node.tag == 'v':
-            value = datablock_to_numpy(item_node.text).flatten().astype(astype(item_type))
+            value = datablock_to_numpy(item_node.text)\
+                    .flatten().astype(astype(item_type))
         else:
             raise NotImplementedError('{0} not implemeneted in xml update items'.format(item_node.tag))
         sdict.update({item_name: value})
@@ -121,7 +126,10 @@ def get_filestring_and_format(fileobj, file_format=None):
 
 def read(fileobj, format=None, get_dict=False, warning=False, debug=False):
     from .format_string import FORMAT_STRING
-    file_string, file_format = get_filestring_and_format(fileobj, format)
+    # file_string, file_format = get_filestring_and_format(fileobj, format)
+    file_content = atomtools.file.get_content(fileobj)
+    file_format = filetype.filetype(fileobj)
+
     assert file_format is not None
     formats = FORMAT_STRING[file_format]
     arrays = ExtDict()

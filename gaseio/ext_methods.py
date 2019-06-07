@@ -1,5 +1,5 @@
 """
-format parser from atomse
+format parser from gase
 """
 import os
 import re
@@ -9,15 +9,16 @@ import glob
 from io import StringIO
 import numpy as np
 import pandas as pd
-from ase.io.formats import filetype
+from . import filetype
+
 try:
-    from atomse import Atoms
-    import atomse.calculators as calculators
+    from gase import Atoms
+    import gase.calculators as calculators
     HAS_ATOMSE = True
 except ModuleNotFoundError:
     HAS_ATOMSE = False
 
-from .units import unit_to_Ang
+import atomtools
 from .ext_types import ExtList, ExtDict
 
 
@@ -112,7 +113,7 @@ def get_filestring_and_format(fileobj, file_format=None):
         fileobj = fileobj.read()
     elif isinstance(fileobj, str):
         if os.path.exists(fileobj):
-            file_format = file_format or filetype(fileobj)
+            file_format = file_format or filetype.filetype(fileobj)
             fileobj = open(fileobj).read()
     return fileobj.lstrip(), file_format
 
@@ -231,7 +232,7 @@ def process_synthesized_data(arrays, formats, DEBUG=False):
 def assemble_atoms(arrays, calculator):
     assert HAS_ATOMSE
     if arrays.get('unit', None):
-        arrays['positions'] *= unit_to_Ang(arrays['unit'])
+        arrays['positions'] *= atomtools.unit.trans_length(arrays['unit'], 'Ang')
         del arrays['unit']
     if arrays.get('numbers', None) is not None:
         symbols = arrays.get('numbers')
@@ -314,7 +315,7 @@ def template(atoms, template_file=None, format=None, print_mode=False):
 
 
 def get_template(fileobj, format=None):
-    format = format or filetype(fileobj)
+    format = format or filetype.filetype(fileobj)
     assert format is not None
 
 def test():

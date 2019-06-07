@@ -1,5 +1,5 @@
 """
-format parser from atomse
+format parser from gase
 """
 import os
 import re
@@ -9,15 +9,17 @@ import glob
 from io import StringIO
 import numpy as np
 import pandas as pd
-from ase.io.formats import filetype
-try:
-    from atomse import Atoms
-    import atomse.calculators as calculators
-    HAS_ATOMSE = True
-except ModuleNotFoundError:
-    HAS_ATOMSE = False
+from . import filetype
 
-from .units import unit_to_Ang
+
+try:
+    from gase import Atoms
+    import gase.calculators as calculators
+    HAS_GASE = True
+except ModuleNotFoundError:
+    HAS_GASE = False
+
+import atomtools
 from .ext_types import ExtList, ExtDict
 
 
@@ -125,7 +127,7 @@ def read(fileobj, format=None, get_dict=False, warning=False, debug=False):
     arrays = ExtDict()
     process_primitive_data(arrays, file_string, formats, warning, debug)
     process_synthesized_data(arrays, formats, debug)
-    if not HAS_ATOMSE or get_dict:
+    if not HAS_GASE or get_dict:
         return arrays
     return assemble_atoms(arrays, formats.get('calculator', None))
 
@@ -226,9 +228,9 @@ def process_synthesized_data(arrays, formats, debug=False):
                 del arrays[item]
 
 def assemble_atoms(arrays, calculator):
-    assert HAS_ATOMSE
+    assert HAS_GASE
     if arrays.get('unit', None):
-        arrays['positions'] *= unit_to_Ang(arrays['unit'])
+        arrays['positions'] *= atomtools.unit.trans_length(arrays['unit'], 'Ang')
         del arrays['unit']
     if arrays.get('numbers', None) is not None:
         symbols = arrays.get('numbers')

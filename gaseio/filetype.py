@@ -5,7 +5,7 @@ analyze filetype
 
 import os
 import re
-from configparser import ConfigParser
+import configparser
 import atomtools
 
 
@@ -13,6 +13,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_FILETYPE_REGEXP_CONF = 'default_extension.conf'
 USER_FILETYPE_REGEXP_CONF = os.path.expanduser('~/.gase/user_extension.conf')
 REG_ANYSTRING = '[\s\S]*?'
+
 global format_regexp
 format_regexp = dict()
 
@@ -21,7 +22,7 @@ def update_config(path=None):
     global format_regexp
     path = path or os.path.join(BASE_DIR, DEFAULT_FILETYPE_REGEXP_CONF)
     if os.path.exists(path):
-        conf = ConfigParser()
+        conf = configparser.ConfigParser()
         conf.optionxform=str
         conf.read(path)
         for section in conf.sections():

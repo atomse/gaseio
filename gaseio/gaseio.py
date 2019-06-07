@@ -4,7 +4,6 @@ gaseio
 
 
 import os
-from configparser import ConfigParser
 from io import StringIO
 import ase.io
 import atomtools

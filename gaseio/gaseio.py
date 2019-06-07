@@ -4,7 +4,6 @@ gaseio
 
 
 import os
-from io import StringIO
 import ase.io
 import atomtools
 

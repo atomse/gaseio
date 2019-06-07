@@ -6,16 +6,16 @@ from setuptools import setup, find_packages
 def get_version():
     import sys
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-    import gasio
-    return gasio.__version__
+    import gaseio
+    return gaseio.__version__
 
 
 if __name__ == '__main__':
     setup(
-        name='gasio',
+        name='gaseio',
         version=get_version(),
         description=(
-            'tool collection for parsing vasp inputs & outputs'
+            'Generalized Atomic Simulation Environment Input/Output',
         ),
         long_description=open('README.md').read(),
         long_description_content_type='text/markdown',
@@ -26,7 +26,7 @@ if __name__ == '__main__':
         license='MIT License',
         packages=find_packages(),
         platforms=["Linux", "Darwin"],
-        url='https://github.com/atomse/gasio',
+        url='https://github.com/atomse/gaseio',
         python_requires='>=3',
         classifiers=[
             'Development Status :: 4 - Beta',
@@ -44,7 +44,7 @@ if __name__ == '__main__':
         install_requires=open('requirements.txt').read().split(),
         entry_points={
             "console_scripts": [
-                "gasio=gasio.cli:run_gasio_cli",
+                "gaseio=gaseio.cli:run_gaseio_cli",
             ],
         },
         extras_require={
@@ -63,6 +63,6 @@ if __name__ == '__main__':
             ],
         },
         include_package_data = True,
-        # package_data = {'gasio_test': test_files},
+        # package_data = {'gaseio_test': test_files},
         zip_safe=False,
     )

@@ -10,7 +10,7 @@ FORMAT_STRING = {
         'calculator': 'ADF',
         'ignorance': ('!',),
         'primitive_data'  : {
-            r'ATOMS cartesian\s*\n([\s\S]*?)[eE][nN][dD]':{
+            r'ATOMS.*\s*\n([\s\S]*?)[eE][nN][dD]':{
                     'important' : True,
                     'selection' : -1,
                     'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
@@ -45,7 +45,7 @@ FORMAT_STRING = {
                     # 'type' :ext_types.ExtDict,
                     'key' : 'calc_arrays/scf',
                 },
-            r'XC\s*\n([\s\S]*?)[eE][nN][dD]' : {
+            r'[Xx][Cc]\s*\n([\s\S]*?)[eE][nN][dD]' : {
                 'important': True,
                 'selection' : -1,
                 # 'type' :ext_types.ExtDict,

@@ -11,6 +11,9 @@ import atomtools
 
 
 
+BASEDIR = os.path.dirname(os.path.abspath(__file__))
+
+
 
 def read(fileobj, index=None, format=None, parallel=True, force_ase=False, 
          force_fmt=False, **kwargs):
@@ -33,7 +36,7 @@ def ase_reader(fileobj, index=None, format=None, parallel=True, **kwargs):
 
 def fmt_reader(fileobj, index=None, format=None, parallel=True, **kwargs):
     from . import format_parser
-    return format_parser.read(fileobj, format=format)
+    return format_parser.read(fileobj, format=format, **kwargs)
 
 
 def read_preview(fileobj, lines=200):
@@ -67,8 +70,11 @@ def preview(fileobj, images, format=None, parallel=True, append=False, **kwargs)
 
 
 def test(test_types=None):
-    test_dir = os.path.join(BASE_DIR, 'testcases')
+    test_dir = os.path.join(BASEDIR, 'testcases')
     for filename in os.listdir(test_dir):
         if filename.startswith('.'):
             continue
-        print(read(test_dir+'/'+filename, force_fmt=True).arrays)
+        filename = os.path.join(test_dir, filename)
+        print(filename)
+        if os.path.isfile(filename):
+            print(read(filename, force_fmt=True, debug=True))

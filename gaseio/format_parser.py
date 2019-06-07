@@ -23,7 +23,8 @@ import atomtools
 from .filetype import filetype
 from .ext_types import ExtList, ExtDict
 from .ext_methods import astype, xml_parameters, datablock_to_numpy,\
-                         datablock_to_numpy, get_depth_dict, FileFinder
+                         datablock_to_numpy, construct_depth_dict, \
+                         get_depth_dict, FileFinder
 
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -34,8 +35,8 @@ BASEDIR = os.path.dirname(os.path.abspath(__file__))
 def read(fileobj, format=None, get_dict=False, warning=False, debug=False):
     from .format_string import FORMAT_STRING
     # file_string, file_format = get_filestring_and_format(fileobj, format)
-    file_content = atomtools.file.get_content(fileobj)
-    file_format = filetype(fileobj)
+    file_string = atomtools.file.get_file_content(fileobj)
+    file_format = format or filetype(fileobj)
 
     assert file_format is not None
     formats = FORMAT_STRING[file_format]
@@ -56,7 +57,8 @@ def process_primitive_data(arrays, file_string, formats, warning=False, debug=Fa
     file_format = formats.get('file_format', 'plain_text')
     finder = FileFinder(file_string, file_format=file_format)
     for pattern, pattern_property in primitive_data.items():
-        if debug: print(pattern, pattern_property)
+        if debug:
+            print(pattern, pattern_property)
         key = pattern_property['key']
         important = pattern_property.get('important', False)
         selection = pattern_property.get('selection', -1) # default select the last one
@@ -213,17 +215,21 @@ def get_template(fileobj, format=None):
 def test():
     from .format_string import FORMAT_STRING
     for _filetype in FORMAT_STRING:
-        filename = glob.glob('{0}/base_format/{1}.*'.format(BASEDIR, _filetype))[0]
+        filenames = glob.glob('{0}/base_format/{1}.*'.format(BASEDIR, _filetype))
+        if not filenames:
+            continue
+        # print(filenames, _filetype)
+        filename = filenames[0]
         print('\n', _filetype)
         _dict = read(filename, format=_filetype, get_dict=True, warning=True)
         print(_dict)
         if _filetype == 'gaussian':
             print(_dict.get('connectivity', None))
         print(read(filename, format=_filetype, ))
-    _atoms = Atoms('C6H6', positions=np.random.rand(12, 3))
-    for _filetype in FORMAT_STRING:
-        print('\n\n\n ======= ', _filetype)
-        template(_atoms, format=_filetype, print_mode=True)
+    # _atoms = Atoms('C6H6', positions=np.random.rand(12, 3))
+    # for _filetype in FORMAT_STRING:
+    #     print('\n\n\n ======= ', _filetype)
+    #     template(_atoms, format=_filetype, print_mode=True)
 
 
 

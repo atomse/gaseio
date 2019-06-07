@@ -43,11 +43,11 @@ def filetype(fileobj=None, isfilename=False):
         return None
     for fmt_regexp, fmt_filetype in format_regexp.items():
         name_regexp, content_regexp = (fmt_regexp.split('||') + [None])[:2]
-        # print(name_regexp)
+        print(name_regexp)
         if filename and re.match(re.compile(name_regexp.strip()), filename) or filename is None:
             if content and content_regexp:
                 content_regexp = REG_ANYSTRING + content_regexp.strip() + REG_ANYSTRING
-                # print(content_regexp)
+                print(content_regexp)
                 if re.match(re.compile(content_regexp.strip()), content):
                     return fmt_filetype
             else:

@@ -1,1 +1,1 @@
-include chemdata/*.json
+include gaseio/testcases/*

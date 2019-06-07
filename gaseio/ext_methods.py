@@ -101,27 +101,27 @@ def get_depth_dict(root, names):
     return ptr
 
 
-def get_filestring_and_format(fileobj, file_format=None):
-    if hasattr(fileobj, 'read'):
-        fileobj = fileobj.read()
-    elif isinstance(fileobj, str):
-        if os.path.exists(fileobj):
-            file_format = file_format or filetype.filetype(fileobj)
-            fileobj = open(fileobj).read()
-    return fileobj.lstrip(), file_format
+# def get_filestring_and_format(fileobj, file_format=None):
+#     if hasattr(fileobj, 'read'):
+#         fileobj = fileobj.read()
+#     elif isinstance(fileobj, str):
+#         if os.path.exists(fileobj):
+#             file_format = file_format or filetype.filetype(fileobj)
+#             fileobj = open(fileobj).read()
+#     return fileobj.lstrip(), file_format
 
 
-def read(fileobj, format=None, get_dict=False, warning=False, DEBUG=False):
-    from .format_string import FORMAT_STRING
-    file_string, file_format = get_filestring_and_format(fileobj, format)
-    assert file_format is not None
-    formats = FORMAT_STRING[file_format]
-    arrays = ExtDict()
-    process_primitive_data(arrays, file_string, formats, warning, DEBUG)
-    process_synthesized_data(arrays, formats, DEBUG)
-    if not HAS_ATOMSE or get_dict:
-        return arrays
-    return assemble_atoms(arrays, formats.get('calculator', None))
+# def read(fileobj, format=None, get_dict=False, warning=False, DEBUG=False):
+#     from .format_string import FORMAT_STRING
+#     file_string, file_format = get_filestring_and_format(fileobj, format)
+#     assert file_format is not None
+#     formats = FORMAT_STRING[file_format]
+#     arrays = ExtDict()
+#     process_primitive_data(arrays, file_string, formats, warning, DEBUG)
+#     process_synthesized_data(arrays, formats, DEBUG)
+#     if not HAS_ATOMSE or get_dict:
+#         return arrays
+#     return assemble_atoms(arrays, formats.get('calculator', None))
 
 
 class FileFinder(object):
@@ -131,7 +131,9 @@ class FileFinder(object):
         super(FileFinder, self).__init__()
         self.fileobj = fileobj
         self.file_format = file_format
-        file_string, file_format = get_filestring_and_format(fileobj, file_format)
+        file_string = atomtools.file.get_file_content(fileobj)
+        print(fileobj)
+        file_format = file_format or filetype(fileobj)
         if not file_format in self.SUPPOTED_FILETYPE:
             raise NotImplementedError('only {0} are supported'.format(self.SUPPOTED_FILETYPE))
         # assert isinstance(filename, str) and os.path.exists(filename), '{0} not exists'.format(filename)

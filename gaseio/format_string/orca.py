@@ -6,8 +6,8 @@ from .. import ext_types
 from .. import ext_methods
 
 FORMAT_STRING = {
-    'nwchem': {
-        'calculator': 'NWCHEM',
+    'orca': {
+        'calculator': 'ORCA',
         'ignorance' : ('#',),
         'primitive_data': {
             r'^\s*(start)\s*.*\n\s*title\s*.*\n' :{
@@ -68,7 +68,7 @@ FORMAT_STRING = {
             }),
     },
 
-    'nwchem-out': {
+    'orca-out': {
         'calculator': 'NWCHEM',
         'ignorance' : ('#',),
         'primitive_data': {
@@ -96,7 +96,7 @@ FORMAT_STRING = {
             #     'key' : 'unit',
             #     'type' : str
             #     },
-            r'Output coordinates in angstroms.*\n\n.*Z\n[- ]*\n([\s\S]*?)\n\s+Atomic Mass' :{
+            r'Output coordinates in angstroms[\s\S]*?[- ]*\n[\s\S]*?\n\s+Atomic Mass' :{
                 'important': True,
                 'selection' : -1,
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),

@@ -111,3 +111,39 @@ def get_filestring_and_format(fileobj, file_format=None):
     return fileobj.lstrip(), file_format
 
 
+def read(fileobj, format=None, get_dict=False, warning=False, DEBUG=False):
+    from .format_string import FORMAT_STRING
+    file_string, file_format = get_filestring_and_format(fileobj, format)
+    assert file_format is not None
+    formats = FORMAT_STRING[file_format]
+    arrays = ExtDict()
+    process_primitive_data(arrays, file_string, formats, warning, DEBUG)
+    process_synthesized_data(arrays, formats, DEBUG)
+    if not HAS_ATOMSE or get_dict:
+        return arrays
+    return assemble_atoms(arrays, formats.get('calculator', None))
+
+
+class FileFinder(object):
+    """docstring for FileFinder"""
+    SUPPOTED_FILETYPE = ['plain_text', 'lxml']
+    def __init__(self, fileobj, file_format='plain_text'):
+        super(FileFinder, self).__init__()
+        self.fileobj = fileobj
+        self.file_format = file_format
+        file_string, file_format = get_filestring_and_format(fileobj, file_format)
+        if not file_format in self.SUPPOTED_FILETYPE:
+            raise NotImplementedError('only {0} are supported'.format(self.SUPPOTED_FILETYPE))
+        # assert isinstance(filename, str) and os.path.exists(filename), '{0} not exists'.format(filename)
+        if file_format == 'plain_text':
+            self.fileobj = file_string
+        elif file_format == 'lxml':
+            self.fileobj = etree.HTML(file_string.encode())
+
+    def find_pattern(self, pattern):
+        assert isinstance(pattern, str)
+        if self.file_format == 'plain_text':
+            return re.findall(pattern, self.fileobj)
+        elif self.file_format == 'lxml':
+            return self.fileobj.xpath(pattern)
+

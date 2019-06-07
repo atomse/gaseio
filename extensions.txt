@@ -1,0 +1,78 @@
+abinit	ABINIT input file	RW
+aims	FHI-aims geometry file	RW
+aims-output	FHI-aims output	R+
+bundletrajectory	ASE bundle trajectory	RW+
+castep-castep	CASTEP output file	R+
+castep-cell	CASTEP geom file	RW
+castep-geom	CASTEP trajectory file	R+
+castep-md	CASTEP molecular dynamics file	R+
+castep-phonon	CASTEP phonon file	R
+cfg	AtomEye configuration	RW
+cif	CIF-file	RW+
+cmdft	CMDFT-file	R
+crystal	Crystal fort.34 format	RW
+cube	CUBE file	RW
+dacapo	Dacapo netCDF output file	R
+dacapo-text	Dacapo text output	R
+db	ASE SQLite database file	RW+
+dftb	DftbPlus input file	RW
+dlp4	DL_POLY_4 CONFIG file	RW
+dmol-arc	DMol3 arc file	RW+
+dmol-car	DMol3 structure file	RW
+dmol-incoor	DMol3 structure file	RW
+elk	ELK atoms definition	R
+eon	EON reactant.con file	RW
+eps	Encapsulated Postscript	W
+espresso-in	Quantum espresso in file	RW
+espresso-out	Quantum espresso out file	R+
+etsf	ETSF format	RW
+exciting	exciting input	RW
+extxyz	Extended XYZ file	RW+
+findsym	FINDSYM-format	W+
+gaussian	Gaussian com (input) file	RW
+gaussian-out	Gaussian output file	R
+gen	DFTBPlus GEN format	RW
+gif	Graphics interchange format	W+
+gpaw-out	GPAW text output	R+
+gpw	GPAW restart-file	R
+gromacs	Gromacs coordinates	RW
+gromos	Gromos96 geometry file	RW
+html	X3DOM HTML	W
+iwm	?	R
+json	ASE JSON database file	RW+
+jsv	JSV file format	RW
+lammps-data	LAMMPS data file	R
+lammps-dump	LAMMPS dump file	R+
+magres	MAGRES ab initio NMR data file	RW
+mol	MDL Molfile	R
+mp4	MP4 animation	W+
+mustem	muSTEM xtl file	RW
+netcdftrajectory	AMBER NetCDF trajectory file	RW+
+nomad-json	JSON from Nomad archive	R+
+nwchem	NWChem input file	RW
+octopus	Octopus input file	R
+png	Portable Network Graphics	W
+postgresql	ASE PostgreSQL database file	RW+
+pov	Persistance of Vision	W
+proteindatabank	Protein Data Bank	RW+
+py	Python file	W+
+qbox	QBOX output file	R+
+res	SHELX format	RW
+sdf	SDF format	R
+struct	WIEN2k structure file	RW
+struct_out	SIESTA STRUCT file	R
+traj	ASE trajectory	RW+
+trj	Old ASE pickle trajectory	RW+
+turbomole	TURBOMOLE coord file	RW
+turbomole-gradient	TURBOMOLE gradient file	R+
+v-sim	V_Sim ascii file	RW
+vasp	VASP POSCAR/CONTCAR file	RW
+vasp-out	VASP OUTCAR file	R+
+vasp-xdatcar	VASP XDATCAR file	R+
+vasp-xml	VASP vasprun.xml file	R+
+vti	VTK XML Image Data	W
+vtu	VTK XML Unstructured Grid	W
+x3d	X3D	W
+xsd	Materials Studio file	RW
+xsf	XCrySDen Structure File	RW+
+xyz	XYZ-file	RW+

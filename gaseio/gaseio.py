@@ -9,56 +9,9 @@ from io import StringIO
 import ase.io
 import atomtools
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-
-global types_map
-types_map = {
-    'gjf': 'gaussian',
-    'com': 'gaussian',
-    'log' : 'gaussian-out',
-    'adf' : 'adf',
-    'xyz' : 'xyz',
-}
-
-# types_custom = {
-#     'xyz': ['W', formats.xyz.read_xyz, formats.xyz.write_xyz],
-# }
-
-
-def update_config(path=None):
-    global types_map
-    path = path or os.path.join(BASE_DIR, 'config')
-    if os.path.exists(path):
-        conf = ConfigParser()
-        conf.read(path)
-        types_map.update(conf['types'])
-
-
-def filetype(filename=None):
-    if filename is None:
-        return None
-    update_config()
-    basename, ext = os.path.splitext(filename)
-    if ext in types_map:
-        return types_map[ext]
-    format = ase.io.formats.filetype(filename, read=os.path.exists(filename))
-    # print(filename, format)
-    if format in types_map:
-        format = types_map[format]
-    return format
 
 
 
-def get_fileobj(fileobj):
-    if isinstance(fileobj, str):
-        if os.path.exists(fileobj):
-            return open(fileobj), fileobj
-        return StringIO(fileobj), None
-    elif isinstance(fileobj, StringIO):
-        return fileobj, None
-    else:
-        raise ValueError('fileobj should be filename/filecontent/StringIO object')
 
 
 def read(fileobj, index=None, format=None, parallel=True, force_ase=False, 
@@ -74,7 +27,7 @@ def read(fileobj, index=None, format=None, parallel=True, force_ase=False,
 
 
 def ase_reader(fileobj, index=None, format=None, parallel=True, **kwargs):
-    _, filename = get_fileobj(fileobj)
+    filename = atomtools.file.get_filename(fileobj)
     format = format or filetype(filename)
     _atoms = ase.io.read(fileobj, index, format, parallel, **kwargs)
     return atomse.Atoms(arrays=_atoms.arrays)

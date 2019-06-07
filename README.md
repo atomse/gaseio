@@ -1,8 +1,8 @@
-# GASIO
+# GASEIO
 
-Generalized Atomic Simulation Input/Output
+Generalized Atomic Simulation Environment Input/Output
 
-Free from GASE project
+Split from GASE project
 
 
 

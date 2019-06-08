@@ -8,6 +8,15 @@ import atomtools
 from .. import ext_types
 from .. import ext_methods
 
+
+ENERGY_ORDER = ["CCSD(T)", "CCSD", "MP4SDQ", "MP4DQ", "MP4D", "MP3", "MP2", "HF"]
+
+
+def get_item_energy(properties, order=ENERGY_ORDER):
+    for _ord in order:
+        if properties.get(_ord, None):
+            return properties.get(_ord)
+
 FORMAT_STRING = {
     'gaussian': {
         'calculator': 'Gaussian',
@@ -115,12 +124,13 @@ FORMAT_STRING = {
                 'key' : 'unit',
                 'type' : str,
                 },
-            r'l9999.exe\)\n([\s\S]*?)\\\\@\n': {
+            r'\n (1[\\|\|]1[\\|\|][\s\S]*?)[\\|\|][\\|\|]@\n': {
+                # 'debug' : True,
                 'important' : True,
                 'selection' : -1,
                 'key' : 'gaussian_datablock',
                 'type' : list,
-                'process' : lambda data, arrays: data.replace('\n ', '').strip().split('\\\\')
+                'process' : lambda data, arrays: data.replace('\n ', '').replace('\\', '|').strip().split('||')
                 },
             r'Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n': {
                 'important' : True,
@@ -188,9 +198,12 @@ FORMAT_STRING = {
                 # 'delete' : ['gaussian_datablock'],
                 },
             'potential_energy' : {
-                'prerequisite' : ['properties/HF'],
-                'equation' : lambda arrays: float(arrays['properties/HF']) * atomtools.unit.trans_energy('au', 'eV'),
-            }
+                'prerequisite' : ['properties'],
+                'equation' : lambda arrays: float(get_item_energy(arrays['properties'], ENERGY_ORDER)) * atomtools.unit.trans_energy('au', 'eV'),
+                },
             }),
     },
 }
+
+
+

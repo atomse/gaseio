@@ -101,7 +101,7 @@ def get_depth_dict(root, names):
     return ptr
 
 
-def string_to_dict(string, sep='\\', keysep='='):
+def string_to_dict(string, sep='|', keysep='='):
     sdict = dict()
     for keyval in string.split(sep):
         print(string, keyval)

@@ -33,29 +33,49 @@ FORMAT_STRING = {
                     'key' : 'calc_arrays/command',
                 },
             r'#\s*([\s\S]*?)\n' : {
+                    'debug' : True,
                     'important' : True,
-                    'selection' : -1,
+                    'selection' : 'all',
                     'type' : str,
+                    'join' : '\n',
                     'key' : 'comments',
+                    # 'process' : lambda data, arrays: '\n'.join(data)
                 },
-            r'[\s\S]*?xyzfile\s+(\d+)\s+\d+[\s\S]*?' : {
+            r'[\s\S]*?xyz.*\s+(\d+)\s+\d+[\s\S]*?' : {
                     'important' : True,
                     'selection' : -1,
                     'type' : int,
                     'key' : 'charge'
                 },
-            r'[\s\S]*?xyzfile\s+\d+\s+(\d+)[\s\S]*?' : {
+            r'[\s\S]*?xyz.*\s+\d+\s+(\d+)[\s\S]*?' : {
                     'important' : True,
                     'selection' : -1,
                     'type' : int,
                     'key' : 'multiplicity'
                 },
-            r'[\s\S]*?xyzfile\s+\d+\s+\d+\s+(.+)' : {
-                    'important' : True,
+            r'[\s\S]*?xyzfile\s+\d+\s+\d+\s+(.+)\s*\n' : {
+                    'important' : False,
                     'selection' : -1,
                     'type' : str,
                     'key' : 'xyzfile',
                     'process' : lambda data, arrays: os.path.join(arrays['basedir'], data),
+                },
+            r'[\s\S]*?xyz\s+\d+\s+\d+\s+([\s\S]*?)\*' : {
+                    'important' : False,
+                    'selection' : -1,
+                    'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                    'key' : [
+                        {
+                            'key' : 'symbols',
+                            'type' : str,
+                            'index' : ':,0',
+                        },
+                        {
+                            'key' : 'positions',
+                            'type' : float,
+                            'index' : ':,1:3',
+                        },
+                    ]
                 },
             r'%basis([\s\S]*?)\n\s*end' : {
                     'important' : True,
@@ -109,7 +129,7 @@ FORMAT_STRING = {
                 'equation' : lambda arrays: read(arrays['xyzfile'], format='xyz')['symbols']
                 },
             }),
-        # 'writer_formats': '%nproc={atoms.maxcore}\n%mem={atoms.maxmem}B\n%chk={randString()}.chk\n#p force b3lyp/6-31g(d)\n\natomse\n\n{atoms.charge} {atoms.multiplicity}\n{atoms.get_symbols_positions()}{atoms.calc.connectivity}{atoms.calc.genecp}',
+        # 'writer_formats': '%nproc={atoms.maxcore}\n%mem={atoms.maxmem}B\n%chk={randString()}.chk\n#p force b3lyp/6-31g(d)\n\ngase\n\n{atoms.charge} {atoms.multiplicity}\n{atoms.get_symbols_positions()}{atoms.calc.connectivity}{atoms.calc.genecp}',
     },
     'orca-out': {
         'calculator': 'ORCA',

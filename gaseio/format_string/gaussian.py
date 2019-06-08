@@ -2,6 +2,7 @@
 format_string
 """
 
+import re
 from collections import OrderedDict
 
 import atomtools
@@ -101,7 +102,7 @@ FORMAT_STRING = {
             },
         'synthesized_data' : OrderedDict({
             }),
-        # 'writer_formats': '%nproc={atoms.maxcore}\n%mem={atoms.maxmem}B\n%chk={randString()}.chk\n#p force b3lyp/6-31g(d)\n\natomse\n\n{atoms.charge} {atoms.multiplicity}\n{atoms.get_symbols_positions()}{atoms.calc.connectivity}{atoms.calc.genecp}',
+        # 'writer_formats': '%nproc={atoms.maxcore}\n%mem={atoms.maxmem}B\n%chk={randString()}.chk\n#p force b3lyp/6-31g(d)\n\ngase\n\n{atoms.charge} {atoms.multiplicity}\n{atoms.get_symbols_positions()}{atoms.calc.connectivity}{atoms.calc.genecp}',
     },
     'gaussian-out': {
         'calculator': 'Gaussian',
@@ -124,15 +125,15 @@ FORMAT_STRING = {
                 'key' : 'unit',
                 'type' : str,
                 },
-            r'\n (1[\\|\|]1[\\|\|][\s\S]*?)[\\|\|][\\|\|]@\n': {
+            r'\n (1[\\|\|]1[\\|\|][\s\S]*?[\\|\|][\\|\|])@\n': {
                 # 'debug' : True,
                 'important' : True,
                 'selection' : -1,
-                'key' : 'gaussian_datablock',
-                'type' : list,
-                'process' : lambda data, arrays: data.replace('\n ', '').replace('\\', '|').strip().split('||')
+                'key' : 'gaussian_datastring',
+                'type' : str,
+                'process' : lambda data, arrays: data.replace('\n ', '').replace('\\', '|').strip()
                 },
-            r'Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n': {
+            r'Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n' : {
                 'important' : True,
                 'selection' : -1,
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
@@ -176,6 +177,10 @@ FORMAT_STRING = {
                 },
             },
         'synthesized_data' : OrderedDict({
+            'gaussian_datablock' : {
+                'prerequisite' : ['gaussian_datastring'],
+                'equation' : lambda arrays: arrays['gaussian_datastring'].split('||'),
+            },
             'calc_arrays/config' : {
                 'prerequisite' : ['gaussian_datablock'],
                 'equation' : lambda arrays: arrays['gaussian_datablock'][0],
@@ -192,18 +197,17 @@ FORMAT_STRING = {
                 'prerequisite' : ['gaussian_datablock'],
                 'equation' : lambda arrays: arrays['gaussian_datablock'][3],
                 },
-            'properties' : {
-                'prerequisite' : ['gaussian_datablock'],
-                'equation' : lambda arrays: ext_methods.string_to_dict(arrays['gaussian_datablock'][-1]),
-                # 'delete' : ['gaussian_datablock'],
+            'calc_arrays/results' : {
+                'prerequisite' : ['gaussian_datastring'],
+                'equation' : lambda arrays: ext_methods.string_to_dict(re.findall(r'\|\|(Version=.*?)\|\|', 
+                                            arrays['gaussian_datastring'])[-1]),
                 },
             'potential_energy' : {
-                'prerequisite' : ['properties'],
-                'equation' : lambda arrays: float(get_item_energy(arrays['properties'], ENERGY_ORDER)) * atomtools.unit.trans_energy('au', 'eV'),
+                'prerequisite' : ['calc_arrays/results'],
+                'equation' : lambda arrays: float(get_item_energy(arrays['calc_arrays/results'],
+                                            ENERGY_ORDER)) * atomtools.unit.trans_energy('au', 'eV'),
                 },
             }),
     },
 }
-
-
 

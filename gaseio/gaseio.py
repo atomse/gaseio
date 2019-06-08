@@ -7,6 +7,7 @@ import os
 import ase.io
 import atomtools
 
+from .filetype import filetype
 
 
 
@@ -17,21 +18,22 @@ BASEDIR = os.path.dirname(os.path.abspath(__file__))
 
 def read(fileobj, index=None, format=None, parallel=True, force_ase=False, 
          force_fmt=False, **kwargs):
-    if force_ase:
-        return ase_reader(fileobj, index, format, parallel, **kwargs)
     if force_fmt:
         return fmt_reader(fileobj, index, format, parallel, **kwargs)
-    try:
-        return fmt_reader(fileobj, index, format, parallel, **kwargs)
-    except:
+    elif force_ase:
         return ase_reader(fileobj, index, format, parallel, **kwargs)
+    else:
+        try:
+            return fmt_reader(fileobj, index, format, parallel, **kwargs)
+        except:
+            return ase_reader(fileobj, index, format, parallel, **kwargs)
 
 
 def ase_reader(fileobj, index=None, format=None, parallel=True, **kwargs):
     filename = atomtools.file.get_filename(fileobj)
     format = format or filetype(filename)
     _atoms = ase.io.read(fileobj, index, format, parallel, **kwargs)
-    return atomse.Atoms(arrays=_atoms.arrays)
+    return gase.Atoms(arrays=_atoms.arrays)
 
 
 def fmt_reader(fileobj, index=None, format=None, parallel=True, **kwargs):
@@ -43,8 +45,9 @@ def read_preview(fileobj, lines=200):
     """
     show last `lines` lines of fileobj, default 200 lines
     """
+    string = ''.join(fd.read().split('\n')[-200:])
     with open(fileobj) as fd:
-        print(''.join(fd.read().split('\n')[-200:]))
+        print(string)
 
 
 def write(fileobj, images, format=None, parallel=True, append=False, **kwargs):

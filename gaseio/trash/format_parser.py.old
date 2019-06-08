@@ -3,13 +3,13 @@ import re
 # import ast
 import glob
 
-from atomse.main import atoms
+from gase.main import atoms
 import numpy as np
 import pandas as pd
 from io import StringIO
-from atomse.io import filetype
-from atomse import utils
-from atomse.utils import randString, unit_to_Ang
+from gase.io import filetype
+from gase import utils
+from gase.utils import randString, unit_to_Ang
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 

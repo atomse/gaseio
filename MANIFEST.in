@@ -1,1 +1,2 @@
 include gaseio/testcases/*
+include gaseio/*.conf

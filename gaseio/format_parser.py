@@ -70,14 +70,17 @@ def process_primitive_data(arrays, file_string, formats, warning=False, debug=Fa
         if pattern_property.get('debug', False):
             import pdb; pdb.set_trace()
         selectAll = selection == 'all'
+            
         assert isinstance(selection, int) or selection == 'all', 'selection must be int or all'
         match = finder.find_pattern(pattern)
+            
         if not match:
             if important:
                 raise ValueError(key, 'not match, however important')
             elif warning:
                 print(' WARNING: ', key, 'not matched', '\n')
             continue
+
         if pattern_property.get('join', None):
             match = [pattern_property['join'].join(match)]
             # import pdb; pdb.set_trace()

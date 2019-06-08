@@ -104,7 +104,7 @@ def get_depth_dict(root, names):
 def string_to_dict(string, sep='|', keysep='='):
     sdict = dict()
     for keyval in string.split(sep):
-        print(string, keyval)
+        # print(string, keyval)
         key, val = keyval.split(keysep)
         sdict[key] = val
     return sdict

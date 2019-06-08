@@ -42,11 +42,11 @@ if __name__ == '__main__':
             'Programming Language :: Python :: 3.7',
         ],
         install_requires=open('requirements.txt').read().split(),
-        entry_points={
-            "console_scripts": [
-                "gaseio=gaseio.cli:run_gaseio_cli",
-            ],
-        },
+        # entry_points={
+        #     "console_scripts": [
+        #         "gaseio=gaseio.cli:run_gaseio_cli",
+        #     ],
+        # },
         extras_require={
             'docs': [
                 'sphinx',

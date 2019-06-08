@@ -132,7 +132,7 @@ class FileFinder(object):
         self.fileobj = fileobj
         self.file_format = file_format
         file_string = atomtools.file.get_file_content(fileobj)
-        print(fileobj)
+        # print(fileobj)
         file_format = file_format or filetype(fileobj)
         if not file_format in self.SUPPOTED_FILETYPE:
             raise NotImplementedError('only {0} are supported'.format(self.SUPPOTED_FILETYPE))

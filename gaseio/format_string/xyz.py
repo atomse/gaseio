@@ -8,7 +8,7 @@ from .. import ext_methods
 FORMAT_STRING = {
     'xyz': {
         'primitive_data'  : OrderedDict({
-            r'(\d+)\n.*\n[\s\S]*': {
+            r'\s*(\d+)\n.*\n[\s\S]*': {
                 'important': True,
                 'selection' : -1,
                 'key' : 'natoms',

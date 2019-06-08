@@ -41,6 +41,11 @@ def read(fileobj, format=None, get_dict=False, warning=False, debug=False):
     assert file_format is not None
     formats = FORMAT_STRING[file_format]
     arrays = ExtDict()
+    arrays['basedir'] = ''
+    filename = atomtools.file.get_filename(fileobj)
+    if filename:
+        arrays['basedir'] = os.path.dirname(filename)
+
     process_primitive_data(arrays, file_string, formats, warning, debug)
     process_synthesized_data(arrays, formats, debug)
     return arrays

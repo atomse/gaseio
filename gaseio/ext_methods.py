@@ -101,6 +101,14 @@ def get_depth_dict(root, names):
     return ptr
 
 
+def string_to_dict(string, sep='\\', keysep='='):
+    sdict = dict()
+    for keyval in string.split(sep):
+        print(string, keyval)
+        key, val = keyval.split(keysep)
+        sdict[key] = val
+    return sdict
+
 # def get_filestring_and_format(fileobj, file_format=None):
 #     if hasattr(fileobj, 'read'):
 #         fileobj = fileobj.read()

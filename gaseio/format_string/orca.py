@@ -101,11 +101,11 @@ FORMAT_STRING = {
             },
         'synthesized_data' : OrderedDict({
             'positions' : {
-                'prerequsite' : 'xyzfile',
+                'prerequisite' : 'xyzfile',
                 'equation' : lambda arrays: read(arrays['xyzfile'], format='xyz')['positions']
                 },
             'symbols' : {
-                'prerequsite' : 'xyzfile',
+                'prerequisite' : 'xyzfile',
                 'equation' : lambda arrays: read(arrays['xyzfile'], format='xyz')['symbols']
                 },
             }),

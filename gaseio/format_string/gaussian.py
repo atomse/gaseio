@@ -1,7 +1,10 @@
 """
 format_string
 """
+
 from collections import OrderedDict
+
+import atomtools
 from .. import ext_types
 from .. import ext_methods
 
@@ -112,6 +115,13 @@ FORMAT_STRING = {
                 'key' : 'unit',
                 'type' : str,
                 },
+            r'l9999.exe\)\n([\s\S]*?)\\\\@\n': {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'gaussian_datablock',
+                'type' : list,
+                'process' : lambda data, arrays: data.replace('\n ', '').strip().split('\\\\')
+                },
             r'Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n': {
                 'important' : True,
                 'selection' : -1,
@@ -156,6 +166,31 @@ FORMAT_STRING = {
                 },
             },
         'synthesized_data' : OrderedDict({
+            'calc_arrays/config' : {
+                'prerequisite' : ['gaussian_datablock'],
+                'equation' : lambda arrays: arrays['gaussian_datablock'][0],
+                },
+            'calc_arrays/command' : {
+                'prerequisite' : ['gaussian_datablock'],
+                'equation' : lambda arrays: arrays['gaussian_datablock'][1],
+                },
+            'comments' : {
+                'prerequisite' : ['gaussian_datablock'],
+                'equation' : lambda arrays: arrays['gaussian_datablock'][2],
+                },
+            'calc_arrays/geometry' : {
+                'prerequisite' : ['gaussian_datablock'],
+                'equation' : lambda arrays: arrays['gaussian_datablock'][3],
+                },
+            'properties' : {
+                'prerequisite' : ['gaussian_datablock'],
+                'equation' : lambda arrays: ext_methods.string_to_dict(arrays['gaussian_datablock'][-1]),
+                # 'delete' : ['gaussian_datablock'],
+                },
+            'potential_energy' : {
+                'prerequisite' : ['properties/HF'],
+                'equation' : lambda arrays: float(arrays['properties/HF']) * atomtools.unit.trans_energy('au', 'eV'),
+            }
             }),
     },
 }

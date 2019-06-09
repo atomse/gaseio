@@ -175,6 +175,30 @@ FORMAT_STRING = {
                     }
                     ],
                 },
+            r'Center\s+Atomic\s+Forces\(Hartrees/Bohr\)\n\s+Number\s+Number\s+X\s+Y\s+Z\n ---*\n([\s\S]*?)---*' : {
+                'important' : False,
+                'selection' : -1,
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key' : [
+                    {
+                        'key' : 'calc_arrays/forces',
+                        'type' : float,
+                        'index' : ':,2:',
+                    },
+                    ],
+                },
+            r'and normal coordinates:([\s\S]*?)\n -------------------' : {
+                'important' : False,
+                'selection' : -1,
+                'process' : lambda data, arrays: gaussian_extract_frequency(data),
+                'key' : 'frequency',
+                },
+            r'The second derivative matrix:\n([\s\S]*?) ITU=  0' : {
+                'important' : False,
+                'selection' : -1,
+                'process' : lambda data, arrays: gaussian_extract_hessian(data),
+                'key' : 'Hessian',
+                },
             },
         'synthesized_data' : OrderedDict({
             'gaussian_datablock' : {
@@ -202,7 +226,7 @@ FORMAT_STRING = {
                 'equation' : lambda arrays: ext_methods.string_to_dict(re.findall(r'\|\|(Version=.*?)\|\|', 
                                             arrays['gaussian_datastring'])[-1]),
                 },
-            'potential_energy' : {
+            'calc_arrays/potential_energy' : {
                 'prerequisite' : ['calc_arrays/results'],
                 'equation' : lambda arrays: float(get_item_energy(arrays['calc_arrays/results'],
                                             ENERGY_ORDER)) * atomtools.unit.trans_energy('au', 'eV'),

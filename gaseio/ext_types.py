@@ -27,7 +27,9 @@ class ExtList(list):
 class ExtDict(dict):
     """
     Extended Dict
+    the array get from gaseio.read is a ExtDict
     """
+
     def __getitem__(self, name):
         if name in self.keys():
             return dict.__getitem__(self, name)
@@ -41,6 +43,12 @@ class ExtDict(dict):
                 raise KeyError('{0} not exist'.format(key))
             sdict = sdict[key]
         return sdict
+
+    def __getattr__(self, name):
+        if name.startswith('get_'):
+            _name = name[len('get_'):]
+            return self.get(_name, None)
+        return dict.__getattr__(self, name)
 
     def has_key(self, name):
         try:

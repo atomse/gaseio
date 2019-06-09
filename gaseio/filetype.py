@@ -29,7 +29,7 @@ def update_config(path=None):
             format_regexp.update(conf._sections[section])
 
 
-def filetype(fileobj=None, isfilename=False):
+def filetype(fileobj=None, isfilename=False, debug=False):
     """
     >>> filetype("a.gjf")
     gaussian
@@ -43,12 +43,14 @@ def filetype(fileobj=None, isfilename=False):
         return None
     for fmt_regexp, fmt_filetype in format_regexp.items():
         name_regexp, content_regexp = (fmt_regexp.split('||') + [None])[:2]
-        print(name_regexp)
+        if debug:
+            print(name_regexp)
         if filename and re.match(re.compile(name_regexp.strip()), filename) or filename is None:
             if content and content_regexp:
                 content_regexp = REG_ANYSTRING + content_regexp.strip() + REG_ANYSTRING
-                # import pdb; pdb.set_trace()
-                print(content_regexp)
+                if debug:
+                    print(content_regexp)
+                    import pdb; pdb.set_trace()
                 if re.match(re.compile(content_regexp.strip()), content):
                     return fmt_filetype
             else:

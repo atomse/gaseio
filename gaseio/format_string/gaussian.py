@@ -13,10 +13,165 @@ from .. import ext_methods
 ENERGY_ORDER = ["CCSD(T)", "CCSD", "MP4SDQ", "MP4DQ", "MP4D", "MP3", "MP2", "HF"]
 
 
-def get_item_energy(properties, order=ENERGY_ORDER):
+def get_value_by_order(properties, order):
     for _ord in order:
         if properties.get(_ord, None):
             return properties.get(_ord)
+
+def gaussian_extract_frequency(logline, arrays):
+    """
+    extract frequency data from gaussian log
+    """
+
+    def parse_freq_lines(origin_lines, si, num_lines, index, num_items, natoms):
+        """
+        #           1              2              3
+        #           A              A              A
+        #  Frequencies --   -754.3221            31.3611           174.9690
+        #  Red. masses --      1.1484             6.5519             6.8477
+        #  Frc consts  --      0.3850             0.0038             0.1235
+        #  IR Inten    --   1827.3164             2.1140             0.0189
+        #   Atom  AN      X  Y  Z    X  Y      Z    X      Y      Z
+        #      1  15     0.00   0.05   0.00 0.00   0.00  -0.01     0.10   0.04   0.00
+        #      2   6     0.00  -0.02   0.00    -0.20  -0.01   0.15     0.21  -0.09  -0.06
+        #      3   1     0.00   0.00   0.00    -0.33  -0.03   0.07     0.29   0.03   0.00
+        #      4   1    -0.01  -0.02  -0.02    -0.20  -0.01   0.24     0.39  -0.18  -0.14
+        """
+        item_dict = {
+            'Frequencies' : 'Frequencies'
+        }
+        lines = origin_lines[si: si+num_lines]
+        # if DEBUG: print('line:', lines)
+        if index+1 > len(lines[0].split()):
+            return None
+        data = {}
+        line_i = 1
+        data['symmetry'] = lines[line_i].split()[index]
+        line_i += 1
+        for line in lines[line_i:num_items+line_i]:
+            item_name = line.split('--')[0].strip().lower()
+            if re.match('freq', item_name):
+                item_name = 'freq'
+            elif re.match('mass', item_name):
+                item_name = 'reduced_mass'
+            elif re.match('frc', item_name):
+                item_name = 'frc_consts'
+            elif re.match('ir', item_name):
+                item_name = 'IR_intensities'
+            elif re.match('raman', item_name):
+                item_name = 'Raman_activity'
+            elif re.match('dep', item_name):
+                if re.match('(p)', item_name):
+                    item_name = 'depolar_p'
+                elif re.match('(u)', item_name):
+                    item_name = 'depolar_u'
+            # print(line)
+            rs = line.split('--')[1]
+            rs = rs.split()[index]
+            rs = float(rs)
+            data[item_name] = rs
+        line_i += num_items+1
+        vector = [[0.0, 0.0, 0.0]] *natoms
+        for line in lines[line_i:]:
+            try:
+                atom_number = int(line[0:14].split()[0]) -1
+            except:
+                break
+            i_vector = line.split()[2+3*index:2+3*index+3]
+            i_vector = list(map(lambda x: float(x), i_vector))
+            if DEBUG: print(i_vector)
+            # vector.append(i_vector)
+            vector[atom_number] = i_vector
+            if DEBUG: print(atom_number, i_vector)
+        data['vector'] = vector
+        return data
+
+
+    lines = logline.split('\n')
+    natoms = arrays['natoms']
+    
+    for line in lines:
+        if re.match('--', line):
+            item_name.append((line.split('--')[0]).strip())
+        elif re.match('Atom', line):
+            break
+    num_line_each = 2 + len(item_name) + 1 + natoms
+
+    for i in range(natoms):
+        for j in range(3):
+            data = parse_freq_lines(lines, start_i+num_line_each*i,
+                num_line_each, j, len(item_name), natoms)
+            if data is None:
+                break
+            # if DEBUG: print(i, j, data)
+            freq.append(data)
+        if data is None:
+            break
+    return freq
+
+
+
+
+
+def get_gaussian_freuencies(logline, natoms):
+    key_string = ' and normal coordinates:'
+    # 'Harmonic frequencies (cm**-1), IR intensities (KM/Mole)'
+    found = False
+    head  = False
+    counter = 0
+    line_count = 3
+    num_items = 0
+    item_name = []
+    freq = []
+    lines = logline.split('\n')
+    for (start_i, line) in zip(range(len(lines)), lines):
+        if re.match(key_string, line):
+            found = True
+            break
+    start_i += 1
+    # if DEBUG: print(start_i, lines[start_i])
+    for line in lines[start_i:]:
+        if re.match('--', line):
+            item_name.append((line.split('--')[0]).strip())
+        elif re.match('Atom', line):
+            break
+    num_line_each = 2 + len(item_name) + 1 + natoms
+    # if DEBUG: print(item_name, num_line_each)
+    # print(si, ei)
+    if lines[start_i:] == []:
+        return None
+    for i in range(natoms):
+        for j in range(3):
+            data = parse_freq_lines(lines, start_i+num_line_each*i,
+                num_line_each, j, len(item_name), natoms)
+            if data is None:
+                break
+            # if DEBUG: print(i, j, data)
+            freq.append(data)
+        if data is None:
+            break
+    return freq
+
+
+
+
+
+def gaussian_extract_hessian(data):
+    # head
+    head_startswith = '                          '
+    head0 = head1 = None
+    for i, line in enumerate(data.split('\n')):
+        if line.startswith(head_startswith):
+            if not head0:
+                head0 = i
+            else:
+                head1 = i
+                break
+    column_length = head1 - head0 - 1
+
+    return data
+
+
 
 FORMAT_STRING = {
     'gaussian': {
@@ -187,16 +342,16 @@ FORMAT_STRING = {
                     },
                     ],
                 },
-            r'and normal coordinates:([\s\S]*?)\n -------------------' : {
+            r'and normal coordinates:([\s\S]*?)\n ---[\s\S]*?Thermochemistry' : {
                 'important' : False,
                 'selection' : -1,
-                'process' : lambda data, arrays: gaussian_extract_frequency(data),
+                'process' : lambda data, arrays: gaussian_extract_frequency(data, arrays),
                 'key' : 'frequency',
                 },
-            r'The second derivative matrix:\n([\s\S]*?) ITU=  0' : {
+            r' The second derivative matrix:\n([\s\S]*?)\n ITU' : {
                 'important' : False,
                 'selection' : -1,
-                'process' : lambda data, arrays: gaussian_extract_hessian(data),
+                'process' : lambda data, arrays: gaussian_extract_hessian(data, arrays),
                 'key' : 'Hessian',
                 },
             },
@@ -228,8 +383,13 @@ FORMAT_STRING = {
                 },
             'calc_arrays/potential_energy' : {
                 'prerequisite' : ['calc_arrays/results'],
-                'equation' : lambda arrays: float(get_item_energy(arrays['calc_arrays/results'],
-                                            ENERGY_ORDER)) * atomtools.unit.trans_energy('au', 'eV'),
+                'equation' : lambda arrays: float(get_value_by_order(arrays['calc_arrays/results'], ENERGY_ORDER)) *\
+                                            atomtools.unit.trans_energy('au', 'eV'),
+                },
+            'calc_arrays/zero_point_energy' : {
+                'prerequisite' : ['calc_arrays/results/ZeroPoint'],
+                'equation' : lambda arrays: float(arrays['calc_arrays/results/ZeroPoint']) *\
+                                            atomtools.unit.trans_energy('au', 'eV'),
                 },
             }),
     },

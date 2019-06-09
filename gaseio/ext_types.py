@@ -47,8 +47,8 @@ class ExtDict(dict):
     def __getattr__(self, name):
         if name.startswith('get_'):
             _name = name[len('get_'):]
-            return self.get(_name, None)
-        return dict.__getattr__(self, name)
+            return lambda : self.get(_name, None)
+        return dict.__getitem__(self, name)
 
     def has_key(self, name):
         try:

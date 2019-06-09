@@ -33,7 +33,7 @@ FORMAT_STRING = {
                     'key' : 'calc_arrays/command',
                 },
             r'#\s*([\s\S]*?)\n' : {
-                    'debug' : True,
+                    # 'debug' : True,
                     'important' : True,
                     'selection' : 'all',
                     'type' : str,

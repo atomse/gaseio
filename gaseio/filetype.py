@@ -47,7 +47,7 @@ def filetype(fileobj=None, isfilename=False):
         if filename and re.match(re.compile(name_regexp.strip()), filename) or filename is None:
             if content and content_regexp:
                 content_regexp = REG_ANYSTRING + content_regexp.strip() + REG_ANYSTRING
-                import pdb; pdb.set_trace()
+                # import pdb; pdb.set_trace()
                 print(content_regexp)
                 if re.match(re.compile(content_regexp.strip()), content):
                     return fmt_filetype

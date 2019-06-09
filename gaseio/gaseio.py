@@ -72,12 +72,3 @@ def preview(fileobj, images, format=None, parallel=True, append=False, **kwargs)
     print(_preview(fileobj, images, format, parallel, append, **kwargs))
 
 
-def test(test_types=None):
-    test_dir = os.path.join(BASEDIR, 'testcases')
-    for filename in os.listdir(test_dir):
-        if filename.startswith('.'):
-            continue
-        filename = os.path.join(test_dir, filename)
-        print(filename)
-        if os.path.isfile(filename):
-            print(read(filename, force_fmt=True, debug=True))

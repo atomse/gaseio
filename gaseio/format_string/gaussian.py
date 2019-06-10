@@ -28,7 +28,9 @@ def gaussian_extract_frequency(logline, arrays):
     extract frequency data from gaussian log
     """
 
-    def parse_freq_lines(origin_lines, si, num_lines, index, num_items, natoms):
+    item_pattern = r'\s+(.*?)\s+-- '
+    def parse_freq_lines(origin_lines, startline, num_lines, 
+                         index, num_items, natoms):
         """
         #           1              2              3
         #           A              A              A
@@ -42,10 +44,17 @@ def gaussian_extract_frequency(logline, arrays):
         #      3   1     0.00   0.00   0.00    -0.33  -0.03   0.07     0.29   0.03   0.00
         #      4   1    -0.01  -0.02  -0.02    -0.20  -0.01   0.24     0.39  -0.18  -0.14
         """
+        # import pdb; pdb.set_trace()
         item_dict = {
-            'Frequencies' : 'Frequencies'
+            'Frequencies' : 'frequency',
+            'Red. masses' : 'reduced_mass',
+            'Frc consts'  : 'force_constant',
+            'IR Inten'    : 'IR_intensity',
+            'raman'       : 'Raman_activity',
+            'depolar(p)'  : 'Depolar_p',
+            'depolar(u)'  : 'Depolar_u',
         }
-        lines = origin_lines[si: si+num_lines]
+        lines = origin_lines[startline: startline+num_lines]
         # if DEBUG: print('line:', lines)
         if index+1 > len(lines[0].split()):
             return None
@@ -54,25 +63,10 @@ def gaussian_extract_frequency(logline, arrays):
         data['symmetry'] = lines[line_i].split()[index]
         line_i += 1
         for line in lines[line_i:num_items+line_i]:
-            item_name = line.split('--')[0].strip().lower()
-            if re.match('freq', item_name):
-                item_name = 'freq'
-            elif re.match('mass', item_name):
-                item_name = 'reduced_mass'
-            elif re.match('frc', item_name):
-                item_name = 'frc_consts'
-            elif re.match('ir', item_name):
-                item_name = 'IR_intensities'
-            elif re.match('raman', item_name):
-                item_name = 'Raman_activity'
-            elif re.match('dep', item_name):
-                if re.match('(p)', item_name):
-                    item_name = 'depolar_p'
-                elif re.match('(u)', item_name):
-                    item_name = 'depolar_u'
             # print(line)
-            rs = line.split('--')[1]
-            rs = rs.split()[index]
+            item_name, rs = line.split('--')
+            item_name = item_dict[item_name.strip()]
+            rs = rs.strip().split()[index]
             rs = float(rs)
             data[item_name] = rs
         line_i += num_items+1
@@ -84,71 +78,31 @@ def gaussian_extract_frequency(logline, arrays):
                 break
             i_vector = line.split()[2+3*index:2+3*index+3]
             i_vector = list(map(lambda x: float(x), i_vector))
-            if DEBUG: print(i_vector)
+            # if DEBUG: print(i_vector)
             # vector.append(i_vector)
             vector[atom_number] = i_vector
-            if DEBUG: print(atom_number, i_vector)
+            # if DEBUG: print(atom_number, i_vector)
         data['vector'] = vector
         return data
 
 
     lines = logline.split('\n')
-    natoms = arrays['natoms']
+    natoms = len(arrays['positions'])
     
-    for line in lines:
-        if re.match('--', line):
-            item_name.append((line.split('--')[0]).strip())
-        elif re.match('Atom', line):
-            break
-    num_line_each = 2 + len(item_name) + 1 + natoms
+    items_name = set(re.findall(item_pattern, logline))
+    # for line in lines:
+    #     if re.match('--', line):
+    #         items_name.append((line.split('--')[0]).strip())
+    #     elif re.match('Atom', line):
+    #         break
+    num_line_each = 2 + len(items_name) + 1 + natoms
 
-    for i in range(natoms):
-        for j in range(3):
-            data = parse_freq_lines(lines, start_i+num_line_each*i,
-                num_line_each, j, len(item_name), natoms)
-            if data is None:
-                break
-            # if DEBUG: print(i, j, data)
-            freq.append(data)
-        if data is None:
-            break
-    return freq
-
-
-
-
-
-def get_gaussian_freuencies(logline, natoms):
-    key_string = ' and normal coordinates:'
-    # 'Harmonic frequencies (cm**-1), IR intensities (KM/Mole)'
-    found = False
-    head  = False
-    counter = 0
-    line_count = 3
-    num_items = 0
-    item_name = []
+    N_freq_per_block = 3
     freq = []
-    lines = logline.split('\n')
-    for (start_i, line) in zip(range(len(lines)), lines):
-        if re.match(key_string, line):
-            found = True
-            break
-    start_i += 1
-    # if DEBUG: print(start_i, lines[start_i])
-    for line in lines[start_i:]:
-        if re.match('--', line):
-            item_name.append((line.split('--')[0]).strip())
-        elif re.match('Atom', line):
-            break
-    num_line_each = 2 + len(item_name) + 1 + natoms
-    # if DEBUG: print(item_name, num_line_each)
-    # print(si, ei)
-    if lines[start_i:] == []:
-        return None
-    for i in range(natoms):
-        for j in range(3):
-            data = parse_freq_lines(lines, start_i+num_line_each*i,
-                num_line_each, j, len(item_name), natoms)
+    for i in range(natoms//N_freq_per_block+1):
+        for j in range(N_freq_per_block):
+            data = parse_freq_lines(lines, num_line_each*i,
+                num_line_each, j, len(items_name), natoms)
             if data is None:
                 break
             # if DEBUG: print(i, j, data)
@@ -156,6 +110,8 @@ def get_gaussian_freuencies(logline, natoms):
         if data is None:
             break
     return freq
+
+
 
 
 
@@ -395,12 +351,12 @@ FORMAT_STRING = {
                     },
                     ],
                 },
-            # r'and normal coordinates:([\s\S]*?)\n ---[\s\S]*?Thermochemistry' : {
-            #     'important' : False,
-            #     'selection' : -1,
-            #     'process' : lambda data, arrays: gaussian_extract_frequency(data, arrays),
-            #     'key' : 'frequency',
-            #     },
+            r'and normal coordinates:([\s\S]*?)\n ---[\s\S]*?Thermochemistry' : {
+                'important' : False,
+                'selection' : -1,
+                'process' : lambda data, arrays: gaussian_extract_frequency(data, arrays),
+                'key' : 'frequency',
+                },
             r'Initial Parameters[\s\S]*?Name\s+Definition.*\n\s-*\n([\s\S]*?)\n\s----*': {
                 'important' : False,
                 'selection' : -1,

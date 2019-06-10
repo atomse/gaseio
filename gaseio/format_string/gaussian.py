@@ -4,6 +4,10 @@ format_string
 
 import re
 from collections import OrderedDict
+from io import StringIO
+
+import numpy as np
+import pandas as pd
 
 import atomtools
 from .. import ext_types
@@ -171,6 +175,70 @@ def gaussian_extract_hessian(data):
 
     return data
 
+
+def get_block_data(line, columns=None, index_col=False, header=None):
+    csv = pd.read_csv(StringIO(line), sep='\s+', index_col=index_col, header=header)
+    if columns is None:
+        return np.array(csv)
+    # data = np.array(csv)[:,columns]
+    data = np.array(csv.ix[:,columns])
+    #try:
+    #  data[np.isnan(data)] = 0.
+    #except:
+    #  pass
+    return data
+
+
+def parse_diagonal_data(inp_line, ndim, max_width,
+    has_top = True, sindex=1, type='lower'):
+    lines = inp_line.split('\n')
+    row_i = line_i = 0
+    xndim = ndim
+    if has_top:
+        header_line = 1
+    else:
+        header_line = 0
+    rsdata = np.zeros((ndim, ndim))
+    # rsdata[:] = np.nan
+    while row_i < ndim:
+        line = '\n'.join(lines[line_i:line_i+xndim+header_line])
+        line = re.sub('^', '^XX ', line)
+        line = re.sub('D(?=\+|\-)', 'E', line)
+        data = get_block_data(line, index_col=0, header=header_line-1)
+        rsdata[row_i: ndim, row_i: min(row_i+max_width, ndim)] = data
+        row_i += max_width
+        row_i = min(row_i, ndim)
+        line_i += xndim +header_line
+        xndim -= max_width
+    rsdata[np.isnan(rsdata)] = 0
+    rsdata += np.triu(rsdata.T, 1)
+    return rsdata
+
+
+
+def gaussian_extract_second_derivative_matrix(logline, arrays):
+    # import pdb; pdb.set_trace()
+    if re.match(r'\s+R\d\s+', logline):
+        arrays['hessian_type'] = 'Internal'
+        ndim = len(arrays['calc_arrays/internal_coords'])
+    else:
+        arrays['hessian_type'] = 'Cartesian'
+        natoms = len(arrays['positions'])
+        ndim = 3*natoms
+    return parse_diagonal_data(logline, ndim=ndim, max_width=5)
+
+# def second_order_forces_consts(logline, fctype, ndim):
+#     if fctype == 'cartesian':
+#         if ' Force constants in Cartesian coordinates:' in logline:
+#             return parse_diagonal_data(logline,
+#                 ' Force constants in Cartesian coordinates: \n',
+#                 '\n FormGI is forming the', ndim=ndim, max_width=5)
+#     else:
+#         if ' Force constants in internal coordinates:' in logline:
+#             ndim = len(get_internal_coordinations(logline))
+#             return parse_diagonal_data(logline,
+#                 ' Force constants in internal coordinates: \n',
+#                 '\n Leave Link  716 at', ndim=ndim, max_width=5)
 
 
 FORMAT_STRING = {
@@ -342,16 +410,43 @@ FORMAT_STRING = {
                     },
                     ],
                 },
-            r'and normal coordinates:([\s\S]*?)\n ---[\s\S]*?Thermochemistry' : {
+            # r'and normal coordinates:([\s\S]*?)\n ---[\s\S]*?Thermochemistry' : {
+            #     'important' : False,
+            #     'selection' : -1,
+            #     'process' : lambda data, arrays: gaussian_extract_frequency(data, arrays),
+            #     'key' : 'frequency',
+            #     },
+            r'Initial Parameters[\s\S]*?Name\s+Definition.*\n\s-*\n([\s\S]*?)\n\s----*': {
                 'important' : False,
                 'selection' : -1,
-                'process' : lambda data, arrays: gaussian_extract_frequency(data, arrays),
-                'key' : 'frequency',
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key' : [
+                    {
+                        'key' : 'calc_arrays/internal_coords',
+                        'type' : str,
+                        'index' : ':,1',
+                    },
+                    {
+                        'key' : 'calc_arrays/internal_coords_definition',
+                        'type' : str,
+                        'index' : ':,2',
+                    },
+                    {
+                        'key' : 'calc_arrays/internal_coords_value',
+                        'type' : float,
+                        'index' : ':,3',
+                    },
+                    {
+                        'key' : 'calc_arrays/internal_coords_derivative_info',
+                        'type' : str,
+                        'index' : ':,4:',
+                    },
+                    ]
                 },
             r' The second derivative matrix:\n([\s\S]*?)\n ITU' : {
                 'important' : False,
                 'selection' : -1,
-                'process' : lambda data, arrays: gaussian_extract_hessian(data, arrays),
+                'process' : lambda data, arrays: gaussian_extract_second_derivative_matrix(data, arrays),
                 'key' : 'Hessian',
                 },
             },

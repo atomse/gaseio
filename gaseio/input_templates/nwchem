@@ -1,0 +1,21 @@
+start {{calc_arrays['name']}}
+title "{{comments}}"
+
+geometry units Angstorm
+{% for i in range(symbols|length) %}
+{{symbols[i]}}    {{positions[i][0]}}    {{positions[i][1]}}    {{positions[i][2]}}
+{% endfor %}
+end
+
+
+
+basis
+{% for i in range(calc_arrays['basis_symbols']|length) %}
+{{calc_arrays['basis_symbols'][i]}}    library    {{calc_arrays['basis_names'][i]}}
+{% endfor %}
+end
+
+task {{task}}
+
+
+

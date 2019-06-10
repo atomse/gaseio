@@ -13,86 +13,94 @@ from ..format_parser import read
 FORMAT_STRING = {
     'orca': {
         'calculator': 'ORCA',
+        'ignorance': ('#',),
         'primitive_data' : {
             r'%maxcore\s+(\d+)\s*\n' : {
-                    'important': False,
-                    'selection' : -1,
-                    'type': int,
-                    'key' : 'maxcore',
+                'important': False,
+                'selection' : -1,
+                'type': int,
+                'key' : 'maxcore',
                 },
             r'%maxmem(\d+.*)\s*\n' : {
-                    'important': False,
-                    'selection' : -1,
-                    'type': str,
-                    'key' : 'maxmem',
+                'important': False,
+                'selection' : -1,
+                'type': str,
+                'key' : 'maxmem',
                 },
-            r'!\s*([\s\S]*?)\n' : {
-                    'important': True,
-                    'selection' : -1,
-                    'type': str,
-                    'key' : 'calc_arrays/command',
+            # r'!\s*([\s\S]*?)\n' : {
+            #     'important': True,
+            #     'selection' : -1,
+            #     'type': str,
+            #     'key' : 'calc_arrays/command',
+            #     },
+            r'#\s*comments\s*([\s\S]*?)\n' : {
+                # 'debug' : True,
+                'important' : False,
+                'selection' : -1,
+                'type' : str,
+                'join' : '\n',
+                'key' : 'comments',
                 },
-            r'#\s*([\s\S]*?)\n' : {
-                    # 'debug' : True,
-                    'important' : True,
-                    'selection' : 'all',
-                    'type' : str,
-                    'join' : '\n',
-                    'key' : 'comments',
-                    # 'process' : lambda data, arrays: '\n'.join(data)
-                },
+            r'\n!\s*(.*)' : {
+                # 'debug' : True,
+                'important' : True,
+                'selection' : -1,
+                'type' : str,
+                'join' : ' ',
+                'key' : 'calc_arrays/command',
+            },
             r'[\s\S]*?xyz.*\s+(\d+)\s+\d+[\s\S]*?' : {
-                    'important' : True,
-                    'selection' : -1,
-                    'type' : int,
-                    'key' : 'charge'
+                'important' : True,
+                'selection' : -1,
+                'type' : int,
+                'key' : 'charge'
                 },
             r'[\s\S]*?xyz.*\s+\d+\s+(\d+)[\s\S]*?' : {
-                    'important' : True,
-                    'selection' : -1,
-                    'type' : int,
-                    'key' : 'multiplicity'
+                'important' : True,
+                'selection' : -1,
+                'type' : int,
+                'key' : 'multiplicity'
                 },
-            r'[\s\S]*?xyzfile\s+\d+\s+\d+\s+(.+)\s*\n' : {
-                    'important' : False,
-                    'selection' : -1,
-                    'type' : str,
-                    'key' : 'xyzfile',
-                    'process' : lambda data, arrays: os.path.join(arrays['basedir'], data),
+            r'\*\s*xyzfile\s+\d+\s+\d+\s+(.+)\s*\n' : {
+                'important' : False,
+                'selection' : -1,
+                'type' : str,
+                'key' : 'xyzfile',
+                'process' : lambda data, arrays: os.path.join(arrays['basedir'], data),
                 },
-            r'[\s\S]*?xyz\s+\d+\s+\d+\s+([\s\S]*?)\*' : {
-                    'important' : False,
-                    'selection' : -1,
-                    'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-                    'key' : [
-                        {
-                            'key' : 'symbols',
-                            'type' : str,
-                            'index' : ':,0',
-                        },
-                        {
-                            'key' : 'positions',
-                            'type' : float,
-                            'index' : ':,1:3',
-                        },
-                    ]
+            r'\*\s*xyz\s+\d+\s+\d+\s+([\s\S]*?)\*' : {
+                'important' : False,
+                'selection' : -1,
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key' : [
+                    {
+                        'key' : 'symbols',
+                        'type' : str,
+                        'index' : ':,0',
+                    },
+                    {
+                        'key' : 'positions',
+                        'type' : float,
+                        'index' : ':,1:4',
+                    },
+                ]
                 },
             r'%basis([\s\S]*?)\n\s*end' : {
-                    'important' : True,
-                    'selection' : -1,
-                    'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-                    'key' : [
-                        {
-                            'key' : 'basis_symbols',
-                            'type' : str,
-                            'index' : ':,1',
-                        },
-                        {
-                            'key' : 'basis_types',
-                            'type' : str,
-                            'index' : ':,2',
-                        },
-                    ],
+                'important' : True,
+                'selection' : -1,
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key' : [
+                    {
+                        'key' : 'basis_symbols',
+                        'type' : str,
+                        'index' : ':,1',
+                    },
+                    {
+                        'key' : 'basis_types',
+                        'type' : str,
+                        'index' : ':,2',
+                    },
+                ],
                 },
             # r'#\s*[\s\S]*?\n\n.*\n\n.*-?\d+\s*\d+\s*\n[\s\S]*?\n\n([\s\S])' : {
             #         'important' : True,

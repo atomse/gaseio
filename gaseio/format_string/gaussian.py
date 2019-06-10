@@ -9,6 +9,7 @@ from io import StringIO
 import numpy as np
 import pandas as pd
 
+import chemdata
 import atomtools
 from .. import ext_types
 from .. import ext_methods
@@ -158,22 +159,6 @@ def get_gaussian_freuencies(logline, natoms):
 
 
 
-
-
-def gaussian_extract_hessian(data):
-    # head
-    head_startswith = '                          '
-    head0 = head1 = None
-    for i, line in enumerate(data.split('\n')):
-        if line.startswith(head_startswith):
-            if not head0:
-                head0 = i
-            else:
-                head1 = i
-                break
-    column_length = head1 - head0 - 1
-
-    return data
 
 
 def get_block_data(line, columns=None, index_col=False, header=None):
@@ -348,7 +333,7 @@ FORMAT_STRING = {
                 'key' : 'unit',
                 'type' : str,
                 },
-            r'\n (1[\\|\|]1[\\|\|][\s\S]*?[\\|\|][\\|\|])@\n': {
+            r'\n (1[\\|\|]1[\\|\|][\s\S]*?[\\|\|]{2,})@\n': {
                 # 'debug' : True,
                 'important' : True,
                 'selection' : -1,
@@ -436,11 +421,6 @@ FORMAT_STRING = {
                         'type' : float,
                         'index' : ':,3',
                     },
-                    {
-                        'key' : 'calc_arrays/internal_coords_derivative_info',
-                        'type' : str,
-                        'index' : ':,4:',
-                    },
                     ]
                 },
             r' The second derivative matrix:\n([\s\S]*?)\n ITU' : {
@@ -451,6 +431,10 @@ FORMAT_STRING = {
                 },
             },
         'synthesized_data' : OrderedDict({
+            'symbols' : {
+                'prerequisite' : ['numbers'],
+                'equation' : lambda arrays: np.array([chemdata.get_element(_) for _ in arrays['numbers']]),
+            },
             'gaussian_datablock' : {
                 'prerequisite' : ['gaussian_datastring'],
                 'equation' : lambda arrays: arrays['gaussian_datastring'].split('||'),
@@ -461,7 +445,7 @@ FORMAT_STRING = {
                 },
             'calc_arrays/command' : {
                 'prerequisite' : ['gaussian_datablock'],
-                'equation' : lambda arrays: arrays['gaussian_datablock'][1],
+                'equation' : lambda arrays: re.match(r'\s*#\s*(.*?)$', arrays['gaussian_datablock'][1])[1],
                 },
             'comments' : {
                 'prerequisite' : ['gaussian_datablock'],

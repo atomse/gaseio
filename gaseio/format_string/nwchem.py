@@ -54,8 +54,19 @@ FORMAT_STRING = {
             r'basis\s*\n([\s\S]*?)\n\s*end\n+\s*task\s*.*\n' :{
                 'important': True,
                 'selection' : -1,
-                'key' : 'basis',
-                'type' : str,
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key' : [
+                    {
+                        'key' : 'calc_arrays/basis_symbols',
+                        'type' : str,
+                        'index' : ':,0',
+                    },
+                    {
+                        'key' : 'calc_arrays/basis_names',
+                        'type' : str,
+                        'index' : ':,2',
+                    },
+                    ]
                 },
             r'basis\s*\n[\s\S]*?\n\s*end\n+\s*task\s*(.*)\n' :{
                 'important': True,

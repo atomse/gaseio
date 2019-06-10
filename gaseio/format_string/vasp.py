@@ -7,7 +7,7 @@ from .. import ext_types
 
 
 FORMAT_STRING = {
-    'vasp-out': {
+    'vasp-OUTCAR': {
         'file_format' : 'plain_text',
         'calculator' : 'VASP',
         'primitive_data': OrderedDict({
@@ -107,7 +107,99 @@ FORMAT_STRING = {
                 },
         }),
     },
-    'DOSCAR' : {
+    'vasp-POSCAR' : {
+        'calculator' : 'VASP',
+        'primitive_data' : {
+            r'^(.*)\n' : {
+                'important' : True,
+                'selection' : -1,
+                'type' : str,
+                'key' : 'comments',
+            },
+            r'^(?:.*\n)(.*)\n' : {
+                'important' : True,
+                'selection' : -1,
+                'type' : float,
+                'key' : 'scaling_factor',
+            },
+            r'^(?:.*\n.*\n)(.*\n.*\n.*\n)' : {
+                # 'debug' : True,
+                'important' : True,
+                'selection' : -1,
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data) * arrays['scaling_factor'],
+                'key' : 'cell',
+            },
+            r'^(?:.*\n.*\n.*\n.*\n.*\n)(.*)\n' : {
+                # 'debug' : True,
+                'important' : True,
+                'selection' : -1,
+                'process' : lambda data, arrays: data.split(),
+                'key' : 'element_types',
+                'type' : ext_types.ExtList,
+            },
+            r'^(?:.*\n.*\n.*\n.*\n.*\n.*\n)(.*)\n' : {
+                'important' : True,
+                'selection' : -1,
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data)[0],
+                'key' : 'element_number',
+                'type' : ext_types.ExtList,
+            },
+            r'\n(S\w+)\n' : {
+                'important' : False,
+                'selection' : -1,
+                'key' : 'selection',
+            },
+            # r'\nD\w+\n(?:S.*\n)([\s\S]*?)\n\s*\n' : {
+            r'\nD\w+\n([\s\S]*?)\n\s*\n' : {
+                'debug' : True,
+                'important' : False,
+                'selection' : -1,
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                # 'key' : 'direct_position_data',
+                'key' : [
+                    {
+                        'key' : 'positions',
+                        'index' : ':,:3',
+                        'type' : float,
+                        'process' : lambda data, arrays: data.dot(arrays['cell']),
+                    },
+                    {
+                        'key' : 'constraints',
+                        'index' : ':,3:',
+                        'type' : bool,
+                    },
+                ],
+            },
+            # r'\nC\w+\n(?:S.*\n)([\s\S]*?)\n\s*\n' : {
+            r'\nC\w+\n([\s\S]*?)\n\s*\n' : {
+                'debug' : True,
+                'important' : False,
+                'selection' : -1,
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key' : [
+                    {
+                        'key' : 'positions',
+                        'index' : ':,:3',
+                        'type' : float,
+                        'process' : lambda data, arrays: data * arrays['scaling_factor'],
+                    },
+                    {
+                        'key' : 'constraints',
+                        'index' : ':,3:',
+                        'type' : bool,
+                    },
+                ],
+            },
+        },
+        'synthesized_data' : OrderedDict({
+            'symbols' : {
+                'prerequisite' : ['element_types', 'element_number'],
+                'equation' : lambda arrays : arrays['element_types'] * arrays['element_number'],
+                'delete' : ['element_types', 'element_number'],
+            },
+        }),
+    },
+    'vasp-DOSCAR' : {
         'calculator' : 'VASP',
         'file_format' : 'plain_text',
         'primitive_data' : {

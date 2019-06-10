@@ -1,2 +1,3 @@
 chemdata
 atomtools
+jinja2

@@ -41,10 +41,10 @@ def read(fileobj, format=None, get_dict=False, warning=False, debug=False):
     assert file_format is not None
     formats = FORMAT_STRING[file_format]
     arrays = ExtDict()
-    arrays['basedir'] = ''
     filename = atomtools.file.get_filename(fileobj)
     if filename:
         arrays['basedir'] = os.path.dirname(filename)
+    arrays['basedir'] = arrays['basedir'] or '.'
 
     process_primitive_data(arrays, file_string, formats, warning, debug)
     process_synthesized_data(arrays, formats, debug)
@@ -111,7 +111,9 @@ def process_primitive_data(arrays, file_string, formats, warning=False, debug=Fa
 
 def process_synthesized_data(arrays, formats, debug=False):
     # Process synthesized data
-    synthesized_data = formats['synthesized_data']
+    synthesized_data = formats.get('synthesized_data', None)
+    if synthesized_data is None:
+        return
     for key, key_property in synthesized_data.items():
         cannot_synthesize = False
         if key_property.get('debug', False):

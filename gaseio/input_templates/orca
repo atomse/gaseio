@@ -1,0 +1,33 @@
+{% if comments %}
+# {{comments}}
+{% endif %}
+
+# ! UKS BP SV(P) SV/J Direct TightSCF Grid3 NoFinalGrid
+# ! Split-RI-J SlowConv Uncontract
+
+! {{calc_arrays['command']}}
+
+
+
+%method
+    SpecialGridAtoms = 25
+    SpecialGridIntAcc = 7
+end
+
+%basis
+    NewGTO    25 "TZVPP" end
+    NewAuxGTO 25 "TZV/J" end
+end
+
+%rel method ZORA
+    ModelPot 1,1,1,1
+    ModelDens rhoZORA
+    PictureChange true
+end
+
+
+* xyz {{charge}} {{multiplicity}}
+{% for i in range(symbols|length) %}
+{{symbols[i]}}    {{positions[i][0]}}    {{positions[i][1]}}    {{positions[i][2]}}
+{% endfor %}
+*

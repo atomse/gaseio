@@ -1,0 +1,130 @@
+#!/bin/bash
+if [ ! -d ${0/\.run/} ]
+then
+    mkdir ${0/\.run/}
+fi
+cd ${0/\.run/}
+
+
+
+{% if maxcore %}
+$ADFBIN/adf -n {{maxcore}} << EOF 1>>${0/run/out} 2>>${0/run/err}
+{% else %}
+$ADFBIN/adf -n 4 << EOF 1>>${0/run/out} 2>>${0/run/err}
+{% endif %}
+
+
+
+TITLE {{comments}}
+
+BECKEGRID
+      Quality good
+End
+
+XC
+{{calc_arrays['xc']}}
+END
+
+
+! BASIS
+! TYPE TZP
+! CORE SMALL
+! END
+
+BASIS
+{{calc_arrays['basis']}}
+END
+
+
+{% if calc_arrays['relativistic'] %}
+RELATIVISTIC {{calc_arrays['relativistic']}}
+{% endif %}
+
+
+
+! units
+! length angstrom
+! END
+
+ATOMS cartesian
+{% for i in range(symbols|length) %}
+{{symbols[i]}}    {{positions[i][0]}}    {{positions[i][1]}}    {{positions[i][2]}}
+{% endfor %}
+END
+
+!unrestricted
+
+{% if calc_arrays['restriction'] %}
+{{calc_arrays['restriction']}}
+{% endif %}
+
+CHARGE {{charge}}
+
+
+! symmetry
+{% if calc_arrays['symmetry'] %}
+SYMMETRY calc_arrays['symmetry']
+{% endif %}
+
+
+!occupations smearq=0.001
+
+
+! SCF
+! iterations 100
+! converge 1.0e-6 1.0e-6
+! mixing 0.2
+! lshift 0.0
+! diis n=500 ok=0.00001 cyc=500 cx=5.0 cxx=10.0
+! END
+
+SCF
+{{calc_arrays['scf']}}
+END
+
+! GEOMETRY
+!     optim all
+!     iterations 50
+!     step rad=0.15 angle=10.0
+!     hessupd BFGS
+!     converge e=1.0e-4 grad=1.0e-4 rad=1.0e-2 angle=0.5
+! END
+
+{% if calc_arrays['geometry'] %}
+GEOMETRY
+{{calc_arrays['geometry']}}
+End
+{% endif %}
+
+
+
+! AnalyticalFreq
+! MAX_CPKS_ITERATIONS 500
+! End
+
+{% if calc_arrays['freq'] %}
+AnalyticalFreq
+{{calc_arrays['freq']}}
+End
+{% endif %}
+
+
+
+
+
+
+
+
+SAVE  TAPE21
+
+A1FIT 10.0
+
+end input
+
+
+
+
+
+EOF
+
+

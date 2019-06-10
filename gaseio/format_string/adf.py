@@ -10,54 +10,60 @@ FORMAT_STRING = {
         'calculator': 'ADF',
         'ignorance': ('!',),
         'primitive_data'  : {
-            r'ATOMS.*\s*\n([\s\S]*?)[eE][nN][dD]':{
-                    'important' : True,
-                    'selection' : -1,
-                    'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-                    'key' : [
-                        {
-                            'key' : 'symbols',
-                            'type' : str,
-                            'index' : ':,0',
-                        },
-                        {
-                            'key' : 'positions',
-                            'type' : float,
-                            'index' : ':,1:4',
-                        },
-                    ],
-                },
+            r'adf\s+-n\s+(\d+)\s*<<' : {
+                'important' : True,
+                'selection' : -1,
+                'type' : float,
+                'key' : 'maxcore',
+            },
+            r'ATOMS.*\s*\n([\s\S]*?)\s+[eE][nN][dD]':{
+                'important' : True,
+                'selection' : -1,
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key' : [
+                    {
+                        'key' : 'symbols',
+                        'type' : str,
+                        'index' : ':,0',
+                    },
+                    {
+                        'key' : 'positions',
+                        'type' : float,
+                        'index' : ':,1:4',
+                    },
+                ],
+            },
             r'CHARGE\s+(-?\d+)' : {
-                    'important' : True,
-                    'selection' : -1,
-                    'type' : int,
-                    'key' : 'charge'
-                },
-            r'GEOMETRY\s*\n([\s\S]*?)[eE][nN][dD]' : {
-                    'important': False,
-                    'selection' : -1,
-                    # 'type' :ext_types.ExtDict,
-                    'key' : 'calc_arrays/geometry',
-                },
-            r'SCF\s*\n([\s\S]*?)[eE][nN][dD]' : {
-                    'important': True,
-                    'selection' : -1,
-                    # 'type' :ext_types.ExtDict,
-                    'key' : 'calc_arrays/scf',
-                },
-            r'[Xx][Cc]\s*\n([\s\S]*?)[eE][nN][dD]' : {
+                'important' : True,
+                'selection' : -1,
+                'type' : int,
+                'key' : 'charge'
+            },
+            r'GEOMETRY\s*\n([\s\S]*?)\s+[eE][nN][dD]' : {
+                'important': False,
+                'selection' : -1,
+                # 'type' :ext_types.ExtDict,
+                'key' : 'calc_arrays/geometry',
+            },
+            r'SCF\s*\n([\s\S]*?)\s+[eE][nN][dD]' : {
+                'important': True,
+                'selection' : -1,
+                # 'type' :ext_types.ExtDict,
+                'key' : 'calc_arrays/scf',
+            },
+            r'[Xx][Cc]\s*\n([\s\S]*?)\s+[eE][nN][dD]' : {
                 'important': True,
                 'selection' : -1,
                 # 'type' :ext_types.ExtDict,
                 'key' : 'calc_arrays/xc',
                 },
-            r'BASIS\s*\n([\s\S]*?)[eE][nN][dD]' : {
+            r'BASIS\s*\n([\s\S]*?)\s+[eE][nN][dD]' : {
                 'important': True,
                 'selection' : -1,
                 # 'type' :ext_types.ExtDict,
                 'key' : 'calc_arrays/basis',
                 },
-            r'BECKEGRID\s*\n([\s\S]*?)[eE][nN][dD]' : {
+            r'BECKEGRID\s*\n([\s\S]*?)\s+[eE][nN][dD]' : {
                 'important': False,
                 'selection' : -1,
                 # 'type' :ext_types.ExtDict,
@@ -69,7 +75,7 @@ FORMAT_STRING = {
                 'type' :str,
                 'key' : 'calc_arrays/relativistic',
                 },
-            r'AnalyticalFreq\s*\n([\s\S]*?)[eE][nN][dD]' : {
+            r'AnalyticalFreq\s*\n([\s\S]*?)\s+[eE][nN][dD]' : {
                 'important': False,
                 'selection' : -1,
                 # 'type' :ext_types.ExtDict,

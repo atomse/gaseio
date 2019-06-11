@@ -100,13 +100,19 @@ def process_primitive_data(arrays, file_string, formats, warning=False, debug=Fa
         else: # array
             def np_select(data, dtype, index):
                 data = eval('data[{0}]'.format(index))
-                return data.astype(dtype)
+                if dtype is not None:
+                    return data.astype(dtype)
+                return data
             for key_group in key:
-                key, dtype, index = key_group['key'], key_group['type'], key_group['index']
+                key, dtype, index = key_group.get('key'), key_group.get('type', None), key_group.get('index')
+                if key_group.get('debug', False):
+                    import pdb; pdb.set_trace()
                 if not selectAll:
                     value = np_select(match[0], dtype, index)
                 else:
                     value = [np_select(data, dtype, index) for data in match]
+                if key_group.get('process', None):
+                    value = key_group.get('process')(value, arrays)
                 arrays.update(construct_depth_dict(key, value, arrays))
 
 def process_synthesized_data(arrays, formats, debug=False):
@@ -126,6 +132,8 @@ def process_synthesized_data(arrays, formats, debug=False):
             continue
         equation = key_property['equation']
         value = equation(arrays)
+        if key_property.get('process', None):
+            value = key_property.get('process')(value, arrays)
         arrays.update(construct_depth_dict(key, value, arrays))
         if key_property.get('delete', None):
             for item in key_property.get('delete'):

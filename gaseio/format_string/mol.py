@@ -79,6 +79,7 @@ FORMAT_STRING = {
             'symbols' : {
                 'prerequisite' : ['atoms_data'],
                 'equation' : lambda arrays: arrays['atoms_data'][:,3],
+                'process' : lambda data, arrays: ext_types.ExtList(data.tolist())
                 },
             'positions' : {
                 'prerequisite' : ['mol_content'],

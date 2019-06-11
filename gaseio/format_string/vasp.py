@@ -1,6 +1,11 @@
 """
 format_string contain vasp-out
+
 """
+
+import numpy as np
+
+
 from collections import OrderedDict
 from .. import ext_methods
 from .. import ext_types
@@ -151,7 +156,6 @@ FORMAT_STRING = {
             },
             # r'\nD\w+\n(?:S.*\n)([\s\S]*?)\n\s*\n' : {
             r'\nD\w+\n([\s\S]*?)\n\s*\n' : {
-                'debug' : True,
                 'important' : False,
                 'selection' : -1,
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
@@ -165,14 +169,16 @@ FORMAT_STRING = {
                     },
                     {
                         'key' : 'constraints',
+                        # 'debug' : True,
                         'index' : ':,3:',
-                        'type' : bool,
+                        # 'type' : bool,
+                        'process' : lambda data, arrays: np.any(np.logical_or(data=='F', data=='False'), axis=1)
                     },
                 ],
             },
             # r'\nC\w+\n(?:S.*\n)([\s\S]*?)\n\s*\n' : {
             r'\nC\w+\n([\s\S]*?)\n\s*\n' : {
-                'debug' : True,
+                # 'debug' : True,
                 'important' : False,
                 'selection' : -1,
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
@@ -189,6 +195,12 @@ FORMAT_STRING = {
                         'type' : bool,
                     },
                 ],
+            },
+            r'\n\s*\n([\s\S]*)' : {
+                'important' : False,
+                'selection' : -1,
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key' : 'velocity',
             },
         },
         'synthesized_data' : OrderedDict({

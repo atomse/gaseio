@@ -231,6 +231,7 @@ FORMAT_STRING = {
                             'key' : 'symbols',
                             'type' : str,
                             'index' : ':,0',
+                            'process' : lambda data, arrays: ext_types.ExtList(data.tolist()),
                         },
                         {
                             'key' : 'positions',
@@ -390,6 +391,7 @@ FORMAT_STRING = {
             'symbols' : {
                 'prerequisite' : ['numbers'],
                 'equation' : lambda arrays: np.array([chemdata.get_element(_) for _ in arrays['numbers']]),
+                'process' : lambda data, arrays: ext_types.ExtList(data.tolist()),
             },
             'gaussian_datablock' : {
                 'prerequisite' : ['gaussian_datastring'],

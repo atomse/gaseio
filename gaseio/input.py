@@ -11,7 +11,7 @@ import jinja2
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 INPUT_TEMPLATE_DIR = 'input_templates'
 
-jinja_temp_env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(BASEDIR, INPUT_TEMPLATE_DIR)))
+jinja_temp_env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(BASEDIR, INPUT_TEMPLATE_DIR)), lstrip_blocks=True)
 
 
 

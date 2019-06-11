@@ -33,33 +33,4 @@ def generate_inputfile(arrays, filetype, inputfilename):
         fd.write(output)
 
 
-if __name__ == '__main__':
-    import os, glob
-    # os.chdir('/tmp')
-    test_cases = [
-        {
-            'filetype' : 'gaussian',
-            'program_cmd' : 'vasp',
-            'pbs_processPerNode' : 8,
-        },
-        {
-            'program_cmd' : 'g09',
-            'program_args' : 'ch4.gjf',
-            'pbs_processPerNode' : 4,
-        },
-        {
-            'env_files' : ['/home/scicons/openmpi/openmpi.sh'],
-            'program_cmd' : 'orca', 'program_args' : 'orca.inp',
-        },
-        {
-            'program_cmd' : 'gmx',
-            'program_args' : 'mdrun -f 1.gro',
-        },
-    ]
 
-    for case in test_cases:
-        print(pbs_jinja(**case))
-        generate_pbs_subfile(**case)
-
-    for file in glob.glob('*.sub'):
-        os.system('cat {0}'.format(file))

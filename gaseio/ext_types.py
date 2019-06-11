@@ -67,6 +67,7 @@ class ExtList(list):
         return _contract_numbers
 
     def deep_contract_index(self):
+        # import pdb; pdb.set_trace()
         counts = OrderedDict()
         for i, item in enumerate(self):
             if counts.get(item, None) is None:

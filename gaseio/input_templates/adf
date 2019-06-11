@@ -14,29 +14,38 @@ $ADFBIN/adf -n 4 << EOF 1>>${0/run/out} 2>>${0/run/err}
 {% endif %}
 
 
-
+{% if comments is defined %}
 TITLE {{comments}}
+{% else %}
+TITLE {{symbols.contract_items()}}
+{% endif %}
+
 
 BECKEGRID
       Quality good
 End
 
 XC
+{% if calc_arrays is defined and calc_arrays['xc'] %}
 {{calc_arrays['xc']}}
+{% else %}
+GGA PBE
+{% endif %}
 END
 
 
-! BASIS
-! TYPE TZP
-! CORE SMALL
-! END
 
 BASIS
+{% if calc_arrays is defined and calc_arrays['basis'] %}
 {{calc_arrays['basis']}}
+{% else %}
+TYPE TZP
+CORE SMALL
+{% endif %}
 END
 
 
-{% if calc_arrays['relativistic'] %}
+{% if calc_arrays is defined and calc_arrays['relativistic'] %}
 RELATIVISTIC {{calc_arrays['relativistic']}}
 {% endif %}
 
@@ -54,7 +63,7 @@ END
 
 !unrestricted
 
-{% if calc_arrays['restriction'] %}
+{% if calc_arrays is defined and calc_arrays['restriction'] %}
 {{calc_arrays['restriction']}}
 {% endif %}
 
@@ -62,7 +71,7 @@ CHARGE {{charge}}
 
 
 ! symmetry
-{% if calc_arrays['symmetry'] %}
+{% if calc_arrays is defined and calc_arrays['symmetry'] %}
 SYMMETRY calc_arrays['symmetry']
 {% endif %}
 
@@ -70,16 +79,17 @@ SYMMETRY calc_arrays['symmetry']
 !occupations smearq=0.001
 
 
-! SCF
-! iterations 100
-! converge 1.0e-6 1.0e-6
-! mixing 0.2
-! lshift 0.0
-! diis n=500 ok=0.00001 cyc=500 cx=5.0 cxx=10.0
-! END
 
 SCF
+{% if calc_arrays is defined and calc_arrays['scf'] %}
 {{calc_arrays['scf']}}
+{% else %}
+iterations 100
+converge 1.0e-6 1.0e-6
+mixing 0.2
+lshift 0.0
+diis n=500 ok=0.00001 cyc=500 cx=5.0 cxx=10.0
+{% endif %}
 END
 
 ! GEOMETRY
@@ -90,7 +100,7 @@ END
 !     converge e=1.0e-4 grad=1.0e-4 rad=1.0e-2 angle=0.5
 ! END
 
-{% if calc_arrays['geometry'] %}
+{% if calc_arrays is defined and calc_arrays['geometry'] %}
 GEOMETRY
 {{calc_arrays['geometry']}}
 End
@@ -102,7 +112,7 @@ End
 ! MAX_CPKS_ITERATIONS 500
 ! End
 
-{% if calc_arrays['freq'] %}
+{% if calc_arrays is defined and calc_arrays['freq'] %}
 AnalyticalFreq
 {{calc_arrays['freq']}}
 End

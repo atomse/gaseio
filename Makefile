@@ -21,7 +21,7 @@ travisinstall:
 
 test:
 	bash -c "export PYTHONPATH=$(PYTHONPATH):$(PWD)/build/lib; coverage run --source gaseio ./test/test.py" 
-	echo `which gaseio`
+	# echo `which gaseio`
 	# coverage run --source gaseio `which gaseio` -h
 	# coverage run --source gaseio `which gaseio` LISTSUBCOMMAND
 	# coverage run --source gaseio `which gaseio` LISTSUBCOMMAND | xargs -n 1 -I [] bash -c '(coverage run --source gaseio `which gaseio` [] -h >/dev/null 2>&1 || echo ERROR: [])'
@@ -44,3 +44,5 @@ upload:
 
 clean:
 	rm -rf venv build *.egg-info dist
+
+

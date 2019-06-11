@@ -16,7 +16,7 @@
 {% if oldchkfile %}
 %oldchk={{oldchkfile}}
 {% endif %}
-{% if calc_arrays['command'] %}
+{% if calc_arrays is defined and calc_arrays['command'] %}
 # {{calc_arrays['command']}}
 {% else %}
 # p b3lyp/lanl2dz force

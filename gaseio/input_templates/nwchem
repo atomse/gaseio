@@ -1,4 +1,8 @@
+{% if calc_arrays is defined and calc_arrays['name'] %}
 start {{calc_arrays['name']}}
+{% else %}
+start {{symbols.contract_items()}}
+{% endif %}
 title "{{comments}}"
 
 geometry units Angstorm
@@ -9,13 +13,17 @@ end
 
 
 
+{% if calc_arrays is defined and "basis_symbols" in calc_arrays%}
 basis
 {% for i in range(calc_arrays['basis_symbols']|length) %}
 {{calc_arrays['basis_symbols'][i]}}    library    {{calc_arrays['basis_names'][i]}}
 {% endfor %}
 end
+{% endif %}
 
-task {{task}}
 
+{% if calc_arrays is defined and calc_arrays['freq'] %}
+task {{calc_arrays['task']}}
+{% endif %}
 
 

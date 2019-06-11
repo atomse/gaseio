@@ -5,8 +5,11 @@
 # ! UKS BP SV(P) SV/J Direct TightSCF Grid3 NoFinalGrid
 # ! Split-RI-J SlowConv Uncontract
 
+{% if calc_arrays is defined %}
 ! {{calc_arrays['command']}}
-
+{% else %}
+! UKS B3LYP SV(P) SV/J Direct TightSCF Grid3 NoFinalGrid
+{% endif %}
 
 
 %method

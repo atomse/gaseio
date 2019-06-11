@@ -157,100 +157,100 @@ def process_synthesized_data(arrays, formats, debug=False):
 #         setattr(_atoms, key, val)
 #     return _atoms
 
-def writer(atoms, format=None):
-    from .format_string import FORMAT_STRING
-    assert format is not None
-    _format = FORMAT_STRING[format]['writer_formats']
-    _fstring = '''f%r ''' %(_format)
-    string = eval(_fstring)
-    return string
+# def writer(atoms, format=None):
+#     from .format_string import FORMAT_STRING
+#     assert format is not None
+#     _format = FORMAT_STRING[format]['writer_formats']
+#     _fstring = '''f%r ''' %(_format)
+#     string = eval(_fstring)
+#     return string
 
 
-def get_obj_value(obj, key, dict_sep=' '):
-    assert isinstance(key, tuple)
-    if not isinstance(key[0], tuple):
-        name, _type = key
-        val = get_depth_dict(obj, name)
-        if val is not None:
-            if _type in [int, float]:
-                val = _type(val)
-            elif _type in [dict]:
-                val = '{0}{1}{2}'.format(name, dict_sep, val)
-    else:
-        arrays = None
-        for subkey, subtype, idx in key:
-            val = get_depth_dict(obj, subkey)
-            if isinstance(val, list):
-                val = np.array(val)
-            if val.ndim == 1:
-                val = val.reshape((-1, 1))
-            if arrays is None:
-                arrays = val
-            else:
-                arrays = np.hstack([arrays, val])
-        val = pd.DataFrame(arrays).to_string(header=None, index=None)
-    return val
+# def get_obj_value(obj, key, dict_sep=' '):
+#     assert isinstance(key, tuple)
+#     if not isinstance(key[0], tuple):
+#         name, _type = key
+#         val = get_depth_dict(obj, name)
+#         if val is not None:
+#             if _type in [int, float]:
+#                 val = _type(val)
+#             elif _type in [dict]:
+#                 val = '{0}{1}{2}'.format(name, dict_sep, val)
+#     else:
+#         arrays = None
+#         for subkey, subtype, idx in key:
+#             val = get_depth_dict(obj, subkey)
+#             if isinstance(val, list):
+#                 val = np.array(val)
+#             if val.ndim == 1:
+#                 val = val.reshape((-1, 1))
+#             if arrays is None:
+#                 arrays = val
+#             else:
+#                 arrays = np.hstack([arrays, val])
+#         val = pd.DataFrame(arrays).to_string(header=None, index=None)
+#     return val
 
-def template(atoms, template_file=None, format=None, print_mode=False):
-    from .format_string import FORMAT_STRING
-    if template_file is None:
-        template_file = glob.glob('{0}/base_format/{1}.*'.format(BASEDIR, format))[0]
-    # template_file, format = get_filestring_and_format(template_file, format)
-    template_file_content = atomtools.file.get_file_content(template_file)
-    format = format or filetype(template_file)
-    assert format is not None
-    reader_formats = FORMAT_STRING[format]['reader_formats']
-    for pattern, pattern_property in reader_formats.items():
-        key_group, important = pattern_property['groups'], pattern_property['important']
-        match = re.match(pattern, template_file)
-        if match is None:
-            if important:
-                raise ValueError(key_group, 'not match, however important')
-            continue
-        vals = match.groups()
-        # start = match.start()
-        newval = None
-        for i, (key, val) in enumerate(zip(key_group, vals)):
-            start = match.start(i+1)
-            newval = get_obj_value(atoms, key)
-            if newval is not None:
-                # print(start, key, '\n', val, '\n', newval, '\n', template_file.index(val))
-                if val[-1] == '\n' and newval[-1] != '\n':
-                    newval += '\n'
-                template_file = template_file[:start] + \
-                    template_file[start:].replace(val, str(newval), 1)
-                match = re.match(pattern, template_file)
-        # if newval is not None:
-    if not print_mode:
-        return template_file
-    print(template_file)
-
-
-def get_template(fileobj, format=None):
-    format = format or filetype(fileobj)
-    assert format is not None
-
-def test():
-    from .format_string import FORMAT_STRING
-    for _filetype in FORMAT_STRING:
-        filenames = glob.glob('{0}/base_format/{1}.*'.format(BASEDIR, _filetype))
-        if not filenames:
-            continue
-        # print(filenames, _filetype)
-        filename = filenames[0]
-        print('\n', _filetype)
-        _dict = read(filename, format=_filetype, get_dict=True, warning=True)
-        print(_dict)
-        if _filetype == 'gaussian':
-            print(_dict.get('connectivity', None))
-        print(read(filename, format=_filetype, ))
-    # _atoms = Atoms('C6H6', positions=np.random.rand(12, 3))
-    # for _filetype in FORMAT_STRING:
-    #     print('\n\n\n ======= ', _filetype)
-    #     template(_atoms, format=_filetype, print_mode=True)
+# def template(atoms, template_file=None, format=None, print_mode=False):
+#     from .format_string import FORMAT_STRING
+#     if template_file is None:
+#         template_file = glob.glob('{0}/base_format/{1}.*'.format(BASEDIR, format))[0]
+#     # template_file, format = get_filestring_and_format(template_file, format)
+#     template_file_content = atomtools.file.get_file_content(template_file)
+#     format = format or filetype(template_file)
+#     assert format is not None
+#     reader_formats = FORMAT_STRING[format]['reader_formats']
+#     for pattern, pattern_property in reader_formats.items():
+#         key_group, important = pattern_property['groups'], pattern_property['important']
+#         match = re.match(pattern, template_file)
+#         if match is None:
+#             if important:
+#                 raise ValueError(key_group, 'not match, however important')
+#             continue
+#         vals = match.groups()
+#         # start = match.start()
+#         newval = None
+#         for i, (key, val) in enumerate(zip(key_group, vals)):
+#             start = match.start(i+1)
+#             newval = get_obj_value(atoms, key)
+#             if newval is not None:
+#                 # print(start, key, '\n', val, '\n', newval, '\n', template_file.index(val))
+#                 if val[-1] == '\n' and newval[-1] != '\n':
+#                     newval += '\n'
+#                 template_file = template_file[:start] + \
+#                     template_file[start:].replace(val, str(newval), 1)
+#                 match = re.match(pattern, template_file)
+#         # if newval is not None:
+#     if not print_mode:
+#         return template_file
+#     print(template_file)
 
 
+# def get_template(fileobj, format=None):
+#     format = format or filetype(fileobj)
+#     assert format is not None
+
+# def test():
+#     from .format_string import FORMAT_STRING
+#     for _filetype in FORMAT_STRING:
+#         filenames = glob.glob('{0}/base_format/{1}.*'.format(BASEDIR, _filetype))
+#         if not filenames:
+#             continue
+#         # print(filenames, _filetype)
+#         filename = filenames[0]
+#         print('\n', _filetype)
+#         _dict = read(filename, format=_filetype, get_dict=True, warning=True)
+#         print(_dict)
+#         if _filetype == 'gaussian':
+#             print(_dict.get('connectivity', None))
+#         print(read(filename, format=_filetype, ))
+#     # _atoms = Atoms('C6H6', positions=np.random.rand(12, 3))
+#     # for _filetype in FORMAT_STRING:
+#     #     print('\n\n\n ======= ', _filetype)
+#     #     template(_atoms, format=_filetype, print_mode=True)
 
 
-if __name__ == '__main__':
-    test()
+
+
+# if __name__ == '__main__':
+#     test()

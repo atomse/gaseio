@@ -196,7 +196,7 @@ FORMAT_STRING = {
                     },
                 ],
             },
-            r'\n\s*\n([\s\S]*)' : {
+            r'\n\s*\n\s*(\w[\s\S]*)' : {
                 'important' : False,
                 'selection' : -1,
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
@@ -244,8 +244,14 @@ FORMAT_STRING = {
             '//atominfo/array[@name="atoms"]/set/rc/c[1]/text()' : {
                 'important' : True,
                 'selection' : 'all',
-                'process' : lambda data, arrays: data.strip(),
-                'key' : 'symbols',
+                'key' : [
+                    {
+                        'key' : 'symbols',
+                        # 'type' : str,
+                        'index' : ':',
+                        'process' : lambda data, arrays: ext_types.ExtList(data),
+                    },
+                ]
                 },
             '//atominfo/array[@name="atomtypes"]/set/rc/c[1]/text()' : {
                 'important' : True,

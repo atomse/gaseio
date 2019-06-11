@@ -6,19 +6,19 @@
 1.00000
 {% if cell is defined %}
     {% for i in range(3) %}
-        {{cell[i][0]}}  {{cell[i][1]}}  {{cell[i][2]}}
+{{cell[i][0]}}  {{cell[i][1]}}  {{cell[i][2]}}
     {% endfor %}
 {% else %}
-    {{(positions.T[0].max() - positions.T[0].min())*2}} 0. 0.
-    0. {{(positions.T[1].max() - positions.T[1].min())*2}} 0.
-    0. 0. {{(positions.T[2].max() - positions.T[2].min())*2}}
+{{(positions.T[0].max() - positions.T[0].min())*2}} 0. 0.
+0. {{(positions.T[1].max() - positions.T[1].min())*2}} 0.
+0. 0. {{(positions.T[2].max() - positions.T[2].min())*2}}
 {% endif %}
 {% if contract_mode is defined and contract_mode %}
-    {{symbols.deep_contract_items("string")}}
-    {{symbols.deep_contract_numbers("string")}}
+{{symbols.deep_contract_items("string")}}
+{{symbols.deep_contract_numbers("string")}}
 {% else %}
-    {{symbols.contract_items("string")}}
-    {{symbols.contract_numbers("string")}}
+{{symbols.contract_items("string")}}
+{{symbols.contract_numbers("string")}}
 {% endif %}
 {% if constraint is defined %}
 Selective Dynamics

@@ -130,11 +130,11 @@ FORMAT_STRING = {
             },
         'synthesized_data' : OrderedDict({
             'positions' : {
-                'prerequisite' : 'xyzfile',
+                'prerequisite' : ['xyzfile'],
                 'equation' : lambda arrays: read(arrays['xyzfile'], format='xyz')['positions']
                 },
             'symbols' : {
-                'prerequisite' : 'xyzfile',
+                'prerequisite' : ['xyzfile'],
                 'equation' : lambda arrays: read(arrays['xyzfile'], format='xyz')['symbols']
                 },
             }),
@@ -170,6 +170,7 @@ FORMAT_STRING = {
                         'key' : 'symbols',
                         'type' : str,
                         'index' : ':,0',
+                        'process' : lambda data, arrays: ext_types.ExtList(data.tolist()),
                     },
                     {
                         'key' : 'positions',

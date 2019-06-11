@@ -2,6 +2,9 @@
 format_string
 """
 from collections import OrderedDict
+
+import atomtools
+
 from .. import ext_types
 from .. import ext_methods
 
@@ -43,11 +46,13 @@ FORMAT_STRING = {
                         'key' : 'symbols',
                         'type' : str,
                         'index' : ':,0',
+                        'process' : lambda data, arrays: ext_types.ExtList(data.tolist()),
                     },
                     {
                         'key' : 'positions',
                         'type' : float,
                         'index' : ':,1:',
+                        'process' : lambda data, arrays: data * atomtools.unit.trans_length(arrays.get('unit', 'Ang'), 'Ang'),
                     }
                     ]
                 },
@@ -116,6 +121,7 @@ FORMAT_STRING = {
                         'key' : 'symbols',
                         'type' : str,
                         'index' : ':,1',
+                        'process' : lambda data, arrays: ext_types.ExtList(data.tolist()),
                     },
                     {
                         'key' : 'positions',

@@ -11,6 +11,7 @@ cd ${0/\.run/}
 $ADFBIN/adf -n {{maxcore}} << EOF 1>>${0/run/out} 2>>${0/run/err}
 {% else %}
 $ADFBIN/adf -n 4 << EOF 1>>${0/run/out} 2>>${0/run/err}
+! default run with 4 cores
 {% endif %}
 
 
@@ -25,31 +26,6 @@ BECKEGRID
       Quality good
 End
 
-XC
-{% if calc_arrays is defined and calc_arrays['xc'] %}
-{{calc_arrays['xc']}}
-{% else %}
-GGA PBE
-{% endif %}
-END
-
-
-
-BASIS
-{% if calc_arrays is defined and calc_arrays['basis'] %}
-{{calc_arrays['basis']}}
-{% else %}
-TYPE TZP
-CORE SMALL
-{% endif %}
-END
-
-
-{% if calc_arrays is defined and calc_arrays['relativistic'] %}
-RELATIVISTIC {{calc_arrays['relativistic']}}
-{% endif %}
-
-
 
 ! units
 ! length angstrom
@@ -61,68 +37,105 @@ ATOMS cartesian
 {% endfor %}
 END
 
-!unrestricted
 
-{% if calc_arrays is defined and calc_arrays['restriction'] %}
+
+{% if charge is defined %}
+CHARGE {{charge}}
+{% else %}
+CHARGE 0
+! default charge 0
+{% endif %}
+
+
+{% if calc_arrays is defined %}
+
+
+! unrestricted/restricted
+{% if calc_arrays['restriction']   != 'default' %}
 {{calc_arrays['restriction']}}
 {% endif %}
 
-CHARGE {{charge}}
 
+XC
+{% if calc_arrays['xc'] %}
+    {{calc_arrays['xc']}}
+{% else %}
+    GGA PBE
+{% endif %}
+END
+
+
+
+BASIS
+{% if calc_arrays['basis'] %}
+    {{calc_arrays['basis']}}
+{% else %}
+    TYPE TZP
+    CORE SMALL
+{% endif %}
+END
 
 ! symmetry
-{% if calc_arrays is defined and calc_arrays['symmetry'] %}
+{% if symmetry is defined %}
+SYMMETRY {{symmetry}}
+{% elif calc_arrays is defined and calc_arrays['symmetry'] %}
 SYMMETRY calc_arrays['symmetry']
 {% endif %}
 
 
-!occupations smearq=0.001
+{% if calc_arrays['relativistic'] %}
+RELATIVISTIC {{calc_arrays['relativistic']}}
+{% endif %}
 
+{% if calc_arrays['smearq'] %}
+occupations smearq={{calc_arrays['smearq']}}
+{% endif %}
 
 
 SCF
-{% if calc_arrays is defined and calc_arrays['scf'] %}
+{% if calc_arrays['scf'] and calc_arrays['scf'] != 'default' %}
 {{calc_arrays['scf']}}
 {% else %}
-iterations 100
-converge 1.0e-6 1.0e-6
-mixing 0.2
-lshift 0.0
-diis n=500 ok=0.00001 cyc=500 cx=5.0 cxx=10.0
+    iterations 100
+    converge 1.0e-6 1.0e-6
+    mixing 0.2
+    lshift 0.0
+    diis n=500 ok=0.00001 cyc=500 cx=5.0 cxx=10.0
 {% endif %}
 END
 
-! GEOMETRY
-!     optim all
-!     iterations 50
-!     step rad=0.15 angle=10.0
-!     hessupd BFGS
-!     converge e=1.0e-4 grad=1.0e-4 rad=1.0e-2 angle=0.5
-! END
 
-{% if calc_arrays is defined and calc_arrays['geometry'] %}
+{% if calc_arrays['geometry'] %}
+{% if calc_arrays['geometry'] != 'default' %}
 GEOMETRY
 {{calc_arrays['geometry']}}
 End
+{% else %}
+GEOMETRY
+    optim all
+    iterations 50
+    step rad=0.15 angle=10.0
+    hessupd BFGS
+    converge e=1.0e-4 grad=1.0e-4 rad=1.0e-2 angle=0.5
+END
+{% endif %}
 {% endif %}
 
 
-
-! AnalyticalFreq
-! MAX_CPKS_ITERATIONS 500
-! End
-
-{% if calc_arrays is defined and calc_arrays['freq'] %}
+{% if calc_arrays['freq'] %}
+{% if calc_arrays['freq'] != 'default' %}
 AnalyticalFreq
 {{calc_arrays['freq']}}
 End
+{% else %}
+AnalyticalFreq
+MAX_CPKS_ITERATIONS 500
+End
+{% endif %}
 {% endif %}
 
 
-
-
-
-
+{% endif %}
 
 
 SAVE  TAPE21
@@ -130,9 +143,6 @@ SAVE  TAPE21
 A1FIT 10.0
 
 end input
-
-
-
 
 
 EOF

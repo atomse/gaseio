@@ -13,7 +13,7 @@
 0. {{(positions.T[1].max() - positions.T[1].min())*2}} 0.
 0. 0. {{(positions.T[2].max() - positions.T[2].min())*2}}
 {% endif %}
-{% if contract_mode is defined and contract_mode %}
+{% if contract_mode is not defined or not contract_mode %}
 {{symbols.deep_contract_items("string")}}
 {{symbols.deep_contract_numbers("string")}}
 {% else %}
@@ -25,7 +25,7 @@ Selective Dynamics
 {% endif %}
 Cartesian
 {% for i in range(positions|length) %}
-    {% if contract_mode is defined and contract_mode %}
+    {% if contract_mode is not defined or not contract_mode %}
         {% if constraint is defined %}
             {% if cell is defined %}
 {{positions[symbols.deep_contract_index()[i]][0]}}  {{positions[symbols.deep_contract_index()[i]][1]}}  {{positions[symbols.deep_contract_index()[i]][2]}}  {{not constraint[symbols.deep_contract_index()[i]]}}  {{not constraint[symbols.deep_contract_index()[i]]}}  {{not constraint[symbols.deep_contract_index()[i]]}}

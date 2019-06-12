@@ -8,16 +8,33 @@ Templates are stored in INPUT_TEMPLATE_DIR
 import os
 import jinja2
 
+
+from . import ext_types
+
+
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 INPUT_TEMPLATE_DIR = 'input_templates'
 
-jinja_temp_env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(BASEDIR, INPUT_TEMPLATE_DIR)), lstrip_blocks=True)
+jinja_temp_env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(BASEDIR, INPUT_TEMPLATE_DIR)),
+                                    lstrip_blocks=True)
 
 
 
 def generate_input_content(arrays, filetype):
     jinja_temp_env.trim_blocks = True
     template = jinja_temp_env.get_template(filetype)
+    if hasattr(arrays, 'get_positions'):
+        if arrays.__class__.__module__ == 'ase.atoms':
+            atoms = arrays
+            calc = atoms.calc
+            arrays = atoms.arrays.copy()
+            arrays['symbols'] = ext_types.ExtList(atoms.get_chemical_symbols())
+            if calc is not None:
+                arrays['calc_arrays'] = {}
+                arrays['calc_arrays'].update(calc.parameters)
+                arrays['calc_arrays'].update(calc.results)
+        else: # gase
+            arrays = arrays.arrays
     output = template.render(**arrays)
     return output
 

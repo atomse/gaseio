@@ -44,10 +44,14 @@ def main(args):
     if not os.path.exists(filename):
         raise ValueError(filename, 'not exist')
     fileobj = get_uncompressed_fileobj(filename)
+    _type = gaseio.filetype.filetype(fileobj)
+    if args.format != None and args.format != _type:
+        print(args.filename, _type)
+        return 0
     arrays = gaseio.read(fileobj, force_gase=not args.allow_ase)
-    # if not args.preview:
-    #     return arrays
-    print(arrays)
+    if args.preview:
+        print(arrays)
+    return 0
         
 
 
@@ -55,10 +59,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='')
     parser.add_argument("filename")
     # parser.add_argument("-o", "--output", nargs=1)
-    # parser.add_argument("--type", nargs=1)
+    parser.add_argument("--format", default=None)
     parser.add_argument("--allow_ase", action='store_true')
+    parser.add_argument("-p", "--preview", action='store_true')
     args = parser.parse_args()
-    print(args)
+    # print(args)
     main(args)
 
 

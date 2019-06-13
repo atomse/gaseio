@@ -198,49 +198,58 @@ FORMAT_STRING = {
                     'type': str,
                     'key' : 'maxmem',
                 },
-            r'#\s*([\s\S]*?)\n\n.*\n\n.*-?\d+\s*\d+\s*\n' : {
+            r'#\s*([\s\S]*?)\n\s*\n[\s\S]*?\n\s*\n' : {
                     'important': True,
-                    'selection' : -1,
+                    'selection' : 0,
                     'type': str,
                     'key' : 'calc_arrays/command',
+                    'process' : lambda data, arrays: data.replace('\n', ' ').strip(),
                 },
-            r'#\s*[\s\S]*?\n\n(.*)\n\n.*-?\d+\s*\d+\s*\n' : {
+            r'#\s*[\s\S]*?\n\s*\n([\s\S]*?)\n\s*\n' : {
                     'important' : True,
-                    'selection' : -1,
+                    'selection' : 0,
                     'type' : str,
                     'key' : 'comments',
+                    'process' : lambda data, arrays: data.replace('\n', ' ').strip(),
                 },
-            r'#\s*[\s\S]*?\n\n.*\n\n.*(-?\d+)\s*\d+\s*\n' : {
+            r'#\s*[\s\S]*?\n\s*\n[\s\S]*?\n\s*\n\s*([+-]?\d+)[, ]*\d+.*' : {
                     'important' : True,
-                    'selection' : -1,
+                    'selection' : 0,
                     'type' : int,
                     'key' : 'charge'
                 },
-            r'#\s*[\s\S]*?\n\n.*\n\n.*-?\d+\s*(\d+)\s*\n' : {
+            r'#\s*[\s\S]*?\n\s*\n[\s\S]*?\n\s*\n\s*[+-]?\d+[, ]*(\d+).*' : {
                     'important' : True,
-                    'selection' : -1,
+                    'selection' : 0, 
                     'type' : int,
                     'key' : 'multiplicity'
                 },
-            r'\n\n.*-?\d+\s*\d+\s*\n([\s\S]*?)\n\n' : {
+            r'\n\s*[+-]?\d+[, ]*\d+.*\s*\n([\s\S]*?)\n\s*\n' : {
+                    # 'debug' : True,
                     'important' : True,
-                    'selection' : -1,
+                    'selection' : 0, 
                     'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-                    'key' : [
-                        {
-                            'key' : 'symbols',
-                            'type' : str,
-                            'index' : ':,0',
-                            'process' : lambda data, arrays: ext_types.ExtList(data.tolist()),
-                        },
-                        {
-                            'key' : 'positions',
-                            'type' : float,
-                            'index' : ':,1:4',
-                        },
-                    ],
+                    'key' : 'gaussian_coord_datablock',
+                    # 'key' : [
+                    #     {
+                    #         'key' : 'symbols',
+                    #         'type' : str,
+                    #         'index' : ':,0',
+                    #         'process' : lambda data, arrays: ext_types.ExtList(data.tolist()),
+                    #     },
+                    #     {
+                    #         'key' : 'positions',
+                    #         'type' : float,
+                    #         'index' : ':,1:4',
+                    #     },
+                    #     {
+                    #         'key' : 'tags',
+                    #         'type' : str,
+                    #         'index' : ':,4',
+                    #     },
+                    # ],
                 },
-            r'#\s*[\s\S]*?\n\n.*\n\n.*-?\d+\s*\d+\s*\n[\s\S]*?\n\n([\s\S])' : {
+            r'\n\s*[+-]?\d+[, ]*\d+.*\s*\n[\s\S]*?\n\s*\n([\s\S]*)' : {
                     'important' : True,
                     'selection' : -1,
                     'type' : str,
@@ -266,6 +275,28 @@ FORMAT_STRING = {
                 },
             },
         'synthesized_data' : OrderedDict({
+            'symbols' : {
+                'prerequisite' : ['gaussian_coord_datablock'],
+                'equation' : lambda arrays: arrays['gaussian_coord_datablock'][:,0],
+                },
+            'constraint' : {
+                'prerequisite' : ['gaussian_coord_datablock'],
+                'condition' : lambda arrays: arrays['gaussian_coord_datablock'].shape[1] >= 5 and \
+                                             np.logical_or(arrays['gaussian_coord_datablock'][:,1]==0, arrays['gaussian_coord_datablock'][:,1]==-1).all(),
+                'equation' : lambda arrays: arrays['gaussian_coord_datablock'][:,1] == -1,
+                },
+            'positions' : {
+                'prerequisite' : ['gaussian_coord_datablock'],
+                'equation' : lambda arrays: arrays['gaussian_coord_datablock'][:,2:5] if 'constraint' in arrays else arrays['gaussian_coord_datablock'][:,1:4],
+                },
+            'tags' : {
+                'prerequisite' : ['gaussian_coord_datablock'],
+                'condition' : lambda arrays: arrays['gaussian_coord_datablock'].shape[1] >= 6 if 'constraint' in arrays else \
+                                             arrays['gaussian_coord_datablock'].shape[1] >= 5,
+                'equation' : lambda arrays: arrays['gaussian_coord_datablock'][:,5] if 'constraint' in arrays else \
+                                            arrays['gaussian_coord_datablock'][:,4],
+                'delete' : ['gaussian_coord_datablock'],
+                },
             }),
         # 'writer_formats': '%nproc={atoms.maxcore}\n%mem={atoms.maxmem}B\n%chk={randString()}.chk\n#p force b3lyp/6-31g(d)\n\ngase\n\n{atoms.charge} {atoms.multiplicity}\n{atoms.get_symbols_positions()}{atoms.calc.connectivity}{atoms.calc.genecp}',
     },

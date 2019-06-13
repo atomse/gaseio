@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+
+import os
+import shutil
+import argparse
+
+from io import StringIO
+
+
+import gaseio
+
+
+
+
+TMP_DIR = '/tmp'
+compress_command = {
+    '.xz' : 'xz -d -f',
+    '.zip' : 'unzip',
+    '.gz' : 'gzip -d ',
+    '.Z' : 'uncompress',
+    '.bz2' : 'bzip2 -d',
+    '.bz' : 'bzip2 -d',
+    '.rar' : 'rar x',
+    '.lha' : 'lha -e',
+}
+
+def get_uncompressed_fileobj(filename):
+    for extension, cmd in compress_command.items():
+        if filename.endswith(extension):
+            tmpfilename = os.path.join(TMP_DIR, os.path.basename(filename))
+            newfilename = os.path.splitext(tmpfilename)[0]
+            shutil.copyfile(os.path.abspath(filename), tmpfilename)
+            cmd += ' ' + tmpfilename + '; dos2unix {0} > /dev/null 2>&1 '.format(newfilename)
+            os.system(cmd)
+            with open(newfilename) as fd:
+                fileobj = StringIO(fd.read())
+                fileobj.name = os.path.basename(newfilename)
+            os.remove(newfilename)
+            return fileobj
+    return filename
+
+def main(args):
+    filename = args.filename
+    if not os.path.exists(filename):
+        raise ValueError(filename, 'not exist')
+    fileobj = get_uncompressed_fileobj(filename)
+    arrays = gaseio.read(fileobj, force_gase=not args.allow_ase)
+    # if not args.preview:
+    #     return arrays
+    print(arrays)
+        
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument("filename")
+    # parser.add_argument("-o", "--output", nargs=1)
+    # parser.add_argument("--type", nargs=1)
+    parser.add_argument("--allow_ase", action='store_true')
+    args = parser.parse_args()
+    print(args)
+    main(args)
+
+
+
+
+
+

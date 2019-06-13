@@ -44,7 +44,7 @@ def read(fileobj, format=None, get_dict=False, warning=False, debug=False):
     filename = atomtools.file.get_filename(fileobj)
     if filename:
         arrays['basedir'] = os.path.dirname(filename)
-    arrays['basedir'] = arrays['basedir'] or '.'
+    arrays['basedir'] = arrays.get('basedir', None) or '.'
 
     process_primitive_data(arrays, file_string, formats, warning, debug)
     process_synthesized_data(arrays, formats, debug)
@@ -99,7 +99,10 @@ def process_primitive_data(arrays, file_string, formats, warning=False, debug=Fa
             arrays.update(construct_depth_dict(key, value, arrays))
         else: # array
             def np_select(data, dtype, index):
-                data = eval('data[{0}]'.format(index))
+                try:
+                    data = eval('data[{0}]'.format(index))
+                except IndexError:
+                    return None
                 if dtype is not None:
                     return data.astype(dtype)
                 return data
@@ -111,6 +114,8 @@ def process_primitive_data(arrays, file_string, formats, warning=False, debug=Fa
                     value = np_select(match[0], dtype, index)
                 else:
                     value = [np_select(data, dtype, index) for data in match]
+                if value is None:
+                    continue
                 if key_group.get('process', None):
                     value = key_group.get('process')(value, arrays)
                 arrays.update(construct_depth_dict(key, value, arrays))
@@ -128,13 +133,15 @@ def process_synthesized_data(arrays, formats, debug=False):
             for item in key_property.get('prerequisite'):
                 if not arrays.has_key(item):
                     cannot_synthesize = True
-        if cannot_synthesize:
-            continue
-        equation = key_property['equation']
-        value = equation(arrays)
-        if key_property.get('process', None):
-            value = key_property.get('process')(value, arrays)
-        arrays.update(construct_depth_dict(key, value, arrays))
+            condition = key_property.get('condition', None)
+            if condition and not condition(arrays):
+                cannot_synthesize = True
+        if not cannot_synthesize:
+            equation = key_property['equation']
+            value = equation(arrays)
+            if key_property.get('process', None):
+                value = key_property.get('process')(value, arrays)
+            arrays.update(construct_depth_dict(key, value, arrays))
         if key_property.get('delete', None):
             for item in key_property.get('delete'):
                 del arrays[item]

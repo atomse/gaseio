@@ -73,7 +73,7 @@ def datablock_to_numpy(datablock):
     datablock is a string that contains a block of data
     """
     assert isinstance(datablock, str)
-    return pd.read_csv(StringIO(datablock), header=None, sep=r'\s+', index_col=None).values
+    return pd.read_csv(StringIO(datablock), header=None, sep=r'\s+', error_bad_lines=False, index_col=None).values
 
 def construct_depth_dict(names, value, root=None):
     names = names.split('/')

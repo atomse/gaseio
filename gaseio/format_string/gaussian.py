@@ -11,17 +11,37 @@ import pandas as pd
 
 import chemdata
 import atomtools
+from atomtools import Status
+
+
 from .. import ext_types
 from .. import ext_methods
 
 
-ENERGY_ORDER = ["CCSD(T)", "CCSD", "MP4SDQ", "MP4DQ", "MP4D", "MP3", "MP2", "HF"]
+ENERGY_ORDER = [
+                r"CCSD\(?T\)?",
+                r"CCSD", 
+                r"CBSQ", 
+                r"QCISD\(?T\)?", 
+                r"QCISD", 
+                r"MP4\(?SDQ\)?", 
+                r"MP4\(?DQ\)?", 
+                r"MP4\(?D\)?", 
+                r"MP3", 
+                r"MP2", 
+                r"HF",
+                ]
 
 
 def get_value_by_order(properties, order):
+    if properties is None:
+        return None
     for _ord in order:
-        if properties.get(_ord, None):
-            return properties.get(_ord)
+        # if properties.get(_ord, None):
+        #     return properties.get(_ord)
+        for item, val in properties.items():
+            if re.match(_ord+'.*', item):
+                return val
 
 def gaussian_extract_frequency(logline, arrays):
     """
@@ -159,13 +179,13 @@ def parse_diagonal_data(inp_line, ndim, max_width,
 
 def gaussian_extract_second_derivative_matrix(logline, arrays):
     # import pdb; pdb.set_trace()
-    if re.match(r'\s+R\d\s+', logline):
-        arrays['hessian_type'] = 'Internal'
-        ndim = len(arrays['calc_arrays/internal_coords'])
-    else:
-        arrays['hessian_type'] = 'Cartesian'
-        natoms = len(arrays['positions'])
-        ndim = 3*natoms
+    # if re.match(r'\s+R\d\s+', logline):
+    arrays['hessian_type'] = 'Internal'
+    ndim = len(arrays['calc_arrays/internal_coords'])
+    # else:
+    #     arrays['hessian_type'] = 'Cartesian'
+    #     natoms = len(arrays['positions'])
+    #     ndim = 3*natoms
     return parse_diagonal_data(logline, ndim=ndim, max_width=5)
 
 # def second_order_forces_consts(logline, fctype, ndim):
@@ -303,7 +323,7 @@ FORMAT_STRING = {
     'gaussian-out': {
         'calculator': 'Gaussian',
         'primitive_data': {
-            r'Charge\s+=\s+(-*\d+)' : {
+            r'Charge\s+=\s+(-?\d+)' : {
                 'important' : True,
                 'selection' : -1,
                 'key' : 'charge',
@@ -315,15 +335,15 @@ FORMAT_STRING = {
                 'key' : 'multiplicity',
                 'type' : int,
             },
-            r'Center *Atomic *Atomic *Coordinates.*\((.*)\).*\n': {
-                'important' : True,
-                'selection' : -1,
-                'key' : 'unit',
-                'type' : str,
-                },
-            r'\n (1[\\|\|]1[\\|\|][\s\S]*?[\\|\|]{2,})@\n': {
+            # r'Center *Atomic *Atomic *Coordinates.*\((.*)\).*\n': {
+            #     'important' : True,
+            #     'selection' : -1,
+            #     'key' : 'unit',
+            #     'type' : str,
+            #     },
+            r'\n (1[\\|\|]1[\\|\|][\s\S]*?[\\|\|]\s*[\\|\|])\s*@\n': {
                 # 'debug' : True,
-                'important' : True,
+                # 'important' : True,
                 'selection' : -1,
                 'key' : 'gaussian_datastring',
                 'type' : str,
@@ -346,8 +366,8 @@ FORMAT_STRING = {
                     }
                     ],
                 },
-            r'Dipole moment.*\n\s*(.*)\n': {
-                'important' : True,
+            r'\n Dipole moment.*\n\s*(X=\s+.*)\n': {
+                'important' : False,
                 'selection' : -1,
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
                 'key' : [
@@ -359,8 +379,8 @@ FORMAT_STRING = {
                     },
                     ],
                 },
-            r'Quadrupole moment.*\n\s*(.*\n.*)\n': {
-                'important' : True,
+            r'\n Quadrupole moment.*\n\s*(XX=\s+.*\n.*)\n': {
+                'important' : False,
                 'selection' : -1,
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
                 'key' : [
@@ -383,13 +403,13 @@ FORMAT_STRING = {
                     },
                     ],
                 },
-            r'and normal coordinates:([\s\S]*?)\n ---[\s\S]*?Thermochemistry' : {
+            r'and normal coordinates:\n([\s\S]*?)\n ---[\s\S]*?Thermochemistry' : {
                 'important' : False,
                 'selection' : -1,
                 'process' : lambda data, arrays: gaussian_extract_frequency(data, arrays),
                 'key' : 'frequency',
                 },
-            r'Initial Parameters[\s\S]*?Name\s+Definition.*\n\s-*\n([\s\S]*?)\n\s----*': {
+            r'Initial Parameters[\s\S]*?Name.*Value.*\n\s-*\n([\s\S]*?)\n\s----*': {
                 'important' : False,
                 'selection' : -1,
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
@@ -399,16 +419,16 @@ FORMAT_STRING = {
                         'type' : str,
                         'index' : ':,1',
                     },
-                    {
-                        'key' : 'calc_arrays/internal_coords_definition',
-                        'type' : str,
-                        'index' : ':,2',
-                    },
-                    {
-                        'key' : 'calc_arrays/internal_coords_value',
-                        'type' : float,
-                        'index' : ':,3',
-                    },
+                    # {
+                    #     'key' : 'calc_arrays/internal_coords_definition',
+                    #     'type' : str,
+                    #     'index' : ':,2',
+                    # },
+                    # {
+                    #     'key' : 'calc_arrays/internal_coords_value',
+                    #     'type' : float,
+                    #     'index' : ':,3',
+                    # },
                     ]
                 },
             r' The second derivative matrix:\n([\s\S]*?)\n ITU' : {
@@ -417,8 +437,31 @@ FORMAT_STRING = {
                 'process' : lambda data, arrays: gaussian_extract_second_derivative_matrix(data, arrays),
                 'key' : 'Hessian',
                 },
+            r'Normal termination' : {
+                'important' : False,
+                'selection' : 'all',
+                'key' : 'normal_termination',
+                },
+            r'Error termination' : {
+                'important' : False,
+                'selection' : 'all',
+                'key' : 'error_termination',
+                },
+            r'SCF Done:  E\(.*?\)\s=\s*([+-]?\d+\.\d+E?[+-]?[0-9]*)\s+' : {
+                'important' : False,
+                'selection' : -1,
+                'key' : 'possible_potential_energy',
+                'type' : float,
+                },
             },
         'synthesized_data' : OrderedDict({
+            'calc_arrays/status' : {
+                'equation' : lambda arrays: Status.error if 'error_termination' in arrays else \
+                                            Status.complete if 'normal_termination' in arrays else \
+                                            Status.running if atomtools.file.file_active(arrays['absfilename']) else\
+                                            Status.stopped,
+                'deletion' : ['error_termination', 'normal_termination'],
+                },
             'symbols' : {
                 'prerequisite' : ['numbers'],
                 'equation' : lambda arrays: np.array([chemdata.get_element(_) for _ in arrays['numbers']]),
@@ -450,9 +493,11 @@ FORMAT_STRING = {
                                             arrays['gaussian_datastring'])[-1]),
                 },
             'calc_arrays/potential_energy' : {
-                'prerequisite' : ['calc_arrays/results'],
-                'equation' : lambda arrays: float(get_value_by_order(arrays['calc_arrays/results'], ENERGY_ORDER)) *\
-                                            atomtools.unit.trans_energy('au', 'eV'),
+                'prerequisite' : ['possible_potential_energy'],
+                'equation' : lambda arrays: float(get_value_by_order(arrays.get('calc_arrays/results', None), 
+                                                  ENERGY_ORDER) or arrays['possible_potential_energy'])\
+                                            * atomtools.unit.trans_energy('au', 'eV'),
+                'delete' : ['possible_potential_energy'],
                 },
             'calc_arrays/zero_point_energy' : {
                 'prerequisite' : ['calc_arrays/results/ZeroPoint'],

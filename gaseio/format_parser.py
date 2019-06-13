@@ -44,7 +44,9 @@ def read(fileobj, format=None, get_dict=False, warning=False, debug=False):
     filename = atomtools.file.get_filename(fileobj)
     if filename:
         arrays['basedir'] = os.path.dirname(filename)
+        arrays['absfilename'] = os.path.abspath(filename)
     arrays['basedir'] = arrays.get('basedir', None) or '.'
+    arrays['absfilename'] = arrays.get('absfilename', None) or '/asdf'*5
 
     process_primitive_data(arrays, file_string, formats, warning, debug)
     process_synthesized_data(arrays, formats, debug)
@@ -144,7 +146,8 @@ def process_synthesized_data(arrays, formats, debug=False):
             arrays.update(construct_depth_dict(key, value, arrays))
         if key_property.get('delete', None):
             for item in key_property.get('delete'):
-                del arrays[item]
+                if item in arrays:
+                    del arrays[item]
 
 # def assemble_atoms(arrays, calculator):
 #     assert HAS_GASE

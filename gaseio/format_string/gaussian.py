@@ -6,6 +6,7 @@ import re
 from collections import OrderedDict
 from io import StringIO
 
+import math
 import numpy as np
 import pandas as pd
 
@@ -48,7 +49,7 @@ def gaussian_extract_frequency(logline, arrays):
     extract frequency data from gaussian log
     """
 
-    item_pattern = r'\s+(.*?)\s+-- '
+    item_pattern = r'\s+(.*?)\s*-- '
     def parse_freq_lines(origin_lines, startline, num_lines, 
                          index, num_items, natoms):
         """
@@ -64,17 +65,17 @@ def gaussian_extract_frequency(logline, arrays):
         #      3   1     0.00   0.00   0.00    -0.33  -0.03   0.07     0.29   0.03   0.00
         #      4   1    -0.01  -0.02  -0.02    -0.20  -0.01   0.24     0.39  -0.18  -0.14
         """
-        # import pdb; pdb.set_trace()
         item_dict = {
             'Frequencies' : 'frequency',
             'Red. masses' : 'reduced_mass',
             'Frc consts'  : 'force_constant',
             'IR Inten'    : 'IR_intensity',
-            'raman'       : 'Raman_activity',
-            'depolar(p)'  : 'Depolar_p',
-            'depolar(u)'  : 'Depolar_u',
+            'Raman Activ' : 'Raman_Activity',
+            'Depolar (P)' : 'Depolar_p',
+            'Depolar (U)' : 'Depolar_u',
         }
         lines = origin_lines[startline: startline+num_lines]
+        # import pdb; pdb.set_trace()
         # if DEBUG: print('line:', lines)
         if index+1 > len(lines[0].split()):
             return None
@@ -82,15 +83,17 @@ def gaussian_extract_frequency(logline, arrays):
         line_i = 1
         data['symmetry'] = lines[line_i].split()[index]
         line_i += 1
+        # print('\n'.join(lines))
         for line in lines[line_i:num_items+line_i]:
-            # print(line)
             item_name, rs = line.split('--')
-            item_name = item_dict[item_name.strip()]
+            item_name = item_name.strip()
+            item_name = item_dict.get(item_name, None) or item_name
             rs = rs.strip().split()[index]
             rs = float(rs)
             data[item_name] = rs
         line_i += num_items+1
-        vector = [[0.0, 0.0, 0.0]] *natoms
+        #   vector = [[0.0, 0.0, 0.0]] *natoms
+        vector = {}
         for line in lines[line_i:]:
             try:
                 atom_number = int(line[0:14].split()[0]) -1
@@ -106,20 +109,20 @@ def gaussian_extract_frequency(logline, arrays):
         return data
 
 
-    lines = logline.split('\n')
-    natoms = len(arrays['positions'])
+    # import pdb; pdb.set_trace()
+    # print(logline)
+    lines = logline.strip().split('\n')
+    # natoms = len(arrays['positions'])
+    natoms_pattern = r'  Atom  [\s\S]*?(?:                     |$)'
+    string = re.findall(natoms_pattern, logline)
+    natoms = len(string[0].strip().split('\n')) - 1
     
     items_name = set(re.findall(item_pattern, logline))
-    # for line in lines:
-    #     if re.match('--', line):
-    #         items_name.append((line.split('--')[0]).strip())
-    #     elif re.match('Atom', line):
-    #         break
     num_line_each = 2 + len(items_name) + 1 + natoms
 
     N_freq_per_block = 3
     freq = []
-    for i in range(natoms//N_freq_per_block+1):
+    for i in range(math.floor(natoms/N_freq_per_block)):
         for j in range(N_freq_per_block):
             data = parse_freq_lines(lines, num_line_each*i,
                 num_line_each, j, len(items_name), natoms)
@@ -179,13 +182,13 @@ def parse_diagonal_data(inp_line, ndim, max_width,
 
 def gaussian_extract_second_derivative_matrix(logline, arrays):
     # import pdb; pdb.set_trace()
-    # if re.match(r'\s+R\d\s+', logline):
-    arrays['hessian_type'] = 'Internal'
-    ndim = len(arrays['calc_arrays/internal_coords'])
-    # else:
-    #     arrays['hessian_type'] = 'Cartesian'
-    #     natoms = len(arrays['positions'])
-    #     ndim = 3*natoms
+    if re.match(r'[\s\S]*?X1\s+Y1\s+Z1[\s\S]*?', logline):
+        arrays['hessian_type'] = 'Cartesian'
+        natoms = len(arrays['positions'])
+        ndim = 3*natoms
+    else:
+        arrays['hessian_type'] = 'Internal'
+        ndim = len(arrays['calc_arrays/internal_coords'])
     return parse_diagonal_data(logline, ndim=ndim, max_width=5)
 
 # def second_order_forces_consts(logline, fctype, ndim):
@@ -245,7 +248,6 @@ FORMAT_STRING = {
                     'key' : 'multiplicity'
                 },
             r'\n\s*[+-]?\d+[, ]*\d+.*\s*\n([\s\S]*?)\n\s*\n' : {
-                    # 'debug' : True,
                     'important' : True,
                     'selection' : 0, 
                     'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
@@ -324,13 +326,13 @@ FORMAT_STRING = {
         'calculator': 'Gaussian',
         'primitive_data': {
             r'Charge\s+=\s+(-?\d+)' : {
-                'important' : True,
+                'important' : False,
                 'selection' : -1,
                 'key' : 'charge',
                 'type' : int,
             },
             r'Multiplicity\s+=\s+(\d+)' : {
-                'important' : True,
+                'important' : False,
                 'selection' : -1,
                 'key' : 'multiplicity',
                 'type' : int,
@@ -342,7 +344,6 @@ FORMAT_STRING = {
             #     'type' : str,
             #     },
             r'\n (1[\\|\|]1[\\|\|][\s\S]*?[\\|\|]\s*[\\|\|])\s*@\n': {
-                # 'debug' : True,
                 # 'important' : True,
                 'selection' : -1,
                 'key' : 'gaussian_datastring',
@@ -391,33 +392,22 @@ FORMAT_STRING = {
                     }
                     ],
                 },
-            r'Center\s+Atomic\s+Forces\(Hartrees/Bohr\)\n\s+Number\s+Number\s+X\s+Y\s+Z\n ---*\n([\s\S]*?)---*' : {
-                'important' : False,
-                'selection' : -1,
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-                'key' : [
-                    {
-                        'key' : 'calc_arrays/forces',
-                        'type' : float,
-                        'index' : ':,2:',
-                    },
-                    ],
-                },
-            r'and normal coordinates:\n([\s\S]*?)\n ---[\s\S]*?Thermochemistry' : {
+            r'and normal coordinates:\n[\s\S]*?(                     1\s+[\s\S]*?)\n ---[\s\S]*? - Thermochemistry -' : {
                 'important' : False,
                 'selection' : -1,
                 'process' : lambda data, arrays: gaussian_extract_frequency(data, arrays),
                 'key' : 'frequency',
                 },
-            r'Initial Parameters[\s\S]*?Name.*Value.*\n\s-*\n([\s\S]*?)\n\s----*': {
+            r'Initial Parameters[\s\S]*?Name.*\n\s-*\n([\s\S]*?)\n\s----*': {
+                # 'debug' : True,
                 'important' : False,
                 'selection' : -1,
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data.replace('!', ' '), sep='\s+'),
                 'key' : [
                     {
                         'key' : 'calc_arrays/internal_coords',
                         'type' : str,
-                        'index' : ':,1',
+                        'index' : ':,0',
                     },
                     # {
                     #     'key' : 'calc_arrays/internal_coords_definition',
@@ -453,6 +443,18 @@ FORMAT_STRING = {
                 'key' : 'possible_potential_energy',
                 'type' : float,
                 },
+            r'Center     Atomic {10,}Forces[\s\S]*?-{10,}\n([\s\S]*?)-{10,}' : {
+                'important' : False,
+                'selection' : -1,
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key' : [
+                    {
+                        'key' : 'calc_arrays/forces',
+                        'index' : ':,2:5',
+                        'process' : lambda data, arrays: data * atomtools.unit.trans_force('au', 'eV/Ang'),
+                    },
+                    ],
+                },
             },
         'synthesized_data' : OrderedDict({
             'calc_arrays/status' : {
@@ -483,7 +485,7 @@ FORMAT_STRING = {
                 'prerequisite' : ['gaussian_datablock'],
                 'equation' : lambda arrays: arrays['gaussian_datablock'][2],
                 },
-            'calc_arrays/geometry' : {
+            'gaussian_datablock_geometry' : {
                 'prerequisite' : ['gaussian_datablock'],
                 'equation' : lambda arrays: arrays['gaussian_datablock'][3],
                 },
@@ -503,6 +505,14 @@ FORMAT_STRING = {
                 'prerequisite' : ['calc_arrays/results/ZeroPoint'],
                 'equation' : lambda arrays: float(arrays['calc_arrays/results/ZeroPoint']) *\
                                             atomtools.unit.trans_energy('au', 'eV'),
+                },
+            'charge' : {
+                'prerequisite' : ['gaussian_datablock_geometry'],
+                'equation' : lambda arrays: float(arrays['gaussian_datablock_geometry'].split('|')[0].split(',')[0]),
+                },
+            'multiplicity' : {
+                'prerequisite' : ['gaussian_datablock_geometry'],
+                'equation' : lambda arrays: float(arrays['gaussian_datablock_geometry'].split('|')[0].split(',')[1]),
                 },
             }),
     },

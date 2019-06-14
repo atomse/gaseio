@@ -1,3 +1,2 @@
-chemdata
-atomtools
+atomtools>=1.5.2
 jinja2

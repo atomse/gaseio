@@ -7,14 +7,21 @@ from lxml import etree
 import glob
 
 from io import StringIO
+from typing import Pattern
+
+
+
+import math
 import numpy as np
 import pandas as pd
-from . import filetype
 
 import atomtools
+
+
+
+from . import filetype
 from .ext_types import ExtList, ExtDict
 
-from typing import Pattern
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -110,6 +117,47 @@ def string_to_dict(string, sep='|', keysep='='):
         key, val = keyval.split(keysep)
         sdict[key] = val
     return sdict
+
+
+
+
+def substitute_with_define(string, def_val=None, block_by_block=True):
+    # import pdb; pdb.set_trace()
+    pattern = re.compile(r'\b(cos|sin|tan|cot|sqr|sqrt|pi)\b',  flags=re.IGNORECASE)
+    string = re.sub(pattern, lambda m: 'math.'+m.group(0).lower(), string)
+    if def_val is not None:
+        assert isinstance(def_val, dict)
+        for _name, _val in def_val.items():
+            string = re.sub(r'\b{0}\b'.format(_name), str(_val), string)
+    # evaluate each line&block in string
+    if block_by_block:
+        lines = string.split('\n')
+        for line_i, line in enumerate(lines):
+            blocks = line.split()
+            for i, block in enumerate(blocks):
+                try:
+                    blocks[i] = eval(block)
+                except:
+                    pass
+            lines[line_i] = ' '.join(str(_) for _ in blocks)
+        string = '\n'.join(lines)
+    return string
+
+
+def process_defines(defines, def_val=None):
+    # defines = re.sub(r'\b(cos|sin|tan|cot|sqr|sqrt)\b', 'math.\g<1>', defines)
+    if isinstance(defines, tuple):
+        defines = defines[0]
+    if def_val is None:
+        def_val = {}
+    for line in defines.split('\n'):
+        name, val = re.split('\s*=\s*', line)
+        name = name.strip()
+        val  = val.strip()
+        val  = substitute_with_define(val, def_val, block_by_block=False)
+        def_val[name] = eval(val)
+    return def_val
+
 
 # def get_filestring_and_format(fileobj, file_format=None):
 #     if hasattr(fileobj, 'read'):

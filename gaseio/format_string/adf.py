@@ -28,7 +28,7 @@ FORMAT_STRING = {
                 'type' : float,
                 'key' : 'maxcore',
             },
-            re.compile('ATOMS.*\s*\n([\s\S]*?)\s+[eE][nN][dD]', flags=re.IGNORECASE) : {
+            re.compile('ATOMS.*\s*\n([\s\S]*?)\s+END', flags=re.IGNORECASE) : {
                 'important' : True,
                 'selection' : -1,
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(remove_head_numbers(data)),
@@ -46,55 +46,55 @@ FORMAT_STRING = {
                     },
                 ],
             },
-            r'CHARGE\s+(-?\d+)' : {
+            re.compile('CHARGE\s+(-?\d+)', flags=re.IGNORECASE) : {
                 'important' : True,
                 'selection' : -1,
                 'type' : int,
                 'key' : 'charge'
             },
-            r'GEOMETRY\s*\n([\s\S]*?)\s+[eE][nN][dD]' : {
+            re.compile('GEOMETRY\s*\n([\s\S]*?)\s+END', flags=re.IGNORECASE) : {
                 'important': False,
                 'selection' : -1,
                 # 'type' :ext_types.ExtDict,
                 'key' : 'calc_arrays/geometry',
             },
-            r'SCF\s*\n([\s\S]*?)\s+[eE][nN][dD]' : {
+            re.compile('SCF\s*\n([\s\S]*?)\s+END', flags=re.IGNORECASE) : {
                 'important': False,
                 'selection' : -1,
                 # 'type' :ext_types.ExtDict,
                 'key' : 'calc_arrays/scf',
             },
-            r'[Xx][Cc]\s*\n([\s\S]*?)\s+[eE][nN][dD]' : {
+            re.compile('XC\s*\n([\s\S]*?)\s+END', flags=re.IGNORECASE) : {
                 'important': True,
                 'selection' : -1,
                 # 'type' :ext_types.ExtDict,
                 'key' : 'calc_arrays/xc',
                 },
-            r'BASIS\s*\n([\s\S]*?)\s+[eE][nN][dD]' : {
+            re.compile('BASIS\s*\n([\s\S]*?)\s+END', flags=re.IGNORECASE) : {
                 'important': True,
                 'selection' : -1,
                 # 'type' :ext_types.ExtDict,
                 'key' : 'calc_arrays/basis',
                 },
-            r'BECKEGRID\s*\n([\s\S]*?)\s+[eE][nN][dD]' : {
+            re.compile('BECKEGRID\s*\n([\s\S]*?)\s+END', flags=re.IGNORECASE) : {
                 'important': False,
                 'selection' : -1,
                 # 'type' :ext_types.ExtDict,
                 'key' : 'calc_arrays/beckegrid',
                 },
-            r'RELATIVISTIC\s*([\s\S]*?)\s*\n' : {
+            re.compile('RELATIVISTIC\s*([\s\S]*?)\s*\n', flags=re.IGNORECASE) : {
                 'important': False,
                 'selection' : -1,
                 'type' :str,
                 'key' : 'calc_arrays/relativistic',
                 },
-            r'AnalyticalFreq\s*\n([\s\S]*?)\s+[eE][nN][dD]' : {
+            re.compile('AnalyticalFreq\s*\n([\s\S]*?)\s+END', flags=re.IGNORECASE) : {
                 'important': False,
                 'selection' : -1,
                 # 'type' :ext_types.ExtDict,
                 'key' : 'calc_arrays/freq',
                 },
-            r'TITLE\s*([\s\S]*?)\s*\n' : {
+            re.compile('TITLE\s*([\s\S]*?)\s*\n', flags=re.IGNORECASE) : {
                 'important': False,
                 'selection' : -1,
                 'type' :str,

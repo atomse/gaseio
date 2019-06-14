@@ -14,6 +14,7 @@ from . import filetype
 import atomtools
 from .ext_types import ExtList, ExtDict
 
+from typing import Pattern
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -68,12 +69,13 @@ def xml_parameters(xml_node):
     return parameters
 
 
-def datablock_to_numpy(datablock):
+def datablock_to_numpy(datablock, sep='\s+',):
     """
     datablock is a string that contains a block of data
     """
     assert isinstance(datablock, str)
-    return pd.read_csv(StringIO(datablock), header=None, sep=r'\s+', error_bad_lines=False, warn_bad_lines=False, index_col=None).values
+    return pd.read_csv(StringIO(datablock), header=None, sep=sep, index_col=None,
+                       error_bad_lines=False, warn_bad_lines=False).values
 
 def construct_depth_dict(names, value, root=None):
     names = names.split('/')
@@ -151,7 +153,7 @@ class FileFinder(object):
             self.fileobj = etree.HTML(file_string.encode())
 
     def find_pattern(self, pattern):
-        assert isinstance(pattern, str)
+        assert isinstance(pattern, (str, Pattern))
         if self.file_format == 'plain_text':
             return re.findall(pattern, self.fileobj)
         elif self.file_format == 'lxml':

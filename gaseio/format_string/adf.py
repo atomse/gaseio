@@ -5,21 +5,33 @@ from collections import OrderedDict
 from .. import ext_types
 from .. import ext_methods
 
+import re
+
+
+def remove_head_numbers(data):
+    p1 = r'^\s*\d+\.?'
+    p2 = r'\n\s*\d+\.?'
+    data = re.sub(p1, '', data)
+    data = re.sub(p2, '\n', data)
+    return data
+
+
+
 FORMAT_STRING = {
     'adf' : {
         'calculator': 'ADF',
         'ignorance': ('!',),
         'primitive_data'  : {
             r'adf\s+-n\s+(\d+)\s*<<' : {
-                'important' : True,
+                'important' : False,
                 'selection' : -1,
                 'type' : float,
                 'key' : 'maxcore',
             },
-            r'ATOMS.*\s*\n([\s\S]*?)\s+[eE][nN][dD]':{
+            re.compile('ATOMS.*\s*\n([\s\S]*?)\s+[eE][nN][dD]', flags=re.IGNORECASE) : {
                 'important' : True,
                 'selection' : -1,
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(remove_head_numbers(data)),
                 'key' : [
                     {
                         'key' : 'symbols',
@@ -47,7 +59,7 @@ FORMAT_STRING = {
                 'key' : 'calc_arrays/geometry',
             },
             r'SCF\s*\n([\s\S]*?)\s+[eE][nN][dD]' : {
-                'important': True,
+                'important': False,
                 'selection' : -1,
                 # 'type' :ext_types.ExtDict,
                 'key' : 'calc_arrays/scf',

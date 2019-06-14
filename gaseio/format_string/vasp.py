@@ -274,25 +274,25 @@ FORMAT_STRING = {
                 'key' : 'calc_arrays/dos_total_header',
                 },
             '(//energy)[last()]/i[@name="e_fr_energy"]/text()' : {
-                'important' : True,
+                'important' : False,
                 'process' : lambda data, arrays: data.strip(),
                 'type' : float,
                 'key' : 'calc_arrays/e_fr_energy',
             },
             '(//energy)[last()]/i[@name="e_wo_entrp"]/text()' : {
-                'important' : True,
+                'important' : False,
                 'process' : lambda data, arrays: data.strip(),
                 'type' : float,
                 'key' : 'calc_arrays/potential_energy',
             },
             '(//energy)[last()]/i[@name="e_0_energy"]/text()' : {
-                'important' : True,
+                'important' : False,
                 'process' : lambda data, arrays: data.strip(),
                 'type' : float,
                 'key' : 'calc_arrays/e_0_energy',
             },
             '//time[@name="totalsc"]/text()' : {
-                'important' : True,
+                'important' : False,
                 'join' : '\n',
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
                 'type' : float,
@@ -306,7 +306,7 @@ FORMAT_STRING = {
                 'key' : 'calc_arrays/forces',
             },
             '//varray[@name="forces"]/v/text()' : {
-                'important' : True, 
+                'important' : False,
                 'join' : '\n',
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data).reshape((-1, \
                             len(arrays['calc_arrays/forces']), 3)),
@@ -363,20 +363,20 @@ FORMAT_STRING = {
                 'key' : 'dos_partial_spin2',
             },
             '(//eigenvalues)[last()]/array/field/text()' : {
-                'important' : True,
+                'important' : False,
                 'selection' : 'all',
                 'process' : lambda data, arrays: data.strip(),
                 'key' : 'calc_arrays/eigenvalues_header',
             },
             '(//eigenvalues)[last()]/array/set/set[@comment="spin 1"]/set[@comment="kpoint 1"]/r/text()' : {
-                'important' : True,
+                'important' : False,
                 'join' : '\n',
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
                 'type' : float,
                 'key' : 'calc_arrays/spin1_kpoint1_eigen',
             },
             '(//eigenvalues)[last()]/array/set/set[@comment="spin 1"]/set/r/text()' : {
-                'important' : True,
+                'important' : False,
                 'join' : '\n',
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data).reshape(\
                         tuple([-1] + list(arrays['calc_arrays/spin1_kpoint1_eigen'].shape))),

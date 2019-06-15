@@ -1,1 +1,2 @@
 include gaseio/*.conf
+include gaseio/input_templates/*

@@ -1,7 +1,7 @@
 {% if calc_arrays is defined and calc_arrays['name'] %}
 start {{calc_arrays['name']}}
 {% else %}
-start {{symbols.contract_items()}}
+start {{symbols.deep_contract_items()}}
 {% endif %}
 title "{{comments}}"
 

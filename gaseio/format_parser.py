@@ -39,7 +39,9 @@ def read(fileobj, format=None, get_dict=False, warning=False, debug=False):
     file_format = format or filetype(fileobj)
 
     assert file_format is not None
-    formats = FORMAT_STRING[file_format]
+    formats = FORMAT_STRING.get(file_format, None)
+    if formats is None:
+        raise NotImplementedError(file_format, 'not available now')
     arrays = ExtDict()
     filename = atomtools.file.get_filename(fileobj)
     if filename:

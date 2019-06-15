@@ -30,7 +30,7 @@ def test(test_types=None):
             continue
         for filetype in os.listdir(TEMPLATES_DIR):
             try:
-                gaseio.write('/tmp/test', arrays, filetype, force_gase=True)
+                gaseio.write('/tmp/test', arrays, filetype, force_gase=True, preview=True)
             except Exception as e:
                 print(filetype, 'tempelate wrong!', filename)
                 print(e)
@@ -43,14 +43,17 @@ def test_no_catch():
     test gaseio without catching errors
     """
     for filename in os.listdir(TEST_DIR):
+        print(filename)
+        if filename.startswith('.'):
+            continue
         filename = os.path.join(TEST_DIR, filename)
-        if filename.startswith('.') or not os.path.isfile(filename):
+        if not os.path.isfile(filename):
             continue
         print('\n'*4, filename)
         arrays = gaseio.read(filename, force_gase=True)
         for filetype in os.listdir(TEMPLATES_DIR):
-            # print(filetype, filename)
-            gaseio.write('/tmp/test', arrays, filetype, force_gase=True)
+            print(filetype, filename)
+            gaseio.write('/tmp/test', arrays, filetype, force_gase=True, preview=True)
     return 0
 
 

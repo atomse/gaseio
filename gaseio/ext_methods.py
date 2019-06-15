@@ -5,6 +5,8 @@ import os
 import re
 from lxml import etree
 import glob
+import collections
+
 
 from io import StringIO
 from typing import Pattern
@@ -59,6 +61,18 @@ def update_items_with_node(root, item_xpath=None, default_type='float', sdict=di
             raise NotImplementedError('{0} not implemeneted in xml update items'.format(item_node.tag))
         sdict.update({item_name: value})
     return sdict
+
+
+def update(orig_dict, new_dict):
+    for key, val in new_dict.items():
+        if isinstance(val, collections.Mapping):
+            tmp = update(orig_dict.get(key, { }), val)
+            orig_dict[key] = tmp
+        elif isinstance(val, list):
+            orig_dict[key] = (orig_dict.get(key, []) + val)
+        else:
+            orig_dict[key] = new_dict[key]
+    return orig_dict
 
 def xml_parameters(xml_node):
     parameters = {}

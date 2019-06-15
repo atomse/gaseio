@@ -13,7 +13,7 @@ from .. import ext_methods
 
 siesta_format_string = {
     'ignorance' : ('#', ),
-    'primitive_data'  : OrderedDict({
+    'primitive_data'  : {
         r'%block AtomicCoordinatesAndAtomicSpecies([\s\S]*?)\n%endblock AtomicCoordinatesAndAtomicSpecies':{
             'important': True,
             'selection' : -1,
@@ -54,19 +54,19 @@ siesta_format_string = {
             'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
             'key' : 'cell',
         },
-    }),
+    },
     'synthesized_data' : OrderedDict({
         'symbols' : {
             'prerequisite' : ['species_syms', 'species_nums'],
-            'equation' : lambda arrays: arrays['species_syms'][arrays['species_nums']],
+            'equation' : lambda arrays: ext_types.ExtList(arrays['species_syms'][arrays['species_nums']].tolist()),
         },
     }),
 }
 
 siesta_out_format_string = siesta_format_string
-siesta_out_format_string.update({
+ext_methods.update(siesta_out_format_string, {
     'ignorance' : ('#', ),
-    'primitive_data'  : OrderedDict({
+    'primitive_data'  : {
         r'siesta: Final energy.*([\s\S]*?)\n\n' : {
             'important': False,
             'selection' : -1,
@@ -103,9 +103,10 @@ siesta_out_format_string.update({
             'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
             'key' : 'cell',
         },
-    }),
+    },
     'synthesized_data' : OrderedDict({
         'potential_energy' : {
+            # 'debug' : True,
             'prerequisite' : ['energy_block', ],
             'equation' : lambda arrays: arrays['energy_block']['Total'],
         },

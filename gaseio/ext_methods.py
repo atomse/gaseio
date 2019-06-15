@@ -84,6 +84,18 @@ def datablock_to_numpy(datablock, sep='\s+',):
     return pd.read_csv(StringIO(datablock), header=None, sep=sep, index_col=None,
                        error_bad_lines=False, warn_bad_lines=False).values
 
+
+
+def datablock_to_dict(datablock, sep='\s*=\s*', dtype=float):
+    rsdict = {}
+    print(datablock)
+    for line in datablock.strip().split('\n'):
+        item_val = re.split(re.compile(sep), line.strip())
+        # print(item_val)
+        item, val = item_val
+        rsdict[item] = dtype(val)
+    return rsdict
+
 def construct_depth_dict(names, value, root=None):
     names = names.split('/')
     root = root or {}

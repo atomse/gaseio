@@ -20,7 +20,7 @@ travisinstall:
 	python setup.py install
 
 test:
-	bash -c "export PYTHONPATH=$(PYTHONPATH):$(PWD)/build/lib; coverage run --source gaseio ./test/test.py" 
+	bash -c "export PYTHONPATH=$(PYTHONPATH):$(PWD)/build/lib; coverage run --source gaseio ./tests/test.py" 
 	# echo `which gaseio`
 	# coverage run --source gaseio `which gaseio` -h
 	# coverage run --source gaseio `which gaseio` LISTSUBCOMMAND

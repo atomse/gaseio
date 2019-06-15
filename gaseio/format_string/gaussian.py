@@ -409,11 +409,11 @@ FORMAT_STRING = {
                     }
                     ],
                 },
-            r'and normal coordinates:\n[\s\S]*? {20,}([\s\S]*?(?!coordinates)[\s\S]*?)\n -{10,}\n - Thermochemistry -' : {
-                'debug' : True,
+            r'and normal coordinates:\n[\s\S]*? {20,}([\s\S]*?)\n -{10,}\n - Thermochemistry -' : {
+                # 'debug' : True,
                 'important' : False,
                 'selection' : -1,
-                'process' : lambda data, arrays: gaussian_extract_frequency(data, arrays),
+                'process' : lambda data, arrays: gaussian_extract_frequency(data.split('coordinates:\n')[-1], arrays),
                 'key' : 'frequency',
                 },
             r'Initial Parameters[\s\S]*?Name.*\n\s-*\n([\s\S]*?)\n\s----*': {

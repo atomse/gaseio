@@ -24,7 +24,8 @@ def generate_input_content(arrays, filetype):
     jinja_temp_env.trim_blocks = True
     template = jinja_temp_env.get_template(filetype)
     if not isinstance(arrays, dict) and hasattr(arrays, 'get_positions'):
-        if arrays.__class__.__module__ == 'ase.atoms':
+        module_name = arrays.__class__.__module__
+        if module_name == 'ase.atoms':
             atoms = arrays
             calc = atoms.calc
             arrays = atoms.arrays.copy()
@@ -33,11 +34,11 @@ def generate_input_content(arrays, filetype):
                 arrays['calc_arrays'] = {}
                 arrays['calc_arrays'].update(calc.parameters)
                 arrays['calc_arrays'].update(calc.results)
+        # if module_name == 'ase.atoms':
         else: # gase
             arrays = arrays.arrays
     output = template.render(**arrays)
     return output
-
 
 def preview(arrays, filetype):
     print('\n\n\n-------preview start from here------')

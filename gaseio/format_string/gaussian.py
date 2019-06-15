@@ -51,7 +51,7 @@ def gaussian_extract_frequency(logline, arrays):
 
     item_pattern = r'\s+(.*?)\s*-- '
     def parse_freq_lines(origin_lines, startline, num_lines, 
-                         index, num_items, natoms):
+                         index, num_items, natoms, mode=3):
         """
         #           1              2              3
         #           A              A              A
@@ -64,7 +64,23 @@ def gaussian_extract_frequency(logline, arrays):
         #      2   6     0.00  -0.02   0.00    -0.20  -0.01   0.15     0.21  -0.09  -0.06
         #      3   1     0.00   0.00   0.00    -0.33  -0.03   0.07     0.29   0.03   0.00
         #      4   1    -0.01  -0.02  -0.02    -0.20  -0.01   0.24     0.39  -0.18  -0.14
+        ------------------------
+        #                            1         2         3         4         5
+        #                            A         A         A         A         A
+        #        Frequencies ---    86.8799  208.9974  344.3601  420.4250  423.0281
+        #     Reduced masses ---     2.6364    1.3937    2.5278    3.1416    3.1471
+        #    Force constants ---     0.0117    0.0359    0.1766    0.3272    0.3318
+        #     IR Intensities ---     0.0000    0.0000    0.0000    0.0000    0.0000
+        #  Coord Atom Element:
+        #    1     1     6          0.00000   0.00000   0.00000  -0.12239   0.00000
+        #    2     1     6          0.00000   0.00000   0.00000   0.08728   0.00000
+        #    3     1     6          0.15124   0.00129  -0.00579   0.00000   0.00101
+        #    1     2     6          0.00000   0.00000   0.00000  -0.08238   0.00000
+        #    2     2     6          0.00000   0.00000   0.00000   0.12674   0.00000
+        #    3     2     6          0.16741  -0.01933  -0.14943   0.00000   0.23508
+
         """
+        assert mode in [3, 5]
         item_dict = {
             'Frequencies' : 'frequency',
             'Red. masses' : 'reduced_mass',
@@ -86,6 +102,7 @@ def gaussian_extract_frequency(logline, arrays):
         # print('\n'.join(lines))
         for line in lines[line_i:num_items+line_i]:
             item_name, rs = line.split('--')
+            # item_name, rs = re.split(r'-{2,}', line)
             item_name = item_name.strip()
             item_name = item_dict.get(item_name, None) or item_name
             rs = rs.strip().split()[index]
@@ -221,7 +238,7 @@ FORMAT_STRING = {
                     'type': str,
                     'key' : 'maxmem',
                 },
-            r'#\s*([\s\S]*?)\n\s*\n[\s\S]*?\n\s*\n' : {
+            r'#\s*([\s\S]*?)\n\s*\n' : {
                     'important': True,
                     'selection' : 0,
                     'type': str,
@@ -299,7 +316,7 @@ FORMAT_STRING = {
         'synthesized_data' : OrderedDict({
             'symbols' : {
                 'prerequisite' : ['gaussian_coord_datablock'],
-                'equation' : lambda arrays: arrays['gaussian_coord_datablock'][:,0],
+                'equation' : lambda arrays: ext_types.ExtList(arrays['gaussian_coord_datablock'][:,0].flatten().tolist()),
                 },
             'constraint' : {
                 'prerequisite' : ['gaussian_coord_datablock'],
@@ -392,7 +409,8 @@ FORMAT_STRING = {
                     }
                     ],
                 },
-            r'and normal coordinates:\n[\s\S]*?(                     1\s+[\s\S]*?)\n ---[\s\S]*? - Thermochemistry -' : {
+            r'and normal coordinates:\n[\s\S]*? {20,}([\s\S]*?(?!coordinates)[\s\S]*?)\n -{10,}\n - Thermochemistry -' : {
+                'debug' : True,
                 'important' : False,
                 'selection' : -1,
                 'process' : lambda data, arrays: gaussian_extract_frequency(data, arrays),

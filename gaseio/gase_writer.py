@@ -37,7 +37,7 @@ def generate_input_content(arrays, filetype):
         # if module_name == 'ase.atoms':
         else: # gase
             arrays = arrays.arrays
-    output = template.render(**arrays)
+    output = template.render(arrays=arrays, **arrays)
     return output
 
 def preview(arrays, filetype):

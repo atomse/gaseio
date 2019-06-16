@@ -53,12 +53,18 @@ def update_items_with_node(root, item_xpath=None, default_type='float', sdict=di
     for item_node in root.xpath(item_xpath):
         item_name = item_node.get('name')
         item_type = item_node.get('type', default_type)
-        if item_node.tag == 'i':
-            value = astype(item_type)(item_node.text)
-        elif item_node.tag == 'v':
-            value = datablock_to_numpy(item_node.text).flatten().astype(astype(item_type))
+        text = item_node.text
+        if text is None:
+            continue
+        elif text == '*' * len(text):
+            value = atomtools.string.STRING_OVERFLOW
         else:
-            raise NotImplementedError('{0} not implemeneted in xml update items'.format(item_node.tag))
+            if item_node.tag == 'i':
+                value = astype(item_type)(item_node.text)
+            elif item_node.tag == 'v':
+                value = datablock_to_numpy(item_node.text).flatten().astype(astype(item_type))
+            else:
+                raise NotImplementedError('{0} not implemeneted in xml update items'.format(item_node.tag))
         sdict.update({item_name: value})
     return sdict
 

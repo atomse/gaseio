@@ -128,14 +128,12 @@ FORMAT_STRING = {
                 'key' : 'scaling_factor',
             },
             r'^(?:.*\n.*\n)(.*\n.*\n.*\n)' : {
-                # 'debug' : True,
                 'important' : True,
                 'selection' : -1,
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data) * arrays['scaling_factor'],
                 'key' : 'cell',
             },
             r'^(?:.*\n.*\n.*\n.*\n.*\n)(.*)\n' : {
-                # 'debug' : True,
                 'important' : True,
                 'selection' : -1,
                 'process' : lambda data, arrays: data.split(),
@@ -169,7 +167,6 @@ FORMAT_STRING = {
                     },
                     {
                         'key' : 'constraints',
-                        # 'debug' : True,
                         'index' : ':,3:',
                         # 'type' : bool,
                         'process' : lambda data, arrays: np.any(np.logical_or(data=='F', data=='False'), axis=1)
@@ -178,7 +175,6 @@ FORMAT_STRING = {
             },
             # r'\nC\w+\n(?:S.*\n)([\s\S]*?)\n\s*\n' : {
             r'\nC\w+\n([\s\S]*?)\n\s*\n' : {
-                # 'debug' : True,
                 'important' : False,
                 'selection' : -1,
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
@@ -228,17 +224,26 @@ FORMAT_STRING = {
         'calculator' : 'VASP',
         'file_format' : 'lxml',
         'primitive_data' : OrderedDict({
-            '(//varray[@name="basis"])[last()]//v//text()' : {
+            '(//structure/crystal/varray[@name="basis"])[1]//v//text()' : {
                 'important' : True,
                 'join' : '\n',
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
                 'key' : 'cell',
                 },
-            '(//varray[@name="positions"])[last()]//v//text()' : {
+            '(//structure/varray[@name="positions"])[last()]//v//text()' : {
                 'important' : True,
                 'join' : '\n',
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-                'key' : 'cell_scaled_positions',
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data).dot(arrays['cell']),
+                'key' : 'positions',
+                'type' : float,
+                },
+            '(//structure/varray[@name="positions"])//v//text()' : {
+                'important' : True,
+                'join' : '\n',
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data).astype(float).dot(arrays['cell']).reshape\
+                                                 ((-1, len(arrays['positions']), 3)),
+                'key' : 'all_positions',
+                'passerror' : True,
                 'type' : float,
                 },
             '//atominfo/array[@name="atoms"]/set/rc/c[1]/text()' : {
@@ -266,26 +271,26 @@ FORMAT_STRING = {
                 'process' : lambda data, arrays: data.strip(),
                 'type' : ext_types.ExtList,
                 'key' : 'vasp_pot',
-                },
-            '//dos/total/array/field/text()' : {
+                 },
+            '(//dos/total)[last()]/array/field/text()' : {
                 'important' : False,
                 'selection' : 'all',
                 'process' : lambda data, arrays: data.strip(),
                 'key' : 'calc_arrays/dos_total_header',
                 },
-            '(//energy)[last()]/i[@name="e_fr_energy"]/text()' : {
+            '(//calculation/energy)[last()]/i[@name="e_fr_energy"]/text()' : {
                 'important' : False,
                 'process' : lambda data, arrays: data.strip(),
                 'type' : float,
                 'key' : 'calc_arrays/e_fr_energy',
             },
-            '(//energy)[last()]/i[@name="e_wo_entrp"]/text()' : {
+            '(//calculation/energy)[last()]/i[@name="e_wo_entrp"]/text()' : {
                 'important' : False,
                 'process' : lambda data, arrays: data.strip(),
                 'type' : float,
                 'key' : 'calc_arrays/potential_energy',
             },
-            '(//energy)[last()]/i[@name="e_0_energy"]/text()' : {
+            '(//calculation/energy)[last()]/i[@name="e_0_energy"]/text()' : {
                 'important' : False,
                 'process' : lambda data, arrays: data.strip(),
                 'type' : float,
@@ -293,9 +298,10 @@ FORMAT_STRING = {
             },
             '//time[@name="totalsc"]/text()' : {
                 'important' : False,
-                'join' : '\n',
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-                'type' : float,
+                'selection' : 'all',
+                # 'join' : '\n',
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data if ' ' in data else data[:len(data)//2]+' '+data[len(data)//2:]),
+                # 'type' : np.array,
                 'key' : 'calc_arrays/total_time'
             },
             '(//varray[@name="forces"])[last()]/v/text()' : {
@@ -311,6 +317,7 @@ FORMAT_STRING = {
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data).reshape((-1, \
                             len(arrays['calc_arrays/forces']), 3)),
                 'type' : float,
+                'passerror' : True,
                 'key' : 'calc_arrays/all_forces',
             },
             '(//varray[@name="stress"])[last()]/v/text()' : {
@@ -321,11 +328,13 @@ FORMAT_STRING = {
                 'key' : 'calc_arrays/stress',
             },
             '//varray[@name="stress"]/v/text()' : {
+                # 'debug' : True,
                 'important' : False,
                 'join' : '\n',
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data).reshape((-1, \
                             len(arrays['calc_arrays/stress']), 3)),
                 'type' : float,
+                'passerror' : True,
                 'key' : 'calc_arrays/all_stress',
             },
             '//dos/total/array/set/set[@comment="spin 1"]/r/text()' : {
@@ -416,7 +425,6 @@ FORMAT_STRING = {
         }),
         'synthesized_data' : OrderedDict({
             'calc_arrays/dos/partial/spin1' : {
-                # 'debug' : True,
                 'prerequisite' : ['calc_arrays/dos_partial_header', 'dos_partial_spin1'],
                 'equation' : lambda arrays: dict(zip(arrays['calc_arrays/dos_partial_header'], \
                     [arrays['dos_partial_spin1'][:,i].reshape((-1, len(arrays['dos_total_spin1']))) \
@@ -431,6 +439,7 @@ FORMAT_STRING = {
                 'delete' : ['dos_partial_spin2'],
             },
             'calc_arrays/dos/total/spin1' : {
+                # 'debug' : True,
                 'prerequisite' : ['calc_arrays/dos_total_header', 'dos_total_spin1'],
                 'equation' : lambda arrays: dict(zip(arrays['calc_arrays/dos_total_header'], \
                     [arrays['dos_total_spin1'][:,i] for i in range(len(arrays['calc_arrays/dos_total_header']))])),
@@ -442,11 +451,6 @@ FORMAT_STRING = {
                     [arrays['dos_total_spin2'][:,i] for i in range(len(arrays['calc_arrays/dos_total_header']))])),
                 'delete' : ['dos_total_spin2'],
             },
-            'positions' : {
-                'prerequisite' : ['cell', 'cell_scaled_positions'],
-                'equation' : lambda arrays: arrays['cell_scaled_positions'].dot(arrays['cell']),
-                'delete' : ['cell_scaled_positions'],
-                },
             'pseudo' : {
                 'equation' : lambda arrays: arrays['vasp_pot'] * arrays['ions_per_type'],
                 'delete' : ['vasp_pot', 'ions_per_type'],

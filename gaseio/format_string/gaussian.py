@@ -337,7 +337,6 @@ FORMAT_STRING = {
                 'delete' : ['gaussian_coord_datablock'],
                 },
             }),
-        # 'writer_formats': '%nproc={atoms.maxcore}\n%mem={atoms.maxmem}B\n%chk={randString()}.chk\n#p force b3lyp/6-31g(d)\n\ngase\n\n{atoms.charge} {atoms.multiplicity}\n{atoms.get_symbols_positions()}{atoms.calc.connectivity}{atoms.calc.genecp}',
     },
     'gaussian-out': {
         'calculator': 'Gaussian',
@@ -354,12 +353,6 @@ FORMAT_STRING = {
                 'key' : 'multiplicity',
                 'type' : int,
             },
-            # r'Center *Atomic *Atomic *Coordinates.*\((.*)\).*\n': {
-            #     'important' : True,
-            #     'selection' : -1,
-            #     'key' : 'unit',
-            #     'type' : str,
-            #     },
             r'\n (1[\\|\|]1[\\|\|][\s\S]*?[\\|\|]\s*[\\|\|])\s*@\n': {
                 # 'important' : True,
                 'selection' : -1,
@@ -414,7 +407,7 @@ FORMAT_STRING = {
                 'important' : False,
                 'selection' : -1,
                 'process' : lambda data, arrays: gaussian_extract_frequency(data.split('coordinates:\n')[-1], arrays),
-                'key' : 'frequency',
+                'key' : 'calc_arrays/frequency',
                 },
             r'Initial Parameters[\s\S]*?Name.*\n\s-*\n([\s\S]*?)\n\s----*': {
                 # 'debug' : True,
@@ -480,7 +473,7 @@ FORMAT_STRING = {
                                             Status.complete if 'normal_termination' in arrays else \
                                             Status.running if atomtools.file.file_active(arrays['absfilename']) else\
                                             Status.stopped,
-                'deletion' : ['error_termination', 'normal_termination'],
+                'delete' : ['error_termination', 'normal_termination'],
                 },
             'symbols' : {
                 'prerequisite' : ['numbers'],
@@ -511,11 +504,15 @@ FORMAT_STRING = {
                 'prerequisite' : ['gaussian_datastring'],
                 'equation' : lambda arrays: ext_methods.string_to_dict(re.findall(r'\|\|(Version=.*?)\|\|', 
                                             arrays['gaussian_datastring'])[-1]),
+                'delete' : ['gaussian_datastring'],
                 },
             'calc_arrays/potential_energy' : {
-                'prerequisite' : ['possible_potential_energy'],
+                'debug' : True,
+                # 'prerequisite' : ['possible_potential_energy'],
+                'condition' : lambda arrays: arrays.get('calc_arrays/results', None) is not None or\
+                                             arrays.get('possible_potential_energy', None) is not None,
                 'equation' : lambda arrays: float(get_value_by_order(arrays.get('calc_arrays/results', None), 
-                                                  ENERGY_ORDER) or arrays['possible_potential_energy'])\
+                                                  ENERGY_ORDER) or arrays.get('possible_potential_energy', None))\
                                             * atomtools.unit.trans_energy('au', 'eV'),
                 'delete' : ['possible_potential_energy'],
                 },

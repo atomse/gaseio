@@ -6,6 +6,9 @@ Extended type:
 """
 from collections import Iterable, Counter, OrderedDict
 
+
+
+NO_DEFAULT = '__THIS_MEANS_NO_DEFAULT__'
 class ExtList(list):
     """
     Extended list
@@ -127,4 +130,11 @@ class ExtDict(dict):
                 result.append(keyname)
         return result
 
+    def get(self, key, default=NO_DEFAULT):
+        if self[key] is not None:
+            return self[key]
+        elif default != NO_DEFAULT:
+            return default
+        raise KeyError(key, 'not found')
+        
 

@@ -507,7 +507,7 @@ FORMAT_STRING = {
                 'delete' : ['gaussian_datastring'],
                 },
             'calc_arrays/potential_energy' : {
-                'debug' : True,
+                # 'debug' : True,
                 # 'prerequisite' : ['possible_potential_energy'],
                 'condition' : lambda arrays: arrays.get('calc_arrays/results', None) is not None or\
                                              arrays.get('possible_potential_energy', None) is not None,

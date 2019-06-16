@@ -27,7 +27,6 @@ FORMAT_STRING = {
                 'key' : [
                     {
                         'key' : 'symbols',
-                        # 'debug' : True,
                         'type' : str,
                         'index' : ':,0',
                         'process' : lambda data, arrays: ext_types.ExtList(data.tolist()),

@@ -130,11 +130,13 @@ class ExtDict(dict):
                 result.append(keyname)
         return result
 
-    def get(self, key, default=NO_DEFAULT):
-        if self[key] is not None:
-            return self[key]
-        elif default != NO_DEFAULT:
-            return default
-        raise KeyError(key, 'not found')
+    # def get(self, key, default=NO_DEFAULT):
+    #     if key == 'defines' : 
+    #         import pdb; pdb.set_trace()
+    #     if self[key] is not None:
+    #         return self[key]
+    #     elif default != NO_DEFAULT:
+    #         return default
+    #     raise KeyError(key, 'not found')
         
 

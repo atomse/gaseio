@@ -7,7 +7,7 @@ Templates are stored in INPUT_TEMPLATE_DIR
 
 import os
 import jinja2
-
+import json_tricks
 
 from . import ext_types
 
@@ -37,7 +37,7 @@ def generate_input_content(arrays, filetype):
         # if module_name == 'ase.atoms':
         else: # gase
             arrays = arrays.arrays
-    output = template.render(arrays=arrays, **arrays)
+    output = template.render(arrays=arrays, arrays_json=json_tricks.dumps(arrays), **arrays)
     return output
 
 def preview(arrays, filetype):

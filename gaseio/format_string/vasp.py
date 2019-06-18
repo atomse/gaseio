@@ -147,7 +147,7 @@ FORMAT_STRING = {
                 'key' : 'element_number',
                 'type' : ext_types.ExtList,
             },
-            r'\n(S\w+)\n' : {
+            r'\n(S.*)\n' : {
                 'important' : False,
                 'selection' : -1,
                 'key' : 'selection',
@@ -169,7 +169,7 @@ FORMAT_STRING = {
                         'key' : 'constraints',
                         'index' : ':,3:',
                         # 'type' : bool,
-                        'process' : lambda data, arrays: np.any(np.logical_or(data=='F', data=='False'), axis=1)
+                        'process' : lambda data, arrays: np.any(np.logical_or(data=='F', data=='False'), axis=1),
                     },
                 ],
             },
@@ -188,7 +188,8 @@ FORMAT_STRING = {
                     {
                         'key' : 'constraints',
                         'index' : ':,3:',
-                        'type' : bool,
+                        'process' : lambda data, arrays: np.any(np.logical_or(data=='F', data=='False'), axis=1),
+                        # 'type' : bool,
                     },
                 ],
             },

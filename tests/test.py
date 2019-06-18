@@ -7,7 +7,7 @@ import gaseio
 
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
-TEST_DIR = os.path.join(BASEDIR, 'testcases')
+TEST_DIR = os.path.join(BASEDIR, 'Testcases')
 TEMPLATES_DIR = os.path.join(BASEDIR, '../gaseio/input_templates/')
 
 
@@ -51,7 +51,8 @@ def test_no_catch():
             continue
         print('\n'*4, filename)
         arrays = gaseio.read(filename, force_gase=True, )
-        # print(arrays)
+        print(arrays)
+        print('\n' * 4)
         for filetype in os.listdir(TEMPLATES_DIR):
             print('\n'*4, )
             print(filetype, filename)

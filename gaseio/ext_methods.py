@@ -96,12 +96,12 @@ def xml_parameters(xml_node):
     return parameters
 
 
-def datablock_to_numpy(datablock, sep='\s+',):
+def datablock_to_numpy(datablock, sep='\s+',header=None):
     """
     datablock is a string that contains a block of data
     """
     assert isinstance(datablock, str)
-    return pd.read_csv(StringIO(datablock), header=None, sep=sep, index_col=None,
+    return pd.read_csv(StringIO(datablock), header=header, sep=sep, index_col=None,
                        error_bad_lines=False, warn_bad_lines=False).values
 
 

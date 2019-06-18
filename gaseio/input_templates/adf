@@ -40,7 +40,7 @@ END
 
 
 {% if charge is defined %}
-CHARGE {{charge}}
+CHARGE {{charge|int}}
 {% else %}
 CHARGE 0
 ! default charge 0

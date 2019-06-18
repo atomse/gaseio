@@ -20,17 +20,17 @@
 {{symbols.contract_items("string")}}
 {{symbols.contract_numbers("string")}}
 {% endif %}
-{% if constraint is defined %}
+{% if constraints is defined %}
 Selective Dynamics
 {% endif %}
 Cartesian
 {% for i in range(positions|length) %}
     {% if contract_mode is not defined or not contract_mode %}
-        {% if constraint is defined %}
+        {% if constraints is defined %}
             {% if cell is defined %}
-{{positions[symbols.deep_contract_index()[i]][0]}}  {{positions[symbols.deep_contract_index()[i]][1]}}  {{positions[symbols.deep_contract_index()[i]][2]}}  {{not constraint[symbols.deep_contract_index()[i]]}}  {{not constraint[symbols.deep_contract_index()[i]]}}  {{not constraint[symbols.deep_contract_index()[i]]}}
+{{positions[symbols.deep_contract_index()[i]][0]}}  {{positions[symbols.deep_contract_index()[i]][1]}}  {{positions[symbols.deep_contract_index()[i]][2]}}  {{not constraints[symbols.deep_contract_index()[i]]}}  {{not constraints[symbols.deep_contract_index()[i]]}}  {{not constraints[symbols.deep_contract_index()[i]]}}
             {% else %}
-{{positions[symbols.deep_contract_index()[i]][0] + (positions.T[0].max() - positions.T[0].min())}}  {{positions[symbols.deep_contract_index()[i]][1] + (positions.T[1].max() - positions.T[1].min())}}  {{positions[symbols.deep_contract_index()[i]][2] + (positions.T[2].max() - positions.T[2].min())}}  {{not constraint[symbols.deep_contract_index()[i]]}}  {{not constraint[symbols.deep_contract_index()[i]]}}  {{not constraint[symbols.deep_contract_index()[i]]}}
+{{positions[symbols.deep_contract_index()[i]][0] + (positions.T[0].max() - positions.T[0].min())}}  {{positions[symbols.deep_contract_index()[i]][1] + (positions.T[1].max() - positions.T[1].min())}}  {{positions[symbols.deep_contract_index()[i]][2] + (positions.T[2].max() - positions.T[2].min())}}  {{not constraints[symbols.deep_contract_index()[i]]}}  {{not constraints[symbols.deep_contract_index()[i]]}}  {{not constraints[symbols.deep_contract_index()[i]]}}
             {% endif %}
         {% else %}
             {% if cell is defined %}
@@ -40,11 +40,11 @@ Cartesian
             {% endif %}
         {% endif %}
     {% else %}
-        {% if constraint is defined %}
+        {% if constraints is defined %}
             {% if cell is defined %}
-{{positions[i][0]}}  {{positions[i][1]}}  {{positions[i][2]}}  {{not constraint[i]}}  {{not constraint[i]}}  {{not constraint[i]}}
+{{positions[i][0]}}  {{positions[i][1]}}  {{positions[i][2]}}  {{not constraints[i]}}  {{not constraints[i]}}  {{not constraints[i]}}
             {% else %}
-{{positions[i][0] + (positions.T[0].max() - positions.T[0].min())}}  {{positions[i][1] + (positions.T[1].max() - positions.T[1].min())}}  {{positions[i][2] + (positions.T[2].max() - positions.T[2].min())}}  {{not constraint[i]}}  {{not constraint[i]}}  {{not constraint[i]}}
+{{positions[i][0] + (positions.T[0].max() - positions.T[0].min())}}  {{positions[i][1] + (positions.T[1].max() - positions.T[1].min())}}  {{positions[i][2] + (positions.T[2].max() - positions.T[2].min())}}  {{not constraints[i]}}  {{not constraints[i]}}  {{not constraints[i]}}
             {% endif %}
         {% else %}
             {% if cell is defined %}

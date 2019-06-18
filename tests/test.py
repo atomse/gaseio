@@ -51,13 +51,12 @@ def test_no_catch():
             continue
         print('\n'*4, filename)
         arrays = gaseio.read(filename, force_gase=True, )
-        print(arrays)
-        print('\n'*4, )
+        # print(arrays)
         for filetype in os.listdir(TEMPLATES_DIR):
+            print('\n'*4, )
             print(filetype, filename)
             gaseio.write('/tmp/test', arrays, filetype, force_gase=True, preview=True)
-    return 0
 
 
 if __name__ == '__main__':
-    exit(test_no_catch())
+    test_no_catch()

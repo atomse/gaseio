@@ -222,6 +222,20 @@ def gaussian_extract_second_derivative_matrix(logline, arrays):
 #                 '\n Leave Link  716 at', ndim=ndim, max_width=5)
 
 
+
+def process_population_analysis(data):
+    ndim_pattern = r' {20,}\d([\s\S]*?) {20,}\d'
+    block_sample = re.findall(ndim_pattern, data)[0]
+    extra_line = 0
+    keys = []
+    for line in block_sample.split('\n'):
+        if line.startswith(' '*20):
+            extra_line += 1
+        elif '--' in line:
+            key = line.split('--')[0]
+        else:
+            
+
 FORMAT_STRING = {
     'gaussian': {
         'calculator': 'Gaussian',
@@ -465,6 +479,37 @@ FORMAT_STRING = {
                         'process' : lambda data, arrays: data * atomtools.unit.trans_force('au', 'eV/Ang'),
                     },
                     ],
+                },
+            r'Molecular Orbital Coefficients:\n([\s\S]*?)\n.*Density Matrix:' : {
+                'important' : False,
+                'selection' : -1,
+                'process' : lambda data, arrays: process_population_analysis(data),
+                },
+            r'Density Matrix:\n([\s\S]*?)\n.*Full Mulliken population analysis:' : {
+                'important' : False,
+                'selection' : -1,
+                'process' : lambda data, arrays: process_population_analysis(data),
+
+                },
+            r'Full Mulliken population analysis:\n([\s\S]*?)\n.*Gross orbital populations' : {
+                'important' : False,
+                'selection' : -1,
+                'process' : lambda data, arrays: process_population_analysis(data),
+                },
+            r'Gross orbital populations:\n([\s\S]*?)\n.*Condensed to atoms (all electrons):' : {
+                'important' : False,
+                'selection' : -1,
+                'process' : lambda data, arrays: process_population_analysis(data),
+                },
+            r'Condensed to atoms.*all electrons.*:\n([\s\S]*?)\n.*Mulliken charges:' : {
+                'important' : False,
+                'selection' : -1,
+                'process' : lambda data, arrays: process_population_analysis(data),
+                },
+            r'Mulliken charges:([\s\S]*?)\n.*Sum of Mulliken charges' : {
+                'important' : False,
+                'selection' : -1,
+                'process' : lambda data, arrays: process_charge_analysis(data),
                 },
             },
         'synthesized_data' : OrderedDict({

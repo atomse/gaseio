@@ -104,6 +104,8 @@ class ExtDict(dict):
         return sdict
 
     def __getattr__(self, name):
+        if name.startswith('__'):
+            return dict.__getattr__(name)
         if name.startswith('get_'):
             _name = name[len('get_'):]
             return lambda : self['calc_arrays'].get(_name, None) \

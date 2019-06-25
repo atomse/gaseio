@@ -48,6 +48,7 @@ def read(fileobj, format=None, get_dict=False, warning=False, debug=False):
 
     process_primitive_data(arrays, file_string, formats, warning, debug)
     process_synthesized_data(arrays, formats, debug)
+    process_calculator(arrays, formats, debug)
     return arrays
     # if not HAS_GASE or get_dict:
     #     return arrays
@@ -157,6 +158,11 @@ def process_synthesized_data(arrays, formats, debug=False):
             for item in key_property.get('delete'):
                 if item in arrays:
                     del arrays[item]
+
+
+def process_calculator(arrays, formats, debug=False):
+    if 'calculator' in formats:
+        arrays['calculator'] = formats.get('calculator')
 
 # def assemble_atoms(arrays, calculator):
 #     assert HAS_GASE

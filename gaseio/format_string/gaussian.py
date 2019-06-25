@@ -635,11 +635,11 @@ FORMAT_STRING = {
             },
             'charge' : {
                 'prerequisite' : ['gaussian_datablock_geometry'],
-                'equation' : lambda arrays: float(arrays['gaussian_datablock_geometry'].split('|')[0].split(',')[0]),
+                'equation' : lambda arrays: int(arrays['gaussian_datablock_geometry'].split('|')[0].split(',')[0]),
             },
             'multiplicity' : {
                 'prerequisite' : ['gaussian_datablock_geometry'],
-                'equation' : lambda arrays: float(arrays['gaussian_datablock_geometry'].split('|')[0].split(',')[1]),
+                'equation' : lambda arrays: int(arrays['gaussian_datablock_geometry'].split('|')[0].split(',')[1]),
             },
             }),
     },

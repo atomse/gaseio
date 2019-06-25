@@ -12,6 +12,7 @@ from .. import ext_methods
 
 
 siesta_format_string = {
+    'calculator' : 'SIESTA',
     'ignorance' : ('#', ),
     'primitive_data'  : {
         r'%block AtomicCoordinatesAndAtomicSpecies([\s\S]*?)\n%endblock AtomicCoordinatesAndAtomicSpecies':{
@@ -65,7 +66,6 @@ siesta_format_string = {
 
 siesta_out_format_string = siesta_format_string
 ext_methods.update(siesta_out_format_string, {
-    'ignorance' : ('#', ),
     'primitive_data'  : {
         r'siesta: Final energy.*([\s\S]*?)\n\n' : {
             'important': False,

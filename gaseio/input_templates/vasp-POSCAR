@@ -26,33 +26,33 @@ Selective Dynamics
 Cartesian
 {% for i in range(positions|length) %}
     {% if vasp_POSCAR_deep_contract is not defined or not vasp_POSCAR_deep_contract %}
-        {% if constraints is defined %}
+        {# {% if constraints is defined %} #}
             {% if cell is defined %}
-{{positions[symbols.deep_contract_index()[i]][0]}}  {{positions[symbols.deep_contract_index()[i]][1]}}  {{positions[symbols.deep_contract_index()[i]][2]}}  {{not constraints[symbols.deep_contract_index()[i]]}}  {{not constraints[symbols.deep_contract_index()[i]]}}  {{not constraints[symbols.deep_contract_index()[i]]}}
+{{positions[symbols.deep_contract_index()[i]][0]}}  {{positions[symbols.deep_contract_index()[i]][1]}}  {{positions[symbols.deep_contract_index()[i]][2]}}  {{not constraints[symbols.deep_contract_index()[i]] if constraints is defined else ""}}  {{not constraints[symbols.deep_contract_index()[i]] if constraints is defined else ""}}  {{not constraints[symbols.deep_contract_index()[i]] if constraints is defined else ""}}
             {% else %}
-{{positions[symbols.deep_contract_index()[i]][0] + (positions.T[0].max() - positions.T[0].min())}}  {{positions[symbols.deep_contract_index()[i]][1] + (positions.T[1].max() - positions.T[1].min())}}  {{positions[symbols.deep_contract_index()[i]][2] + (positions.T[2].max() - positions.T[2].min())}}  {{not constraints[symbols.deep_contract_index()[i]]}}  {{not constraints[symbols.deep_contract_index()[i]]}}  {{not constraints[symbols.deep_contract_index()[i]]}}
+{{positions[symbols.deep_contract_index()[i]][0] + (positions.T[0].max() - positions.T[0].min())}}  {{positions[symbols.deep_contract_index()[i]][1] + (positions.T[1].max() - positions.T[1].min())}}  {{positions[symbols.deep_contract_index()[i]][2] + (positions.T[2].max() - positions.T[2].min())}}  {{not constraints[symbols.deep_contract_index()[i]] if constraints is defined else ""}}  {{not constraints[symbols.deep_contract_index()[i]] if constraints is defined else ""}}  {{not constraints[symbols.deep_contract_index()[i]] if constraints is defined else ""}}
             {% endif %}
-        {% else %}
+{#         {% else %}
             {% if cell is defined %}
 {{positions[symbols.deep_contract_index()[i]][0]}}  {{positions[symbols.deep_contract_index()[i]][1]}}  {{positions[symbols.deep_contract_index()[i]][2]}}
             {% else %}
 {{positions[symbols.deep_contract_index()[i]][0] + (positions.T[0].max() - positions.T[0].min())}}  {{positions[symbols.deep_contract_index()[i]][1] + (positions.T[1].max() - positions.T[1].min())}}  {{positions[symbols.deep_contract_index()[i]][2] + (positions.T[2].max() - positions.T[2].min())}}
             {% endif %}
-        {% endif %}
+        {% endif %} #}
     {% else %}
-        {% if constraints is defined %}
+        {# {% if constraints is defined %} #}
             {% if cell is defined %}
-{{positions[i][0]}}  {{positions[i][1]}}  {{positions[i][2]}}  {{not constraints[i]}}  {{not constraints[i]}}  {{not constraints[i]}}
+{{positions[i][0]}}  {{positions[i][1]}}  {{positions[i][2]}}  {{not constraints[i] if constraints is defined else ""}}  {{not constraints[i] if constraints is defined else ""}}  {{not constraints[i] if constraints is defined else ""}}
             {% else %}
-{{positions[i][0] + (positions.T[0].max() - positions.T[0].min())}}  {{positions[i][1] + (positions.T[1].max() - positions.T[1].min())}}  {{positions[i][2] + (positions.T[2].max() - positions.T[2].min())}}  {{not constraints[i]}}  {{not constraints[i]}}  {{not constraints[i]}}
+{{positions[i][0] + (positions.T[0].max() - positions.T[0].min())}}  {{positions[i][1] + (positions.T[1].max() - positions.T[1].min())}}  {{positions[i][2] + (positions.T[2].max() - positions.T[2].min())}}  {{not constraints[i] if constraints is defined else ""}}  {{not constraints[i] if constraints is defined else ""}}  {{not constraints[i] if constraints is defined else ""}}
             {% endif %}
-        {% else %}
+{#         {% else %}
             {% if cell is defined %}
 {{positions[i][0]}}  {{positions[i][1]}}  {{positions[i][2]}}
             {% else %}
 {{positions[i][0] + (positions.T[0].max() - positions.T[0].min())}}  {{positions[i][1] + (positions.T[1].max() - positions.T[1].min())}}  {{positions[i][2] + (positions.T[2].max() - positions.T[2].min())}}
             {% endif %}
-        {% endif %}
+        {% endif %} #}
     {% endif %}
 {% endfor %}
 

@@ -121,7 +121,8 @@ FORMAT_STRING = {
                 'type' : str,
                 'key' : 'comments',
             },
-            r'^(?:.*\n)(.*)\n' : {
+            r'^.*\n(.*)\n' : {
+                # 'debug' : True,
                 'important' : True,
                 'selection' : -1,
                 'type' : float,

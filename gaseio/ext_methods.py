@@ -6,6 +6,8 @@ import re
 from lxml import etree
 import glob
 import collections
+import copy
+
 
 
 from io import StringIO
@@ -70,6 +72,8 @@ def update_items_with_node(root, item_xpath=None, default_type='float', sdict=di
 
 
 def update(orig_dict, new_dict):
+    if isinstance(orig_dict, tuple):
+        return copy.copy(orig_dict)
     for key, val in new_dict.items():
         if isinstance(val, collections.Mapping):
             tmp = update(orig_dict.get(key, { }), val)
@@ -108,7 +112,7 @@ def datablock_to_numpy(datablock, sep='\s+',header=None):
 
 def datablock_to_dict(datablock, sep='\s*=\s*', dtype=float):
     rsdict = {}
-    print(datablock)
+    # print(datablock)
     for line in datablock.strip().split('\n'):
         item_val = re.split(re.compile(sep), line.strip())
         # print(item_val)
@@ -198,6 +202,42 @@ def regularize_cell(cell):
     cell = cell.reshape((-1,3))
     assert cell.shape == (3, 3)
     return cell
+
+
+def process_blockdata_with_several_lines(data, ndim_length_regex, rm_header_regex, index_length, dtype='square'):
+    # import pdb; pdb.set_trace()
+    assert dtype in ['square', 'lower_triangular']
+    data_ndim = re.findall(ndim_length_regex, data)[0].strip()
+    ndim = data_ndim.count('\n') + 1
+    data = re.sub(rm_header_regex, '\n', data).strip()
+
+    lines = [_[index_length:] for _ in data.split('\n')]
+    max_width = max([len(_.split()) for _ in lines])
+    if dtype == 'square':
+        for i in range(ndim):
+            lines[i] = ' '.join(lines[i::ndim])
+        header = ' '.join(str(_) for _ in range(len(lines[0].split())))
+    elif dtype == 'lower_triangular':
+        block_length = ndim % max_width
+        end_point = 0
+        while block_length < ndim:
+            for i in range(1, block_length+1):
+                x1 = (end_point+i+block_length)
+                x2 = (end_point+i)
+                # print(len(lines), x2, x1, block_length, end_point)
+                lines[-x1] += ' ' + lines[-x2]
+            end_point += block_length
+            block_length += max_width
+        header = ' '.join(str(_) for _ in range(ndim))
+    newdata = header + '\n' + '\n'.join(lines[:ndim])
+    # print('newdata', newdata)
+    outdata = datablock_to_numpy(newdata, header=0)
+    if dtype != 'square':
+        # print(outdata)
+        outdata[np.isnan(outdata)] = 0
+        outdata += np.triu(outdata.T, 1)
+    return outdata
+
 
 # def get_filestring_and_format(fileobj, file_format=None):
 #     if hasattr(fileobj, 'read'):

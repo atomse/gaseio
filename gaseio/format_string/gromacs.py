@@ -85,6 +85,7 @@ FORMAT_STRING = {
     },
     'gromacs-top': {
         'ignorance' : (';','<'),
+        'non_regularize' : True,
         'primitive_data'  : OrderedDict({
             r'\[\s*atomtypes\s*\]\n([\s\S]*?)\n[\n<]': {
                 'important': False,
@@ -291,11 +292,6 @@ FORMAT_STRING = {
                         'key' : 'dihedrals/dihedral_force',
                         'type' : float,
                         'index' : ':,6',
-                    },
-                    {
-                        'key' : 'dihedrals/dihedral_type',
-                        'type' : float,
-                        'index' : ':,7',
                     },
                 ],
             },

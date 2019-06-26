@@ -44,7 +44,7 @@ def filetype(fileobj=None, isfilename=False, debug=False):
     if filename is None and content is None:
         return None
     for fmt_regexp, fmt_filetype in format_regexp.items():
-        name_regexp, content_regexp = (fmt_regexp.split('||') + [None])[:2]
+        name_regexp, content_regexp = (fmt_regexp.split('&&') + [None])[:2]
         if debug:
             print(name_regexp, content_regexp)
         if filename and re.match(re.compile(name_regexp.strip()), filename) or filename is None:

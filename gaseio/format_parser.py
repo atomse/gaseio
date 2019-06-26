@@ -37,8 +37,8 @@ def read(fileobj, format=None, get_dict=False, warning=False, debug=False):
     file_format = format or filetype(fileobj)
 
     assert file_format is not None
-    formats = FORMAT_STRING.get(file_format, None)
-    if formats is None:
+    format_dict = FORMAT_STRING.get(file_format, None)
+    if format_dict is None:
         raise NotImplementedError(file_format, 'not available now')
     arrays = ExtDict()
     filename = atomtools.file.get_filename(fileobj)
@@ -46,12 +46,13 @@ def read(fileobj, format=None, get_dict=False, warning=False, debug=False):
         arrays['basedir'] = os.path.dirname(filename)
         arrays['absfilename'] = os.path.abspath(filename)
     arrays['basedir'] = arrays.get('basedir', None) or '.'
-    arrays['absfilename'] = arrays.get('absfilename', None) or '/asdf'*5
+    arrays['absfilename'] = arrays.get('absfilename', None)
 
-    process_primitive_data(arrays, file_string, formats, warning, debug)
-    process_synthesized_data(arrays, formats, debug)
-    process_calculator(arrays, formats, debug)
-    regularize_arrays(arrays)
+    process_primitive_data(arrays, file_string, format_dict, warning, debug)
+    process_synthesized_data(arrays, format_dict, debug)
+    process_calculator(arrays, format_dict, debug)
+    if not format_dict.get('non_regularize', False):
+        regularize_arrays(arrays)
     return arrays
 
 
@@ -115,10 +116,12 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
 
 def process_primitive_data(arrays, file_string, formats, warning=False, debug=False):
     warning = warning or debug
+    # import pdb; pdb.set_trace()
     primitive_data, ignorance = formats['primitive_data'], formats.get('ignorance', None)
-    if ignorance:
-        file_string = '\n'.join([line.strip() for line in file_string.split('\n') \
-            if not (line and line[0] in ignorance)])
+    if isinstance(ignorance, tuple):
+        file_string = '\n'.join([line for line in file_string.split('\n') \
+            if not (line.strip() and line.strip()[0] in ignorance)])
+    # elif isinstance(ignorance, )
     file_format = formats.get('file_format', 'plain_text')
     finder = FileFinder(file_string, file_format=file_format)
     for pattern, pattern_property in primitive_data.items():

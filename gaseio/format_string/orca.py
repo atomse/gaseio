@@ -13,7 +13,8 @@ from ..format_parser import read
 FORMAT_STRING = {
     'orca': {
         'calculator': 'ORCA',
-        'ignorance': ('#',),
+        # 'ignorance' : r'\s*#.*\n',
+        'ignorance' : ('#',),
         'primitive_data' : {
             r'%maxcore\s+(\d+)\s*\n' : {
                 'important': False,

@@ -18,6 +18,7 @@ from .. import ext_methods
 FORMAT_STRING = {
     'mol2': {
         'ignorance' : ('#',),
+        # 'ignorance' : r'\s*#.*\n',
         'primitive_data' : {
             r'@<TRIPOS>ATOM([\s\S]*?)[@|$]' : {
                 'important' : True,

@@ -11,6 +11,7 @@ from .. import ext_methods
 FORMAT_STRING = {
     'nwchem': {
         'calculator': 'nwchem',
+        # 'ignorance' : r'\s*#.*\n',
         'ignorance' : ('#',),
         'primitive_data': {
             r'^\s*(start)\s*.*\n\s*title\s*.*\n' :{
@@ -86,6 +87,7 @@ FORMAT_STRING = {
 
     'nwchem-out': {
         'calculator': 'nwchem',
+        # 'ignorance' : r'\s*#.*\n',
         'ignorance' : ('#',),
         'primitive_data': {
             # r'^\s*(start)\s*.*\n\s*title\s*.*\n' :{

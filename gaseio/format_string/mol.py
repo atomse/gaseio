@@ -18,6 +18,7 @@ from .. import ext_methods
 FORMAT_STRING = {
     'mol': {
         'ignorance' : ('#',),
+        # 'ignorance' : r'\s*#.*\n',
         'primitive_data' : {
             r'^(.*)\n' : {
                 'important' : True,

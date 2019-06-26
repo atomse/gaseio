@@ -33,6 +33,8 @@ def filetype(fileobj=None, isfilename=False, debug=False):
     """
     >>> filetype("a.gjf")
     gaussian
+    >>> filetype("1.gro")
+    gromacs
     """
     if isfilename:
         filename = fileobj

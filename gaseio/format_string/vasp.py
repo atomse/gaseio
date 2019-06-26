@@ -255,7 +255,7 @@ FORMAT_STRING = {
                         'key' : 'symbols',
                         # 'type' : str,
                         'index' : ':',
-                        'process' : lambda data, arrays: ext_types.ExtList([_.strip() for _ in data]),
+                        'process' : lambda data, arrays: [_.strip() for _ in data],
                     },
                 ]
                 },

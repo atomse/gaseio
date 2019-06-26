@@ -51,19 +51,21 @@ def main(args):
     arrays = gaseio.read(fileobj, force_gase=not args.allow_ase)
     if args.preview:
         print(arrays)
-    return 0
+    if args.output:
+        gaseio.write(args.output, arrays, format=args.output_format, force_gase=not args.allow_ase, preview=args.preview)
         
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='')
     parser.add_argument("filename")
-    # parser.add_argument("-o", "--output", nargs=1)
+    parser.add_argument("-o", "--output")
+    parser.add_argument("-f", "--output_format")
     parser.add_argument("--format", default=None)
     parser.add_argument("--allow_ase", action='store_true')
     parser.add_argument("-p", "--preview", action='store_true')
     args = parser.parse_args()
-    # print(args)
+    print(args)
     main(args)
 
 

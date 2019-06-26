@@ -183,13 +183,21 @@ def process_defines(defines, def_val=None):
     if def_val is None:
         def_val = {}
     for line in defines.split('\n'):
-        name, val = re.split('\s*=\s*', line)
+        name, val = re.split(r'\s*=\s*', line)
         name = name.strip()
         val  = val.strip()
         val  = substitute_with_define(val, def_val, block_by_block=False)
         def_val[name] = eval(val)
     return def_val
 
+
+def regularize_cell(cell):
+    cell = np.array(cell).flatten()
+    if cell.shape == (3,):
+        cell = np.diag(cell)
+    cell = cell.reshape((-1,3))
+    assert cell.shape == (3, 3)
+    return cell
 
 # def get_filestring_and_format(fileobj, file_format=None):
 #     if hasattr(fileobj, 'read'):

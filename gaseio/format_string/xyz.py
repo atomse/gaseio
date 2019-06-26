@@ -2,7 +2,6 @@
 format_string
 """
 from collections import OrderedDict
-from .. import ext_types
 from .. import ext_methods
 
 FORMAT_STRING = {
@@ -29,7 +28,7 @@ FORMAT_STRING = {
                         'key' : 'symbols',
                         'type' : str,
                         'index' : ':,0',
-                        'process' : lambda data, arrays: ext_types.ExtList(data.tolist()),
+                        'process' : lambda data, arrays: data.tolist(),
                     },
                     {
                         'key' : 'positions',

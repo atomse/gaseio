@@ -46,7 +46,7 @@ FORMAT_STRING = {
                         'key' : 'symbols',
                         'type' : str,
                         'index' : ':,0',
-                        'process' : lambda data, arrays: ext_types.ExtList(data.tolist()),
+                        'process' : lambda data, arrays: data.tolist(),
                     },
                     {
                         'key' : 'positions',
@@ -121,7 +121,7 @@ FORMAT_STRING = {
                         'key' : 'symbols',
                         'type' : str,
                         'index' : ':,1',
-                        'process' : lambda data, arrays: ext_types.ExtList(data.tolist()),
+                        'process' : lambda data, arrays: data.tolist(),
                     },
                     {
                         'key' : 'positions',

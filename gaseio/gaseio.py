@@ -65,7 +65,7 @@ def preview_write_content(fileobj, images, format=None, parallel=True, append=Fa
                           force_ase=False, force_gase=False, preview=False, **kwargs):
     from . import gase_writer
     _tmp_filename = '/tmp/%s' %(atomtools.name.randString())
-    _filetype = filetype(fileobj) or format
+    _filetype = format or filetype(fileobj)
     if force_gase:
         gase_writer.generate_inputfile(images, _filetype, _tmp_filename)
     elif force_ase:

@@ -59,7 +59,7 @@ siesta_format_string = {
     'synthesized_data' : OrderedDict({
         'symbols' : {
             'prerequisite' : ['species_syms', 'species_nums'],
-            'equation' : lambda arrays: ext_types.ExtList(arrays['species_syms'][arrays['species_nums']].tolist()),
+            'equation' : lambda arrays: arrays['species_syms'][arrays['species_nums']].tolist(),
         },
     }),
 }

@@ -4,18 +4,10 @@ format parser from gase
 
 
 import os
-
-
+import re
 import numpy as np
-
-# try:
-#     from gase import Atoms
-#     import gase.calculators as calculators
-#     HAS_GASE = True
-# except ModuleNotFoundError:
-#     HAS_GASE = False
-
 import atomtools
+
 from .filetype import filetype
 from .ext_types import ExtList, ExtDict
 from .ext_methods import astype, xml_parameters, datablock_to_numpy,\
@@ -30,30 +22,37 @@ BASEDIR = os.path.dirname(os.path.abspath(__file__))
 
 
 
-def read(fileobj, format=None, get_dict=False, warning=False, debug=False):
+def read(fileobj, index=-1, format=None, get_dict=False, warning=False, debug=False):
     from .format_string import FORMAT_STRING
-    # file_string, file_format = get_filestring_and_format(fileobj, format)
-    file_string = atomtools.file.get_file_content(fileobj)
+    assert isinstance(index, int) or isinstance(index, slice)
+    all_file_string = atomtools.file.get_file_content(fileobj)
     file_format = format or filetype(fileobj)
 
     assert file_format is not None
     format_dict = FORMAT_STRING.get(file_format, None)
     if format_dict is None:
         raise NotImplementedError(file_format, 'not available now')
-    arrays = ExtDict()
     filename = atomtools.file.get_filename(fileobj)
-    if filename:
-        arrays['basedir'] = os.path.dirname(filename)
-        arrays['absfilename'] = os.path.abspath(filename)
-    arrays['basedir'] = arrays.get('basedir', None) or '.'
-    arrays['absfilename'] = arrays.get('absfilename', None)
-
-    process_primitive_data(arrays, file_string, format_dict, warning, debug)
-    process_synthesized_data(arrays, format_dict, debug)
-    process_calculator(arrays, format_dict, debug)
-    if not format_dict.get('non_regularize', False):
-        regularize_arrays(arrays)
-    return arrays
+    
+    file_string_sections = [all_file_string]
+    if format_dict.get('multiframe', False):
+        file_string_sections = re.findall(format_dict.get('frame_spliter'), all_file_string)
+    all_arrays = []
+    for frame_i, file_string in enumerate(file_string_sections):
+        arrays = ExtDict()
+        if filename:
+            arrays['basedir'] = os.path.dirname(filename)
+            arrays['absfilename'] = os.path.abspath(filename)
+        arrays['basedir'] = arrays.get('basedir', None) or '.'
+        arrays['absfilename'] = arrays.get('absfilename', None)
+        arrays['frame_i'] = frame_i
+        process_primitive_data(arrays, file_string, format_dict, warning, debug)
+        process_synthesized_data(arrays, format_dict, debug)
+        process_calculator(arrays, format_dict, debug)
+        if not format_dict.get('non_regularize', False):
+            regularize_arrays(arrays)
+        all_arrays.append(arrays)
+    return all_arrays[index]
 
 
 def process_pattern(pattern, pattern_property, arrays, finder, warning=False, debug=False):

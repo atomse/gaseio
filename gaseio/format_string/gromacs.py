@@ -54,7 +54,7 @@ FORMAT_STRING = {
                         'index' : ':,2',
                     },
                     {
-                        'key' : 'atom_number',
+                        'key' : 'gro_atom_number',
                         'type' : int,
                         'index' : ':,3',
                     },
@@ -82,6 +82,8 @@ FORMAT_STRING = {
         }),
         'synthesized_data' : OrderedDict({
         }),
+        'multiframe' : True,
+        'frame_spliter' : r'[^\n].*\n\s*\d+\s*\n[\s\S]*?\n\s*[0-9\.]+\s+[0-9\.]+\s+[0-9\.]+[\s\.0-9]*',
     },
     'gromacs-top': {
         'ignorance' : (';','<'),

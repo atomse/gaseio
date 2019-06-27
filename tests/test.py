@@ -50,14 +50,16 @@ def test_no_catch():
         if not os.path.isfile(filename):
             continue
         print('\n'*4, filename)
-        arrays = gaseio.read(filename, force_gase=True, )
+        arrays = gaseio.read(filename, index=-1, force_gase=True)
         print(arrays)
         print('\n' * 4)
         for filetype in os.listdir(TEMPLATES_DIR):
             print('\n'*4, )
             print(filetype, filename)
             gaseio.write('/tmp/test', arrays, filetype, force_gase=True, preview=True)
-
+        arrays = gaseio.read(filename, index=':', force_gase=True)
+        print(arrays)
+        print('\n' * 4)
 
 if __name__ == '__main__':
     test_no_catch()

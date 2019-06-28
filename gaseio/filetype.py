@@ -62,16 +62,16 @@ def filetype(fileobj=None, isfilename=False, debug=False):
                 return fmt_filetype
     return None
 
-def create_user_regexp():
-    if not os.path.exists(USER_FILETYPE_REGEXP_CONF):
-        if not os.path.exists(os.path.dirname(USER_FILETYPE_REGEXP_CONF)):
-            os.makedirs(os.path.dirname(USER_FILETYPE_REGEXP_CONF))
-        with open(USER_FILETYPE_REGEXP_CONF, 'w') as fd:
-            fd.write('[user]\n')
-
+# def create_user_regexp():
+#     if not os.path.exists(USER_FILETYPE_REGEXP_CONF):
+#         if not os.path.exists(os.path.dirname(USER_FILETYPE_REGEXP_CONF)):
+#             os.makedirs(os.path.dirname(USER_FILETYPE_REGEXP_CONF))
+#         with open(USER_FILETYPE_REGEXP_CONF, 'w') as fd:
+#             fd.write('[user]\n')
+# 
 
 update_config()
-create_user_regexp()
+# create_user_regexp()
 update_config(USER_FILETYPE_REGEXP_CONF)
 
 

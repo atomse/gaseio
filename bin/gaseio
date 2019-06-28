@@ -5,14 +5,14 @@ import shutil
 import argparse
 
 from io import StringIO
-
+import atomtools
 
 import gaseio
 
 
 
 
-TMP_DIR = '/tmp'
+TMP_DIR = '/tmp/gaseio'
 compress_command = {
     '.xz' : 'xz -d -f',
     '.zip' : 'unzip',
@@ -25,6 +25,8 @@ compress_command = {
 }
 
 def get_uncompressed_fileobj(filename):
+    if not os.path.exists(TMP_DIR):
+        os.makedirs(TMP_DIR)
     for extension, cmd in compress_command.items():
         if filename.endswith(extension):
             tmpfilename = os.path.join(TMP_DIR, os.path.basename(filename))

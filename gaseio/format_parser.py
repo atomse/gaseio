@@ -22,9 +22,12 @@ BASEDIR = os.path.dirname(os.path.abspath(__file__))
 
 
 
-def read(fileobj, index=-1, format=None, get_dict=False, warning=False, debug=False):
+def read(fileobj, index=-1, format=None, show_file_content=False, warning=False, debug=False):
     from .format_string import FORMAT_STRING
     assert isinstance(index, int) or isinstance(index, slice)
+    orig_index = index
+    if isinstance(index, int):
+        index = slice(index, None, None)
     all_file_string = atomtools.file.get_file_content(fileobj)
     file_format = format or filetype(fileobj)
 
@@ -32,26 +35,29 @@ def read(fileobj, index=-1, format=None, get_dict=False, warning=False, debug=Fa
     format_dict = FORMAT_STRING.get(file_format, None)
     if format_dict is None:
         raise NotImplementedError(file_format, 'not available now')
-    filename = atomtools.file.get_filename(fileobj)
+    filename = atomtools.file.get_absfilename(fileobj)
     
     file_string_sections = [all_file_string]
     if format_dict.get('multiframe', False):
         file_string_sections = re.findall(format_dict.get('frame_spliter'), all_file_string)
+    frame_indices = range(len(file_string_sections))[index]
+    file_string_sections = file_string_sections[index]
     all_arrays = []
-    for frame_i, file_string in enumerate(file_string_sections):
+    for frame_i, file_string in zip(frame_indices, file_string_sections):
         arrays = ExtDict()
-        if filename:
-            arrays['basedir'] = os.path.dirname(filename)
-            arrays['absfilename'] = os.path.abspath(filename)
-        arrays['basedir'] = arrays.get('basedir', None) or '.'
-        arrays['absfilename'] = arrays.get('absfilename', None)
+        arrays['absfilename'] = filename if filename else None
+        arrays['basedir'] = os.path.basename(filename) if filename else None
         arrays['frame_i'] = frame_i
         process_primitive_data(arrays, file_string, format_dict, warning, debug)
         process_synthesized_data(arrays, format_dict, debug)
         process_calculator(arrays, format_dict, debug)
+        if not show_file_content:
+            del arrays['absfilename'], arrays['basedir']
         if not format_dict.get('non_regularize', False):
             regularize_arrays(arrays)
         all_arrays.append(arrays)
+    if isinstance(orig_index, int):
+        return all_arrays[0]
     return all_arrays[index]
 
 
@@ -75,7 +81,6 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
 
     if pattern_property.get('join', None):
         match = [pattern_property['join'].join(match)]
-        # import pdb; pdb.set_trace()
     process = pattern_property.get('process', None)
     if not selectAll:
         match = [match[selection]]
@@ -90,15 +95,19 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
                 value = pattern_property['type'](value)
         arrays.update(construct_depth_dict(key, value, arrays))
     else: # array
+        key_groups = key
         def np_select(data, dtype, index):
             try:
                 data = eval('data[{0}]'.format(index))
             except IndexError:
                 return None
+            # print(all(data.shape))
+            if isinstance(data, np.ndarray) and not all(data.shape): # if contains no data
+                return None
             if dtype is not None:
                 return data.astype(dtype)
             return data
-        for key_group in key:
+        for key_group in key_groups:
             key, dtype, index = key_group.get('key'), key_group.get('type', None), key_group.get('index')
             if key_group.get('debug', False):
                 import pdb; pdb.set_trace()
@@ -115,7 +124,6 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
 
 def process_primitive_data(arrays, file_string, formats, warning=False, debug=False):
     warning = warning or debug
-    # import pdb; pdb.set_trace()
     primitive_data, ignorance = formats['primitive_data'], formats.get('ignorance', None)
     if isinstance(ignorance, tuple):
         file_string = '\n'.join([line for line in file_string.split('\n') \

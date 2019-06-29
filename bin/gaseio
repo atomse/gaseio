@@ -45,7 +45,7 @@ def main(args):
     filename = args.filename
     if not os.path.exists(filename):
         raise ValueError(filename, 'not exist')
-    fileobj = get_uncompressed_fileobj(filename)
+    fileobj = atomtools.file.get_uncompressed_fileobj(filename)
     _type = gaseio.filetype.filetype(fileobj)
     if args.format != None and args.format != _type:
         print(args.filename, _type)

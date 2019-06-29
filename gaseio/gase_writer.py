@@ -10,6 +10,7 @@ import jinja2
 import json_tricks
 
 from . import ext_types
+from .regularize import regularize_arrays
 
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -37,6 +38,7 @@ def generate_input_content(arrays, filetype):
         # if module_name == 'ase.atoms':
         else: # gase
             arrays = arrays.arrays
+    regularize_arrays(arrays)
     output = template.render(arrays=arrays, arrays_json=json_tricks.dumps(arrays), **arrays)
     return output
 

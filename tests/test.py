@@ -29,6 +29,7 @@ def test(test_types=None):
             error = 1
             continue
         for filetype in os.listdir(TEMPLATES_DIR):
+            filetype = filetype.split('.')[0]
             try:
                 gaseio.write('/tmp/test', arrays, filetype, force_gase=True, preview=True)
             except Exception as e:
@@ -54,6 +55,7 @@ def test_no_catch():
         print(arrays)
         print('\n' * 4)
         for filetype in os.listdir(TEMPLATES_DIR):
+            filetype = filetype.split('.')[0]
             print('\n'*4, )
             print(filetype, filename)
             gaseio.write('/tmp/test', arrays, filetype, force_gase=True, preview=True)

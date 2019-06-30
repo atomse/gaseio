@@ -49,5 +49,9 @@ reg_functions = [
 
 
 def regularize_arrays(arrays):
+    if isinstance(arrays, list):
+        for arr in arrays:
+            regularize_arrays(arr)
+        return
     for func in reg_functions:
         func(arrays)

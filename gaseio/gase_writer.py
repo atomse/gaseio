@@ -30,7 +30,7 @@ def generate_input_content(arrays, filetype):
         'islist': islist,
     })
 
-    template = jinja_environment.get_template(filetype)
+    template = jinja_environment.get_template(template_name)
     if not isinstance(arrays, dict) and hasattr(arrays, 'get_positions'):
         module_name = arrays.__class__.__module__
         if module_name == 'ase.atoms':
@@ -46,7 +46,10 @@ def generate_input_content(arrays, filetype):
         else: # gase
             arrays = arrays.arrays
     regularize_arrays(arrays)
-    output = template.render(arrays=arrays, arrays_json=json_tricks.dumps(arrays), **arrays)
+    if isinstance(arrays, list):
+        output = template.render(arrays=arrays, arrays_json=json_tricks.dumps(arrays))
+    else:
+        output = template.render(arrays=arrays, arrays_json=json_tricks.dumps(arrays), **arrays)
     return output
 
 def preview(arrays, filetype):

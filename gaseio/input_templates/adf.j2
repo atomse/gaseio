@@ -7,7 +7,7 @@ cd ${0/\.run/}
 
 
 
-{% if maxcore %}
+{% if maxcore is defined %}
 $ADFBIN/adf -n {{maxcore}} << EOF 1>>${0/run/out} 2>>${0/run/err}
 {% else %}
 $ADFBIN/adf -n 4 << EOF 1>>${0/run/out} 2>>${0/run/err}
@@ -51,7 +51,7 @@ CHARGE 0
 
 
 ! unrestricted/restricted
-{% if calc_arrays['restriction']   != 'default' %}
+{% if calc_arrays['restriction'] != 'default' %}
 {{calc_arrays['restriction']}}
 {% endif %}
 
@@ -68,7 +68,7 @@ END
 
 BASIS
 {% if calc_arrays['basis'] %}
-    {{calc_arrays['basis']}}
+{{calc_arrays['basis']}}
 {% else %}
     TYPE TZP
     CORE SMALL
@@ -84,7 +84,8 @@ SYMMETRY calc_arrays['symmetry']
 
 
 {% if calc_arrays['relativistic'] %}
-RELATIVISTIC {{calc_arrays['relativistic']}}
+RELATIVISTIC {{calc_arrays['relativistic']}} 
+{# RELATIVISTIC {{calc_arrays['relativistic']['level']}} {{calc_arrays['relativistic']['formalism']}} {{calc_arrays['relativistic']['potential']}} #}
 {% endif %}
 
 {% if calc_arrays['smearq'] %}

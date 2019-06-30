@@ -16,15 +16,21 @@ from .regularize import regularize_arrays
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 INPUT_TEMPLATE_DIR = 'input_templates'
 
-jinja_temp_env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(BASEDIR, INPUT_TEMPLATE_DIR)),
+jinja_environment = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(BASEDIR, INPUT_TEMPLATE_DIR)),
                                     lstrip_blocks=True)
 
+def islist(value):
+    return isinstance(value, list)
 
 
 def generate_input_content(arrays, filetype):
-    jinja_temp_env.trim_blocks = True
     template_name = filetype + '.j2'
-    template = jinja_temp_env.get_template(template_name)
+    jinja_environment.trim_blocks = True
+    jinja_environment.filters.update({
+        'islist': islist,
+    })
+
+    template = jinja_environment.get_template(filetype)
     if not isinstance(arrays, dict) and hasattr(arrays, 'get_positions'):
         module_name = arrays.__class__.__module__
         if module_name == 'ase.atoms':

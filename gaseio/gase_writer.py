@@ -23,7 +23,8 @@ jinja_temp_env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.join(
 
 def generate_input_content(arrays, filetype):
     jinja_temp_env.trim_blocks = True
-    template = jinja_temp_env.get_template(filetype)
+    template_name = filetype + '.j2'
+    template = jinja_temp_env.get_template(template_name)
     if not isinstance(arrays, dict) and hasattr(arrays, 'get_positions'):
         module_name = arrays.__class__.__module__
         if module_name == 'ase.atoms':

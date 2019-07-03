@@ -1,0 +1,9 @@
+{% if calc_arrays is defined and 'pseudopotentials' in calc_arrays %}
+{% for poscar in calc_arrays['pseudopotentials'] %}
+{% include 'potpaw_PBE/' + poscar|string + '/POTCAR' %}
+{% endfor %}
+{% else %}
+{% for poscar in symbols.deep_contract_items() %}
+{% include 'potpaw_PBE/' + poscar|string + '/POTCAR' %}
+{% endfor %}
+{% endif %}

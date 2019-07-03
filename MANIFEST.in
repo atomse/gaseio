@@ -1,2 +1,3 @@
 include gaseio/*.conf
 include gaseio/input_templates/*
+include gaseio/input_templates/potpaw_PBE/*/*

@@ -458,5 +458,9 @@ FORMAT_STRING = {
                 'delete' : ['vasp_pot', 'ions_per_type'],
                 },
         }),
+    },
+    'vasp-INCAR' : {
+        'ignorance' : ('#', ),
+        'file_format' : 'dict',
     }
 }

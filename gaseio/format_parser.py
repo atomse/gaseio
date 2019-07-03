@@ -5,6 +5,7 @@ format parser from gase
 
 import os
 import re
+import configparser
 import numpy as np
 import atomtools
 
@@ -37,6 +38,11 @@ def read(fileobj, index=-1, format=None, show_file_content=False, warning=False,
         raise NotImplementedError(file_format, 'not available now')
     filename = atomtools.file.get_absfilename(fileobj)
     
+    if format_dict.get('file_format', None) == 'dict':
+        conf = configparser.ConfigParser()
+        conf.read_string('[vasp]\n' + all_file_string)
+        return conf._sections
+
     file_string_sections = [all_file_string]
     if format_dict.get('multiframe', False):
         file_string_sections = re.findall(format_dict.get('frame_spliter'), all_file_string)

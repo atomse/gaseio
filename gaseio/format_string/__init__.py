@@ -31,7 +31,8 @@ def update_format_string(warning=False, DEBUG=False):
             continue
         sub_format_string = getattr(mod, 'FORMAT_STRING')
         for key, pattern in sub_format_string.items():
-            pattern['primitive_data'].update(BASIC_PRIMITIVE_DATA_FORMAT_STRING)
+            if 'primitive_data' in pattern:
+                pattern['primitive_data'].update(BASIC_PRIMITIVE_DATA_FORMAT_STRING)
         FORMAT_STRING.update(sub_format_string)
     return FORMAT_STRING
 

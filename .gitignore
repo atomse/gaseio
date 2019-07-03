@@ -136,3 +136,6 @@ tags
 # ignore profile
 *.py.lprof
 line.select
+
+
+.DS_Store

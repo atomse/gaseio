@@ -6,6 +6,11 @@ import os
 import importlib
 from collections import OrderedDict
 from .. import format_parser
+from .. import ext_methods
+from .__basic__ import BASIC_PRIMITIVE_DATA_FORMAT_STRING
+
+
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 global FORMAT_STRING
@@ -25,6 +30,8 @@ def update_format_string(warning=False, DEBUG=False):
             if warning: print('WARNING: {0} has not format_string'.format(mod.__name__))
             continue
         sub_format_string = getattr(mod, 'FORMAT_STRING')
+        for key, pattern in sub_format_string.items():
+            pattern['primitive_data'].update(BASIC_PRIMITIVE_DATA_FORMAT_STRING)
         FORMAT_STRING.update(sub_format_string)
     return FORMAT_STRING
 

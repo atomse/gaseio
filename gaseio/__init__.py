@@ -3,10 +3,10 @@ GASEIO
 """
 
 
-__version__ = '2.2.0'
+__version__ = '2.3.0'
 def version():
     return __version__
 
-from .gaseio import read, write, get_write_content, preview_write
+from .gaseio import read, write, read_preview, write_preview, preview
 
 

@@ -61,17 +61,6 @@ def read_preview(fileobj, lines=200):
         print(string)
 
 
-def write(fileobj, images, format=None, parallel=True, append=False, force_ase=False, 
-          force_gase=False, preview=False, **kwargs):
-    string = get_write_content(fileobj, images, format, parallel, append,
-                                   force_ase=force_ase, force_gase=force_gase, **kwargs)
-    if preview:
-        print(string)
-    else:
-        with open(fileobj, 'w') as fd:
-            fd.write(string)
-
-
 def get_write_content(fileobj, images, format=None, parallel=True, append=False,
                           force_ase=False, force_gase=False, preview=False, **kwargs):
     from . import gase_writer
@@ -92,8 +81,25 @@ def get_write_content(fileobj, images, format=None, parallel=True, append=False,
     os.remove(_tmp_filename)
     return string
 
-def preview_write(fileobj, images, format=None, parallel=True, append=False,
+
+def write(fileobj, images, format=None, parallel=True, append=False, force_ase=False, 
+          force_gase=False, preview=False, **kwargs):
+    string = get_write_content(fileobj, images, format, parallel, append,
+                               force_ase=force_ase, force_gase=force_gase, **kwargs)
+    if preview:
+        print(string)
+    else:
+        with open(fileobj, 'w') as fd:
+            fd.write(string)
+
+
+def write_preview(fileobj, images, format=None, parallel=True, append=False,
                   force_ase=False, force_gase=False, preview=False, **kwargs):
-    write(fileobj, images, format, parallel, append, force_ase=force_ase, force_gase=force_gase, preview=True, **kwargs)
+    write(fileobj, images, format, parallel, append, force_ase=force_ase, force_gase=force_gase,
+          preview=True, **kwargs)
+
+
+def preview(images, format=None, force_ase=False, force_gase=False):
+    write('-', images, format, force_ase=force_ase, force_gase=force_gase, preview=True)
 
 

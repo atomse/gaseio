@@ -4,11 +4,16 @@
 
 import os
 import gaseio
-
+from gaseio import gase_writer
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 TEST_DIR = os.path.join(BASEDIR, 'Testcases')
-TEMPLATES_DIR = os.path.join(BASEDIR, '../gaseio/input_templates/')
+SUPPORTED_TEMPS = gase_writer.list_supported_write_formats()
+
+
+print(gaseio)
+print(gaseio.__version__)
+
 
 
 def test_basic():
@@ -28,12 +33,12 @@ def test(test_types=None):
             print(e)
             error = 1
             continue
-        for filetype in os.listdir(TEMPLATES_DIR):
-            filetype = filetype.split('.')[0]
+        for write_temp_type in SUPPORTED_TEMPS:
+            write_temp_type = write_temp_type.split('.')[0]
             try:
-                gaseio.write('/tmp/test', arrays, filetype, force_gase=True, preview=True)
+                gaseio.write('/tmp/test', arrays, write_temp_type, force_gase=True, preview=True)
             except Exception as e:
-                print(filetype, 'tempelate wrong!', filename)
+                print(write_temp_type, 'tempelate wrong!', filename)
                 print(e)
                 print(arrays)
     return error
@@ -52,15 +57,15 @@ def test_no_catch():
             continue
         print('\n'*4, filename)
         arrays = gaseio.read(filename, index=-1, force_gase=True)
-        print(arrays)
+        # print(arrays)
         print('\n' * 4)
-        for filetype in os.listdir(TEMPLATES_DIR):
-            filetype = filetype.split('.')[0]
+        for write_temp_type in SUPPORTED_TEMPS:
+            write_temp_type = os.path.basename(write_temp_type).split('.')[0]
             print('\n'*4, )
-            print(filetype, filename)
-            gaseio.write('/tmp/test', arrays, filetype, force_gase=True, preview=True)
+            print(write_temp_type, filename)
+            gaseio.write('/tmp/test', arrays, write_temp_type, force_gase=True, preview=True)
         arrays = gaseio.read(filename, index=':', force_gase=True)
-        print(arrays)
+        # print(arrays)
         print('\n' * 4)
 
 if __name__ == '__main__':

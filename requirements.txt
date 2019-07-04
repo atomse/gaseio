@@ -1,10 +1,10 @@
-pandas>=0.22.0
-typing>=3.6.2
 ase>=3.17.0
+numpy
 json_tricks>=3.13.1
-numpy>=1.14.2
-lxml>=4.1.1
-Jinja2>=2.10
+lxml>=4.3.4
+Jinja2>=2.10.1
 parse>=1.12.0
-atomtools>=1.5.8
-chemdata>=1.5.1
+pandas>=0.24.2
+typing>=3.7.4
+chemdata>=1.5.2
+atomtools>=1.7.1

@@ -23,7 +23,7 @@ import atomtools
 
 
 
-from . import filetype
+from atomtools import filetype
 from .ext_types import ExtList, ExtDict
 
 
@@ -244,7 +244,7 @@ def process_blockdata_with_several_lines(data, ndim_length_regex, rm_header_rege
 #         fileobj = fileobj.read()
 #     elif isinstance(fileobj, str):
 #         if os.path.exists(fileobj):
-#             file_format = file_format or filetype.filetype(fileobj)
+#             file_format = file_format or filetype(fileobj)
 #             fileobj = open(fileobj).read()
 #     return fileobj.lstrip(), file_format
 
@@ -285,5 +285,8 @@ class FileFinder(object):
         if self.file_format == 'plain_text':
             return re.findall(pattern, self.fileobj)
         elif self.file_format == 'lxml':
-            return self.fileobj.xpath(pattern)
+            try:
+                return self.fileobj.xpath(pattern)
+            except:
+                return None
 

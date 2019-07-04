@@ -9,7 +9,7 @@ import configparser
 import numpy as np
 import atomtools
 
-from .filetype import filetype
+from atomtools import filetype
 from .ext_types import ExtList, ExtDict
 from .ext_methods import astype, xml_parameters, datablock_to_numpy,\
                          datablock_to_numpy, construct_depth_dict, \

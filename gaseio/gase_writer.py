@@ -6,6 +6,7 @@ Templates are stored in INPUT_TEMPLATE_DIR
 
 
 import os
+import glob
 import jinja2
 import json_tricks
 
@@ -15,28 +16,27 @@ from .regularize import regularize_arrays
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 INPUT_TEMPLATE_DIR = 'input_templates'
-
-jinja_loader = jinja2.FileSystemLoader(os.path.join(BASEDIR, INPUT_TEMPLATE_DIR))
-jinja_environment = jinja2.Environment(loader=jinja_loader, lstrip_blocks=True)
+INPUT_TEMPLATE_DIR = os.path.join(BASEDIR, INPUT_TEMPLATE_DIR)
 
 def islist(value):
     return isinstance(value, list)
 
-
-def include_vasppot(fname):
-    print(fname)
-    potpaw_PBE_dir = 'potpaw_PBE'
-    fname = os.path.join(BASEDIR, potpaw_PBE_dir, str(fname), 'POTCAR')
-    _tmp = jinja_loader.get_source(jinja_environment, fname)[0]
-    print(_tmp)
-    return jinja2.Markup(_tmp)
-
-
-jinja_environment.globals['include_vasppot'] = include_vasppot
+jinja_loader = jinja2.FileSystemLoader(INPUT_TEMPLATE_DIR)
+jinja_environment = jinja2.Environment(loader=jinja_loader, lstrip_blocks=True)
 jinja_environment.trim_blocks = True
-jinja_environment.filters.update({
-    'islist': islist,
-})
+jinja_environment.filters.update({'islist': islist,})
+
+
+# def include_vasppot(fname):
+#     print(fname)
+#     potpaw_PBE_dir = 'potpaw_PBE'
+#     fname = os.path.join(BASEDIR, potpaw_PBE_dir, str(fname), 'POTCAR')
+#     _tmp = jinja_loader.get_source(jinja_environment, fname)[0]
+#     print(_tmp)
+#     return jinja2.Markup(_tmp)
+# 
+# 
+# jinja_environment.globals['include_vasppot'] = include_vasppot
 
 
 def generate_input_content(arrays, filetype):
@@ -75,4 +75,6 @@ def generate_inputfile(arrays, filetype, inputfilename):
         fd.write(output)
 
 
+def list_supported_write_formats():
+    return glob.glob(os.path.join(INPUT_TEMPLATE_DIR, '*.j2'))
 

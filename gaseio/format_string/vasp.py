@@ -12,7 +12,7 @@ from .. import ext_types
 
 
 FORMAT_STRING = {
-    'vasp-OUTCAR': {
+    'OUTCAR': {
         'file_format' : 'plain_text',
         'calculator' : 'VASP',
         'primitive_data': OrderedDict({
@@ -112,7 +112,7 @@ FORMAT_STRING = {
                 },
         }),
     },
-    'vasp-POSCAR' : {
+    'POSCAR' : {
         'calculator' : 'VASP',
         'primitive_data' : {
             r'^(.*)\n' : {
@@ -209,7 +209,7 @@ FORMAT_STRING = {
             },
         }),
     },
-    'vasp-DOSCAR' : {
+    'DOSCAR' : {
         'calculator' : 'VASP',
         'file_format' : 'plain_text',
         'primitive_data' : {
@@ -459,7 +459,7 @@ FORMAT_STRING = {
                 },
         }),
     },
-    'vasp-INCAR' : {
+    'INCAR' : {
         'ignorance' : ('#', ),
         'file_format' : 'dict',
     }

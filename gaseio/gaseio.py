@@ -6,8 +6,7 @@ gaseio
 import os
 import re
 import atomtools
-
-from .filetype import filetype
+from atomtools import filetype
 
 
 

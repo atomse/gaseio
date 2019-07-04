@@ -1,0 +1,5 @@
+{% if calc_arrays is defined and 'vasp_input' in calc_arrays %}
+{% for key, val in calc_arrays['vasp_input'].iteritems() %}
+{{key}} = {{val}}
+{% endfor %}
+{% endif %}

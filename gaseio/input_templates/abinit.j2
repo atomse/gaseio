@@ -1,0 +1,25 @@
+# Structural parameters
+{# acell    3*48.830522424   #}
+
+{% if cell is defined %}
+rprim        {{cell[0][0]}} {{cell[0][1]}} {{cell[0][2]}}
+             {{cell[1][0]}} {{cell[1][1]}} {{cell[1][2]}}
+             {{cell[2][0]}} {{cell[2][1]}} {{cell[2][2]}}
+{% else %}
+rprim {{[(positions.T[0].max() - positions.T[0].min())*2, 10.0] | max}} 0. 0.
+0. {{[(positions.T[1].max() - positions.T[1].min())*2, 10.0] | max}} 0.
+0. 0. {{[(positions.T[2].max() - positions.T[2].min())*2, 10.0] | max}}
+{% endif %}
+{# 
+rprim    1.000000000000000   0.000000000000000   0.000000000000000 
+         0.000000000000000   1.000000000000000   0.000000000000000 
+         0.000000000000000   0.000000000000000   1.000000000000000 
+        #}
+natom    {{numbers | length}}
+ntypat   {{numbers.deep_contract_items() | length}}
+typat    {% for i in range(positions|length) %} {{numbers.deep_contract_items().index(numbers[i]) + 1}} {% endfor %}
+
+znucl    {{numbers.deep_contract_items("string")}}
+xred     {% for i in range(positions | length) %}
+         {{positions[numbers.deep_contract_index()[i]][0]}}  {{positions[numbers.deep_contract_index()[i]][1]}}  {{positions[numbers.deep_contract_index()[i]][2]}}
+         {% endfor %}

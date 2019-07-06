@@ -19,6 +19,7 @@ def reg_numbers_symbols(arrays):
         assert 'symbols' in arrays, 'either numbers or symbols should be in the arrays'
         arrays['numbers'] = np.array([chemdata.get_element_number(_) for _ in arrays['symbols']])
     arrays['symbols'] = ExtList(arrays['symbols'])
+    arrays['numbers'] = ExtList(arrays['numbers'])
 
 def reg_charge(arrays):
     if not 'charge' in arrays:

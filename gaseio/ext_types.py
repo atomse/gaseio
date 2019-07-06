@@ -58,13 +58,13 @@ class ExtList(list):
         return counts
 
     def deep_contract_items(self, outtype=None):
-        _contract_items = self.__get_counts().keys()
+        _contract_items = list(self.__get_counts().keys())
         if outtype == 'string':
             _contract_items = ' '.join(str(_) for _ in _contract_items)
         return _contract_items
 
     def deep_contract_numbers(self, outtype=None):
-        _contract_numbers = self.__get_counts().values()
+        _contract_numbers = list(self.__get_counts().values())
         if outtype == 'string':
             _contract_numbers = ' '.join(str(_) for _ in _contract_numbers)
         return _contract_numbers

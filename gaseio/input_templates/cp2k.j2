@@ -1,0 +1,101 @@
+&GLOBAL
+   PROJECT {{ calc_arrays['project'] | upper  if calc_arrays is defined and 'project' in calc_arrays else 'CP2K' }}
+   PRINT_LEVEL {{ calc_arrays['print_level'] | upper  if calc_arrays is defined and 'print_level' in calc_arrays else 'MEDIUM' }}
+   RUN_TYPE {{ calc_arrays['runtype'] | upper  if calc_arrays is defined and 'runtype' in calc_arrays else 'ENERGY' }}
+&END GLOBAL
+&MOTION
+   &GEO_OPT
+      MAX_ITER  50
+      OPTIMIZER LBFGS
+      MAX_FORCE 6.0E-4
+      &CG
+         &LINE_SEARCH
+            TYPE 2PNT
+         &END LINE_SEARCH
+      &END CG
+   &END GEO_OPT
+&END MOTION
+&FORCE_EVAL
+   METHOD QuickStep
+   &DFT
+      BASIS_SET_FILE_NAME {{calc_arrays['basis_set_filename'] | upper if calc_arrays is defined and 'basis_set_filename' in calc_arrays else 'BASIS_SET'}}
+      POTENTIAL_FILE_NAME {{calc_arrays['potential_filename'] | upper if calc_arrays is defined and 'potential_filename' in calc_arrays else 'POTENTIAL'}}
+      WFN_RESTART_FILE_NAME ./cp2k-RESTART.wfn
+      CHARGE {{charge}}
+      &MGRID
+         CUTOFF {{calc_arrays['cutoff'] if calc_arrays is defined and 'cutoff' in calc_arrays else 280.000000}}
+      &END MGRID
+      &QS
+         METHOD {{calc_arrays['method'] | upper if calc_arrays is defined and 'method' in calc_arrays else 'GPW'}}
+      &END QS
+      &XC
+         &XC_FUNCTIONAL {{calc_arrays['xc'] | upper if calc_arrays is defined and 'xc' in calc_arrays else 'PBE'}}
+         &END XC_FUNCTIONAL
+      &END XC
+      &SCF
+         SCF_GUESS RESTART
+         MAX_SCF 100
+         EPS_SCF 1.0e-5
+         &OT T
+            PRECONDITIONER FULL_ALL
+            MINIMIZER DIIS
+            LINESEARCH 3PNT
+         &END OT
+         &OUTER_SCF ON
+            MAX_SCF 50
+         &END OUTER_SCF
+      &END SCF
+   &END DFT
+   &SUBSYS
+#       &KIND H
+#          BASIS_SET DZVP-MOLOPT-SR-GTH
+#          POTENTIAL GTH-PBE-q1
+#       &END KIND
+#       &KIND O
+#          BASIS_SET DZVP-MOLOPT-SR-GTH
+#          POTENTIAL GTH-PBE-q6
+#       &END KIND
+{% for element in symbols.deep_contract_items() %}
+      &KIND {{element}}
+         BASIS_SET DZVP-MOLOPT-SR-GTH
+         POTENTIAL GTH-PBE
+      &END KIND
+{% endfor %}
+#       &CELL
+#          PERIODIC XYZ
+#          ABC 10.000000 10.000000 10.000000
+#          ALPHA_BETA_GAMMA 90.000000 90.000000 90.000000
+#       &END CELL
+      &CELL
+         PERIODIC {{'XYZ' if periodic is defined and periodic.all() else 'None' }}
+         {% if cell is defined %}
+            A {{cell[0][0]}} {{cell[0][1]}} {{cell[0][2]}}
+            B {{cell[1][0]}} {{cell[1][1]}} {{cell[1][2]}}
+            C {{cell[2][0]}} {{cell[2][1]}} {{cell[2][2]}}
+         {% else %}
+            A {{[(positions.T[0].max() - positions.T[0].min())*2, 10.0] | max}} 0. 0.
+            B 0. {{[(positions.T[1].max() - positions.T[1].min())*2, 10.0] | max}} 0.
+            C 0. 0. {{[(positions.T[2].max() - positions.T[2].min())*2, 10.0] | max}}
+         {% endif %}
+      &END CELL
+      &COORD
+{% for i in range(symbols|length) %}
+{{symbols[i]}}    {{positions[i][0]}}    {{positions[i][1]}}    {{positions[i][2]}}
+{% endfor %}
+      &END COORD
+      &PRINT
+         &ATOMIC_COORDINATES
+            &EACH
+               JUST_ENERGY 1
+               GEO_OPT 1
+            &END EACH
+         &END ATOMIC_COORDINATES
+      &END PRINT
+   &END SUBSYS
+   &PRINT
+      &FORCES
+      &END FORCES
+      &GRID_INFORMATION
+      &END GRID_INFORMATION
+   &END PRINT
+&END FORCE_EVAL

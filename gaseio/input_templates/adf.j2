@@ -39,11 +39,10 @@ END
 
 
 
-{% if charge is defined %}
-CHARGE {{charge|int}}
+{% if spin is defined %}
+CHARGE {{charge|int}} {{spin | int}}
 {% else %}
-CHARGE 0
-! default charge 0
+CHARGE {{charge|int}} 
 {% endif %}
 
 

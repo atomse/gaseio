@@ -13,31 +13,13 @@ FORMAT_STRING = {
                 'key' : 'comments',
                 'type' : str,
             },
-            r'_atom_site_occupancy\n([\s\S]*?)[_\n$]':{
+            r'loop_\n(_atom_site_[\s\S]*_z\n[\s\S]*?)(?:\n\n|_loop|loop|$)':{
                 'important': True,
                 'selection' : -1,
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-                'key' : [
-                    {
-                        'key' : 'symbols',
-                        'type' : str,
-                        'index' : ':,0',
-                        'process' : lambda data, arrays: data.tolist(),
-                    },
-                    {
-                        'key' : 'primitive_positions',
-                        'type' : float,
-                        'index' : ':,1:4',
-                    },
-                    {
-                        'key' : 'occupancy',
-                        'type' : float,
-                        'index' : ':,4',
-                        'process' : lambda data, arrays: data.tolist(),
-                    },
-                ],
+                'key' : '_atom_site',
+                'type' : str,
             },
-            r'_symmetry_space_group_name_H-M\s+\'(.*?)\'' : {
+            r'_symmetry_space_group_name_H-M\s+[\']?(.*?)[\']?' : {
                 'important' : False,
                 'selection' : -1,
                 'type' : str,
@@ -79,8 +61,26 @@ FORMAT_STRING = {
                 'type' : float,
                 'key' : '_cell_length_c'
             },
+            r'loop_\n((?:_symmetry|_space)[\s\S]*?)(?:\n\n|_loop|loop|$)' : {
+                'important' : False,
+                'selection' : -1,
+                'type' : str,
+                'key' : '_space_group_symop',
+            },
         }),
         'synthesized_data' : OrderedDict({
+            '_atom_site_labels' : {
+                'prerequisite' : '_atom_site',
+                'equation' : lambda arrays: re.findall(r'(?:\n|^)_atom_site.*(?:\n)', arrays['_atom_site']),
+            }
+            'symbols' : {
+                'prerequisite' : '_atom_site',
+                'equation' : lambda arrays: fetch_symbols(arrays['_atom_site']),
+            },
+            'positions' : {
+                'prerequisite' : '_atom_site',
+                'equation' : lambda arrays: fetch_positions(arrays['_atom_site']),
+            },
         }),
     },
 }

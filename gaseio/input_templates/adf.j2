@@ -7,8 +7,8 @@ cd ${0/\.run/}
 
 
 
-{% if maxcore is defined %}
-$ADFBIN/adf -n {{maxcore}} << EOF 1>>${0/run/out} 2>>${0/run/err}
+{% if calc_arrays is defined and 'maxcore' in calc_arrays %}
+$ADFBIN/adf -n {{calc_arrays['maxcore']}} << EOF 1>>${0/run/out} 2>>${0/run/err}
 {% else %}
 $ADFBIN/adf -n 4 << EOF 1>>${0/run/out} 2>>${0/run/err}
 ! default run with 4 cores
@@ -18,7 +18,7 @@ $ADFBIN/adf -n 4 << EOF 1>>${0/run/out} 2>>${0/run/err}
 {% if comments is defined %}
 TITLE {{comments}}
 {% else %}
-TITLE {{symbols.contract_items()}}
+TITLE {{symbols.contract_items("string")}}
 {% endif %}
 
 
@@ -46,7 +46,7 @@ CHARGE {{charge|int}}
 {% endif %}
 
 
-{% if calc_arrays is defined %}
+{# {% if calc_arrays is defined %} #}
 
 
 ! unrestricted/restricted
@@ -82,18 +82,18 @@ SYMMETRY calc_arrays['symmetry']
 {% endif %}
 
 
-{% if calc_arrays['relativistic'] %}
+{% if calc_arrays is defined and calc_arrays['relativistic'] %}
 RELATIVISTIC {{calc_arrays['relativistic']}} 
 {# RELATIVISTIC {{calc_arrays['relativistic']['level']}} {{calc_arrays['relativistic']['formalism']}} {{calc_arrays['relativistic']['potential']}} #}
 {% endif %}
 
-{% if calc_arrays['smearq'] %}
+{% if calc_arrays is defined and calc_arrays['smearq'] %}
 occupations smearq={{calc_arrays['smearq']}}
 {% endif %}
 
 
 SCF
-{% if calc_arrays['scf'] and calc_arrays['scf'] != 'default' %}
+{% if calc_arrays is defined and calc_arrays['scf'] and calc_arrays['scf'] != 'default' %}
 {{calc_arrays['scf']}}
 {% else %}
     iterations 100
@@ -105,7 +105,7 @@ SCF
 END
 
 
-{% if calc_arrays['geometry'] %}
+{% if calc_arrays is defined and calc_arrays['geometry'] %}
 {% if calc_arrays['geometry'] != 'default' %}
 GEOMETRY
 {{calc_arrays['geometry']}}
@@ -122,7 +122,7 @@ END
 {% endif %}
 
 
-{% if calc_arrays['freq'] %}
+{% if calc_arrays is defined and calc_arrays['freq'] %}
 {% if calc_arrays['freq'] != 'default' %}
 AnalyticalFreq
 {{calc_arrays['freq']}}
@@ -135,7 +135,7 @@ End
 {% endif %}
 
 
-{% endif %}
+{# {% endif %} #}
 
 
 SAVE  TAPE21

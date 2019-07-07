@@ -211,7 +211,7 @@ FORMAT_STRING = {
                 'process' : lambda data, arrays: data * atomtools.unit.trans_energy('au', 'eV'),
             },
             r'GEOMETRY OPTIMIZATION COMPLETED' : {
-                'important' False,
+                'important' : False,
                 'selection' : -1,
                 'key' : 'calc_arrays/geometry_opt_done',
             },

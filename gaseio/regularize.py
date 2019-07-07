@@ -6,10 +6,19 @@ import numpy as np
 import chemdata
 from .ext_types import ExtList
 
+
+
 def reg_customized_symbols(arrays):
     if 'customized_symbols' in arrays:
-        arrays['symbols'] = [symbol[:2] if symbol[:2] in chemdata.chemical_symbols else symbol[:1]\
-                             for symbol in arrays['customized_symbols'] ]
+        arrays['symbols'] = [symbol[0].upper() + symbol[1].lower() if len(symbol) >= 2 and symbol[:2].lower() in \
+                             [_.lower() for _ in chemdata.chemical_symbols] \
+                             else symbol[0].upper() for symbol in arrays['customized_symbols'] ]
+
+
+def reg_symbols(arrays):
+    arrays['symbols'] = [symbol[0].upper() + symbol[1].lower() if len(symbol) == 2 and symbol[:2].lower() in \
+                         [_.lower() for _ in chemdata.chemical_symbols] \
+                         else symbol[0].upper() for symbol in arrays['symbols'] ]
 
 
 def reg_numbers_symbols(arrays):
@@ -17,9 +26,11 @@ def reg_numbers_symbols(arrays):
         arrays['symbols'] = [chemdata.get_element(_) for _ in arrays['numbers']]
     else:
         assert 'symbols' in arrays, 'either numbers or symbols should be in the arrays'
+        reg_symbols(arrays)
         arrays['numbers'] = np.array([chemdata.get_element_number(_) for _ in arrays['symbols']])
     arrays['symbols'] = ExtList(arrays['symbols'])
     arrays['numbers'] = ExtList(arrays['numbers'])
+
 
 def reg_charge(arrays):
     if not 'charge' in arrays:

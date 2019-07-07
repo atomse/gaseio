@@ -1,8 +1,32 @@
 """
 format_string
 """
+import re
+import numpy as np
 from collections import OrderedDict
 from .. import ext_methods
+import atomtools
+
+def cif_construct_cell(arrays):
+    a = float(arrays['_cell_length_a'])
+    b = float(arrays['_cell_length_b'])
+    c = float(arrays['_cell_length_c'])
+    alpha = float(arrays['_cell_angle_alpha'])
+    beta = float(arrays['_cell_angle_beta'])
+    gamma = float(arrays['_cell_angle_gamma'])
+    cell = atomtools.geo.cellpar_to_cell((a, b, c, alpha, beta, gamma))
+    return cell
+
+def cif_parse_symbols(arrays):
+    return ext_methods.regularize_symbols(arrays['_atom_site']['_atom_site_label'].values)
+
+
+def cif_parse_positions(arrays):
+    frac_positions = arrays['_atom_site'].loc[:,['_atom_site_fract_x', '_atom_site_fract_y', '_atom_site_fract_z']]
+    positions = frac_positions.dot(arrays['cell'])
+    return positions
+
+
 
 FORMAT_STRING = {
     'cif': {
@@ -13,11 +37,11 @@ FORMAT_STRING = {
                 'key' : 'comments',
                 'type' : str,
             },
-            r'loop_\n(_atom_site_[\s\S]*_z\n[\s\S]*?)(?:\n\n|_loop|loop|$)':{
+            r'loop_\n(_atom_site_[\s\S]*_z\n[\s\S]*?[A-Z][\s\S]*?)(?:\n\n|_|loop|$)':{
                 'important': True,
                 'selection' : -1,
                 'key' : '_atom_site',
-                'type' : str,
+                'process' : lambda data, arrays: ext_methods.datablock_to_dataframe(re.sub('\n_', ' _', data), header=0)
             },
             r'_symmetry_space_group_name_H-M\s+[\']?(.*?)[\']?' : {
                 'important' : False,
@@ -69,17 +93,18 @@ FORMAT_STRING = {
             },
         }),
         'synthesized_data' : OrderedDict({
-            '_atom_site_labels' : {
-                'prerequisite' : '_atom_site',
-                'equation' : lambda arrays: re.findall(r'(?:\n|^)_atom_site.*(?:\n)', arrays['_atom_site']),
-            }
+            'cell' : {
+                'prerequisite' : ['_cell_length_a', '_cell_length_b', '_cell_length_c', '_cell_angle_alpha', '_cell_angle_beta', '_cell_angle_gamma'],
+                'equation' : lambda arrays: cif_construct_cell(arrays),
+            },
             'symbols' : {
-                'prerequisite' : '_atom_site',
-                'equation' : lambda arrays: fetch_symbols(arrays['_atom_site']),
+                # 'debug' : True,
+                'prerequisite' : ['_atom_site'],
+                'equation' : lambda arrays: cif_parse_symbols(arrays),
             },
             'positions' : {
-                'prerequisite' : '_atom_site',
-                'equation' : lambda arrays: fetch_positions(arrays['_atom_site']),
+                'prerequisite' : ['_atom_site'],
+                'equation' : lambda arrays: cif_parse_positions(arrays),
             },
         }),
     },

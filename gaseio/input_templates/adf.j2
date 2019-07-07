@@ -1,3 +1,5 @@
+{% set adf_xc_types = {"xonly" : "LDA", "xalpha" : "LDA", "vwn" : "LDA", "stoll" : "LDA", "pw92" : "LDA", "bp86" : "GGA", "pw91" : "GGA", "mpw" : "GGA", "pbe" : "GGA", "rpbe" : "GGA", "revpbe" : "GGA", "mpbe" : "GGA", "pbesol" : "GGA", "htbs" : "GGA", "blyp" : "GGA", "olyp" : "GGA", "opbe" : "GGA", "bee" : "GGA", "xlyp" : "GGA", "ssb-d" : "GGA", "s12g" : "GGA", "lb94" : "GGA", "kt1" : "GGA", "kt2" : "GGA", "m06-l" : "METAGGA", "tpss" : "METAGGA", "revtpss" : "METAGGA", "ssb-d" : "METAGGA", "mvs" : "METAGGA", "ms0" : "METAGGA", "ms1" : "METAGGA", "ms2" : "METAGGA", "scan" : "METAGGA", "b3lyp" : "HYBRID", "b3lyp*" : "HYBRID", "b1lyp" : "HYBRID", "kmlyp" : "HYBRID", "o3lyp" : "HYBRID", "x3lyp" : "HYBRID", "bhandh" : "HYBRID", "bhandhlyp" : "HYBRID", "b1pw91" : "HYBRID", "mpw1pw" : "HYBRID", "mpw1k" : "HYBRID", "pbe0" : "HYBRID", "opbe0" : "HYBRID", "m06" : "METAHYBRID", "m06-2x" : "METAHYBRID", "m06-hf" : "METAHYBRID", "tpssh" : "METAHYBRID"} %}
+
 #!/bin/bash
 if [ ! -d ${0/\.run/} ]
 then
@@ -40,24 +42,23 @@ END
 
 
 {% if spin is defined %}
-CHARGE {{charge|int}} {{spin | int}}
+CHARGE {{charge|int}} {{spin|int}}
 {% else %}
 CHARGE {{charge|int}} 
 {% endif %}
 
 
-{# {% if calc_arrays is defined %} #}
 
 
 ! unrestricted/restricted
-{% if calc_arrays['restriction'] != 'default' %}
+{% if calc_arrays is defined and calc_arrays['restriction'] %}
 {{calc_arrays['restriction']}}
 {% endif %}
 
 
 XC
-{% if calc_arrays['xc'] %}
-    {{calc_arrays['xc']}}
+{% if calc_arrays is defined and calc_arrays['xc'] %}
+    {{adf_xc_types[calc_arrays['xc'] | lower ]}} {{calc_arrays['xc']}}
 {% else %}
     GGA PBE
 {% endif %}
@@ -66,7 +67,7 @@ END
 
 
 BASIS
-{% if calc_arrays['basis'] %}
+{% if calc_arrays is defined and calc_arrays['basis'] %}
 {{calc_arrays['basis']}}
 {% else %}
     TYPE TZP
@@ -78,7 +79,7 @@ END
 {% if symmetry is defined %}
 SYMMETRY {{symmetry}}
 {% elif calc_arrays is defined and calc_arrays['symmetry'] %}
-SYMMETRY calc_arrays['symmetry']
+SYMMETRY {{calc_arrays['symmetry']}}
 {% endif %}
 
 
@@ -134,8 +135,6 @@ End
 {% endif %}
 {% endif %}
 
-
-{# {% endif %} #}
 
 
 SAVE  TAPE21

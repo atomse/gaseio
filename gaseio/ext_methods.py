@@ -8,22 +8,18 @@ import glob
 import collections
 import copy
 
-
-
 from io import StringIO
 from typing import Pattern
-
-
 
 import math
 import numpy as np
 import pandas as pd
 
+import chemdata
 import atomtools
-
-
-
 from atomtools import filetype
+
+
 from .ext_types import ExtList, ExtDict
 
 
@@ -45,6 +41,7 @@ def astype(typestring):
         return bool
     else:
         raise NotImplementedError('{0} not implemented'.format(typestring))
+
 
 def update_items_with_node(root, item_xpath=None, default_type='float', sdict=dict()):
     item_xpath = item_xpath or ['./i', './v']
@@ -84,6 +81,7 @@ def update(orig_dict, new_dict):
             orig_dict[key] = new_dict[key]
     return orig_dict
 
+
 def xml_parameters(xml_node):
     parameters = {}
     parameters_section = {}
@@ -100,17 +98,23 @@ def xml_parameters(xml_node):
     return parameters
 
 
-def datablock_to_numpy(datablock, sep='\s+',header=None):
+def datablock_to_dataframe(datablock, sep=r'\s+',header=None):
     """
     datablock is a string that contains a block of data
     """
     assert isinstance(datablock, str)
     return pd.read_csv(StringIO(datablock), header=header, sep=sep, index_col=None,
-                       error_bad_lines=False, warn_bad_lines=False).values
+                       error_bad_lines=False, warn_bad_lines=False)
 
 
+def datablock_to_numpy(datablock, sep=r'\s+',header=None):
+    """
+    datablock is a string that contains a block of data
+    """
+    return datablock_to_dataframe(datablock, sep, header).values
 
-def datablock_to_dict(datablock, sep='\s*=\s*', dtype=float):
+
+def datablock_to_dict(datablock, sep=r'\s*=\s*', dtype=float):
     rsdict = {}
     # print(datablock)
     for line in datablock.strip().split('\n'):
@@ -119,6 +123,7 @@ def datablock_to_dict(datablock, sep='\s*=\s*', dtype=float):
         item, val = item_val
         rsdict[item] = dtype(val)
     return rsdict
+
 
 def construct_depth_dict(names, value, root=None):
     names = names.split('/')
@@ -130,6 +135,7 @@ def construct_depth_dict(names, value, root=None):
         ptr = ptr[name]
     ptr[names[-1]] = value
     return root
+
 
 def get_depth_dict(root, names):
     names = names.split('/')
@@ -153,8 +159,6 @@ def string_to_dict(string, sep='|', keysep='='):
         key, val = keyval.split(keysep)
         sdict[key] = val
     return sdict
-
-
 
 
 def substitute_with_define(string, def_val=None, block_by_block=True):
@@ -239,29 +243,6 @@ def process_blockdata_with_several_lines(data, ndim_length_regex, rm_header_rege
     return outdata
 
 
-# def get_filestring_and_format(fileobj, file_format=None):
-#     if hasattr(fileobj, 'read'):
-#         fileobj = fileobj.read()
-#     elif isinstance(fileobj, str):
-#         if os.path.exists(fileobj):
-#             file_format = file_format or filetype(fileobj)
-#             fileobj = open(fileobj).read()
-#     return fileobj.lstrip(), file_format
-
-
-# def read(fileobj, format=None, get_dict=False, warning=False, DEBUG=False):
-#     from .format_string import FORMAT_STRING
-#     file_string, file_format = get_filestring_and_format(fileobj, format)
-#     assert file_format is not None
-#     formats = FORMAT_STRING[file_format]
-#     arrays = ExtDict()
-#     process_primitive_data(arrays, file_string, formats, warning, DEBUG)
-#     process_synthesized_data(arrays, formats, DEBUG)
-#     if not HAS_ATOMSE or get_dict:
-#         return arrays
-#     return assemble_atoms(arrays, formats.get('calculator', None))
-
-
 class FileFinder(object):
     """docstring for FileFinder"""
     SUPPOTED_FILETYPE = ['plain_text', 'lxml']
@@ -289,4 +270,11 @@ class FileFinder(object):
                 return self.fileobj.xpath(pattern)
             except:
                 return None
+
+
+def regularize_symbols(symbols):
+    return [symbol[0].upper() + symbol[1].lower() if len(symbol) >= 2 and symbol[:2].lower() in \
+            [_.lower() for _ in chemdata.chemical_symbols] \
+            else symbol[0].upper() for symbol in symbols]
+
 

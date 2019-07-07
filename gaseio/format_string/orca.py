@@ -20,7 +20,7 @@ FORMAT_STRING = {
                 'important': False,
                 'selection' : -1,
                 'type': int,
-                'key' : 'maxcore',
+                'key' : 'calc_arrays/maxcore',
                 },
             r'%maxmem(\d+.*)\s*\n' : {
                 'important': False,

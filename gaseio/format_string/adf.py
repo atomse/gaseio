@@ -29,7 +29,7 @@ ADF_FORMAT_STRING = {
             'important' : False,
             'selection' : 0,
             'type' : float,
-            'key' : 'maxcore',
+            'key' : 'calc_arrays/maxcore',
             },
         re.compile('DEFINE\s*\n([\s\S]*?)\n\s*END', flags=re.IGNORECASE) : {
             # 'debug' : True,

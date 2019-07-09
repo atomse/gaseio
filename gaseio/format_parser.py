@@ -159,7 +159,17 @@ def process_synthesized_data(arrays, formats, debug=False):
             import pdb; pdb.set_trace()
         if key_property.get('prerequisite', None):
             for item in key_property.get('prerequisite'):
-                if not arrays.has_key(item):
+                if isinstance(item, tuple):
+                    has_key = False
+                    for _item in item:
+                        if arrays.has_key(_item):
+                            has_key = True
+                            break
+                else:
+                    has_key = True
+                    if not arrays.has_key(item):
+                        has_key = False
+                if not has_key:
                     cannot_synthesize = True
         condition = key_property.get('condition', None)
         if condition and not condition(arrays):

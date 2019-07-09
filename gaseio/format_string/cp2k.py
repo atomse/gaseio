@@ -12,6 +12,24 @@ from .. import ext_types
 from .. import ext_methods
 from ..format_parser import read
 
+
+def parse_cp2k_cell(arrays):
+    _cell_data = arrays['_cell_data']
+    ABC_PATTERN = r'ABC\s+(\d+.*?)\s+(\d+.*?)\s+(\d+.*?)\n'
+    AlphaBetaGamma_PATTERN = r'ALPHA_BETA_GAMMA\s+(\d+.*?)\s+(\d+.*?)\s+(\d+.*?)\n'
+    COMPLETE_CELL_PATTERN = r'(A\s+\d+[\s\S]*?\n\s*B\s+\d+[\s\S]*?\n\s*C\s+\d+[\s\S]*?)\n'
+    if re.findall(ABC_PATTERN, _cell_data):
+        a, b, c = re.findall(ABC_PATTERN, _cell_data)[0]
+        if re.findall(AlphaBetaGamma_PATTERN, _cell_data):
+            alpha, beta, gamma = re.findall(AlphaBetaGamma_PATTERN, _cell_data)[0]
+        else:
+            alpha, beta, gamma = 90., 90., 90.
+        cell = atomtools.geo.cellpar_to_cell((float(a), float(b), float(c), float(alpha), float(beta), float(gamma)))
+    elif re.findall(COMPLETE_CELL_PATTERN, _cell_data):
+        cell = ext_methods.datablock_to_numpy(re.findall(COMPLETE_CELL_PATTERN, _cell_data)[0])[:,1:4]
+    return cell
+
+
 FORMAT_STRING = {
     'cp2k': {
         'calculator': 'CP2K',
@@ -34,31 +52,39 @@ FORMAT_STRING = {
                         'type' : float,
                         'index' : ':,1:4',
                     },
-                ]
-                },
-            r'&CELL[\s\S]*\n(\s*A\s+[\s\S]*?)&END' : {
+                ],
+            },
+            r'&CELL.*?\n([\s\S]*?\s*A[\sB][\s\S]*?)&END.*' : {
                 'important' : True,
                 'selection' : -1,
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-                'key' : [
-                    {
-                        'key' : 'cell',
-                        'type' : float,
-                        'index' : ':,1:3',
-                    },
-                ],
-                },
+                'key' : '_cell_data'
             },
+            r'CHARGE\s+(\d+)\s*\n' : {
+                'important' : False,
+                'selection' : -1,
+                'key' : 'charge',
+                'type' : int,
+            },
+            r'CUTOFF\s+(\d+.*)\s*\n' : {
+                'important' : False,
+                'selection' : -1,
+                'key' : 'calc_arryas/cutoff',
+                'type' : float,
+            },
+            r'MAX_FORCE\s+(\d+.*)\s*\n' : {
+                'important' : False,
+                'selection' : -1,
+                'key' : 'calc_arryas/max_force',
+                'type' : float,
+            },
+        },
         'synthesized_data' : OrderedDict({
-            'positions' : {
-                'prerequisite' : ['xyzfile'],
-                'equation' : lambda arrays: read(arrays['xyzfile'], format='xyz')['positions']
-                },
-            'symbols' : {
-                'prerequisite' : ['xyzfile'],
-                'equation' : lambda arrays: read(arrays['xyzfile'], format='xyz')['symbols']
-                },
-            }),
+            'cell' : {
+                'prerequisite' : ['_cell_data'],
+                'equation' : lambda arrays: parse_cp2k_cell(arrays),
+                'delete' : ['_cell_data'],
+            },
+        }),
     },
     'cp2k-out': {
         'calculator': 'CP2K',

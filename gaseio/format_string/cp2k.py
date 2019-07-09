@@ -7,6 +7,10 @@ format_string
 import re
 from collections import OrderedDict
 import atomtools
+import numpy as np
+
+
+
 
 from .. import ext_types
 from .. import ext_methods
@@ -68,13 +72,13 @@ FORMAT_STRING = {
             r'CUTOFF\s+(\d+.*)\s*\n' : {
                 'important' : False,
                 'selection' : -1,
-                'key' : 'calc_arryas/cutoff',
+                'key' : 'calc_arrays/cutoff',
                 'type' : float,
             },
             r'MAX_FORCE\s+(\d+.*)\s*\n' : {
                 'important' : False,
                 'selection' : -1,
-                'key' : 'calc_arryas/max_force',
+                'key' : 'calc_arrays/max_force',
                 'type' : float,
             },
         },
@@ -90,6 +94,7 @@ FORMAT_STRING = {
         'calculator': 'CP2K',
         'primitive_data': {
             r'ATOMIC COORDINATES.*\n+\s+.*Atom\s+Kind\s+Element.*\n+([\s\S]*?)\n{2,}' : {
+                # 'debug' : True,
                 'important' : True,
                 'selection' : -1,
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
@@ -106,51 +111,57 @@ FORMAT_STRING = {
                     },
                     {
                         'key' : 'Zeff',
-                        'index' : ':7',
+                        'index' : ':,7',
                         'type' : float,
                     },
                     {
                         'key' : 'mass',
-                        'index' : ':8',
+                        'index' : ':,8',
                         'type' : float,
                     },
                 ],
             },
             re.compile(r'ATOMIC COORDINATES.*\n+\s+.*Atom\s+Kind\s+Element.*\n+([\s\S]*?)\n{2,}') : {
+                # 'debug' : True,
                 'important' : True,
-                'selection' : -1,
+                'selection' : 'all',
+                # 'join' : '\n',
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
                 'key' : [
                     {
                         'key' : 'all_positions',
                         'index' : ':,4:7',
                         'type' : float,
+                        'process' : lambda data, arrays: np.array(data).astype(float).reshape((-1, \
+                                    len(arrays['positions']), 3))
                     },
                 ],
             },
             r'ATOMIC FORCES.*\n+\s+.*Atom\s+Kind\s+Element.*\n+([\s\S]*?)\n.*SUM OF ATOMIC FORCES' : {
-                'important' : True,
+                'important' : False,
                 'selection' : -1,
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
                 'key' : [
                     {
                         'key' : 'forces',
                         'index' : ':,3:6',
-                        'type' : float,
-                        'process' : lambda data, arrays: data * atomtools.unit.trans_force('au')
+                        # 'type' : float,
+                        'process' : lambda data, arrays: np.array(data).astype(float)\
+                                                         * atomtools.unit.trans_force('au')
                     },
                 ],
             },
             re.compile(r'ATOMIC FORCES.*\n+\s+.*Atom\s+Kind\s+Element.*\n+([\s\S]*?)\n.*SUM OF ATOMIC FORCES') : {
-                'important' : True,
+                'important' : False,
                 'selection' : 'all',
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
                 'key' : [
                     {
                         'key' : 'all_forces',
                         'index' : ':,3:6',
-                        'type' : float,
-                        'process' : lambda data, arrays: data * atomtools.unit.trans_force('au')
+                        # 'type' : float,
+                        'process' : lambda data, arrays: np.array(data).astype(float).reshape((-1, \
+                                    len(arrays['forces']), 3)) * atomtools.unit.trans_force('au')
                     },
                 ],
             },
@@ -158,15 +169,15 @@ FORMAT_STRING = {
                 'important' : False,
                 'selection' : -1,
                 'key' : 'calc_arrays/potential_energy',
-                'type' : float,
-                'process' : lambda data, arrays: data * atomtools.unit.trans_energy('au', 'eV'),
+                # 'type' : float,
+                'process' : lambda data, arrays: float(data) * atomtools.unit.trans_energy('au', 'eV'),
             },
             re.compile(r'ENERGY\| Total FORCE_EVAL.*\s{2,}([+-]\d+.*)\n') : {
                 'important' : False,
                 'selection' : 'all',
                 'key' : 'calc_arrays/all_potential_energy',
-                'type' : float,
-                'process' : lambda data, arrays: data * atomtools.unit.trans_energy('au', 'eV'),
+                # 'type' : float,
+                'process' : lambda data, arrays: float(data) * atomtools.unit.trans_energy('au', 'eV'),
             },
             r'GEOMETRY OPTIMIZATION COMPLETED' : {
                 'important' : False,
@@ -174,8 +185,23 @@ FORMAT_STRING = {
                 'key' : 'calc_arrays/geo_opt_done',
                 'process' : lambda data, arrays: True if data else False,
             },
+            r' VIB\| {10,}NORMAL MODES.*\n.*([\s\S]*?)-{10,}' : {
+                'important' : False,
+                'selection' : -1,
+                'key' : '_frequency_data',
+            },
+            r'GLOBAL\| Run type {5,}(.+)\n' : {
+                'important' : False,
+                'selection' : -1,
+                'key' : 'calc_arrays/runtype',
+                'process' : lambda data, arrays: data.lower(),
+            }
             },
         'synthesized_data' : OrderedDict({
+            'calc_arrays/frequency' : {
+                'prerequisite' : ['_frequency_data'],
+                'equation' : lambda arrays: arrays['_frequency_data'],
+            }
             }),
     },
 }

@@ -42,12 +42,12 @@ FORMAT_STRING = {
                 'join' : '\n',
                 'key' : 'comments',
                 },
-            r'\n!\s*(.*)' : {
+            r'(?:\n|^)!\s*(.*)' : {
                 # 'debug' : True,
                 'important' : True,
                 'selection' : -1,
                 'type' : str,
-                'join' : ' ',
+                # 'join' : ' ',
                 'key' : 'calc_arrays/command',
             },
             r'[\s\S]*?xyz.*\s+(\d+)\s+\d+[\s\S]*?' : {
@@ -88,7 +88,7 @@ FORMAT_STRING = {
                 ]
                 },
             r'%basis([\s\S]*?)\n\s*end' : {
-                'important' : True,
+                'important' : False,
                 'selection' : -1,
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
                 'key' : [

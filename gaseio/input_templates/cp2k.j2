@@ -1,3 +1,4 @@
+{# https://manual.cp2k.org/ #}
 &GLOBAL
    PROJECT {{ calc_arrays['project'] | upper  if calc_arrays is defined and 'project' in calc_arrays else 'CP2K' }}
    PRINT_LEVEL {{ calc_arrays['print_level'] | upper  if calc_arrays is defined and 'print_level' in calc_arrays else 'MEDIUM' }}

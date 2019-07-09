@@ -154,7 +154,7 @@ FORMAT_STRING = {
                 'key' : 'selection',
             },
             # r'\nD\w+\n(?:S.*\n)([\s\S]*?)\n\s*\n' : {
-            r'\nD\w+\n([\s\S]*?)\n\s*\n' : {
+            r'\n[dD]\w+\n(\s*\d+[\s\S]*?)\n(?:\s*\n|$)' : {
                 'important' : False,
                 'selection' : -1,
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
@@ -175,7 +175,7 @@ FORMAT_STRING = {
                 ],
             },
             # r'\nC\w+\n(?:S.*\n)([\s\S]*?)\n\s*\n' : {
-            r'\nC\w+\n([\s\S]*?)\n\s*\n' : {
+            r'\n[cC]\w+\n(\s*\d+[\s\S]*?)\n(?:\s*\n|$)' : {
                 'important' : False,
                 'selection' : -1,
                 'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),

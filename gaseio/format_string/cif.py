@@ -42,14 +42,14 @@ FORMAT_STRING = {
             #     'key' : 'comments',
             #     'type' : str,
             # },
-            r'loop_\n(_atom_site_[\s\S]*fract_z\n[\s\S]*?[A-Z][\s\S]*?)(?:\n\n|_|loop|$)':{
+            r'loop_\n(_atom_site_[\s\S]*fract_z\n[\s\S]*?[A-Z](?!_)[\s\S]*?)(?:\n\n|_loop|loop|$)':{
                 'important': False,
                 'selection' : -1,
                 'key' : '_atom_site_fract',
                 'process' : lambda data, arrays: ext_methods.datablock_to_dataframe(\
                                                  re.sub('\n_', ' _', data), header=0)
             },
-            r'loop_\n(_atom_site_[\s\S]*cartn_z\n[\s\S]*?[A-Z][\s\S]*?)(?:\n\n|_|loop|$)':{
+            r'loop_\n(_atom_site_[\s\S]*cartn_z\n[\s\S]*?[A-Z](?!_)[\s\S]*?)(?:\n\n|_loop|loop|$)':{
                 'important': False,
                 'selection' : -1,
                 'key' : '_atom_site_cartn',

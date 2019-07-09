@@ -9,7 +9,7 @@ from . import ext_methods
 
 
 def reg_customized_symbols(arrays):
-    if 'customized_symbols' in arrays and not 'symbols' in arrarys:
+    if 'customized_symbols' in arrays and not 'symbols' in arrays:
         arrays['symbols'] = ext_methods.regularize_symbols(arrays['customized_symbols'])
 
 

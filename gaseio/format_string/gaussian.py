@@ -292,7 +292,10 @@ def process_genecp_basis(data, arrays):
             continue
         lines = seg.split('\n')
         elements, basis_type = lines[0], '\n'.join(lines[1:])
-        for ele in elements.split()[:-1]:
+        elements_split = elements.split()
+        if elements_split[-1] == '0':
+            elements_split = elements_split[:-1]
+        for ele in elements_split:
             if ele.isdigit():
                 basis[int(ele)-1] = basis_type
             elif ele in chemdata.chemical_symbols:
@@ -314,7 +317,10 @@ def process_genecp_ecp(data, arrays):
     for seg in re.findall(ECP_PATTERN, ecp_data):
         lines = seg.split('\n')
         elements, ecp_type = lines[0], '\n'.join(lines[1:])
-        for ele in elements.split()[:-1]:
+        elements_split = elements.split()
+        if elements_split[-1] == '0':
+            elements_split = elements_split[:-1]
+        for ele in elements_split:
             if ele.isdigit():
                 ecp[int(ele)-1] = ecp_type
             elif ele in chemdata.chemical_symbols:
@@ -324,6 +330,19 @@ def process_genecp_ecp(data, arrays):
             else:
                 raise NotImplementedError(ele, 'cannot be parsed')
     return ecp
+
+
+def process_gaussian_coord_datablock(data):
+    max_block = 0
+    for line in data.split('\n'):
+        if len(line.split()) > max_block:
+            max_block = len(line.split())
+    header = ' '.join([str(_) for _ in range(max_block)])
+    data = header + '\n' + data
+    df = ext_methods.datablock_to_numpy(data, header=0)
+    import pdb; pdb.set_trace()
+    return df
+
 
 
 FORMAT_STRING = {
@@ -362,35 +381,18 @@ FORMAT_STRING = {
                 'type' : int,
                 'key' : 'charge'
             },
-            r'#\s*[\s\S]*?\n\s*\n[\s\S]*?\n\s*\n\s*[+-]?\d+[, ]*(\d+).*' : {
+            r'#\s*[\s\S]*?\n *\n[\s\S]*?\n *\n *[+-]?\d+[, ]*(\d+).*' : {
                 'important' : True,
                 'selection' : 0,
                 'type' : int,
                 'key' : 'multiplicity'
             },
-            r'\n\s*[+-]?\d+[, ]*\d+.*\s*\n([\s\S]*?)\n\s*\n' : {
+            r'#\s*[\s\S]*?\n *\n[\s\S]*?\n *\n *[+-]?\d+[, ]*\d+.* *\n([\s\S]*?)\n *\n' : {
+                # 'debug' : True,
                 'important' : True,
                 'selection' : 0,
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'process' : lambda data, arrays: process_gaussian_coord_datablock(data),
                 'key' : 'gaussian_coord_datablock',
-                # 'key' : [
-                #     {
-                #         'key' : 'symbols',
-                #         'type' : str,
-                #         'index' : ':,0',
-                #         'process' : lambda data, arrays: ext_types.ExtList(data.tolist()),
-                #     },
-                #     {
-                #         'key' : 'positions',
-                #         'type' : float,
-                #         'index' : ':,1:4',
-                #     },
-                #     {
-                #         'key' : 'tags',
-                #         'type' : str,
-                #         'index' : ':,4',
-                #     },
-                # ],
             },
             r'\n\s*[+-]?\d+[, ]*\d+.*\s*\n[\s\S]*?\n\s*\n([\s\S]*)' : {
                 'important' : True,
@@ -404,7 +406,7 @@ FORMAT_STRING = {
                 'type' : str,
                 'key' : '_connectivity',
             },
-            r'#[\s\S]*?[ /]gen(?:ecp| )[\s\S]*?\n *\n[\s\S]*?\n *\n\s*[+-0-9 ]*[\s\S]*?\n\s*\n *((?:[A-Z][ a-z]|\d+ 0\n)[\s\S]*?(?:\n *\n(?:[A-Z][ a-z]|\d+ 0\n)[\s\S]*?|))\n *\n':{
+            r'#[\s\S]*?[ /]gen(?:ecp| )[\s\S]*?\n *\n[\s\S]*?\n *\n\s*[+-]?[0-9 ]+[\s\S]*?\n\s*\n *((?:[A-Z][ a-z]|[0-9 ]+ 0\n)[\s\S]*?(?:\n *\n(?:[A-Z][ a-z]|[0-9 ]+ 0\n)[\s\S]*?|))\n *\n':{
                 # 'debug' : True,
                 'important': False,
                 'selection' : -1,
@@ -432,7 +434,8 @@ FORMAT_STRING = {
             },
             'positions' : {
                 'prerequisite' : ['gaussian_coord_datablock'],
-                'equation' : lambda arrays: arrays['gaussian_coord_datablock'][:,2:5] if 'constraint' in arrays else arrays['gaussian_coord_datablock'][:,1:4],
+                'equation' : lambda arrays: arrays['gaussian_coord_datablock'][:,2:5].astype(float) \
+                    if 'constraint' in arrays else arrays['gaussian_coord_datablock'][:,1:4].astype(float),
             },
             'tags' : {
                 'prerequisite' : ['gaussian_coord_datablock'],
@@ -443,6 +446,7 @@ FORMAT_STRING = {
                 'delete' : ['gaussian_coord_datablock'],
             },
             'connectivity' : {
+                # 'debug' : True,
                 'prerequisite' : ['_connectivity'],
                 'equation' : lambda arrays: process_connectivity(arrays['_connectivity'], arrays),
                 'delete' : ['_connectivity'],
@@ -454,8 +458,8 @@ FORMAT_STRING = {
             'calc_arrays/ecp' : {
                 'prerequisite' : ['calc_arrays/genecp'],
                 'equation' : lambda arrays: process_genecp_ecp(arrays['calc_arrays']['genecp'], arrays),
-            }
-            }),
+            },
+        }),
     },
     'gaussian-out': {
         'calculator': 'Gaussian',

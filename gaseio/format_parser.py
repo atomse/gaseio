@@ -153,8 +153,10 @@ def process_synthesized_data(arrays, formats, debug=False):
     synthesized_data = formats.get('synthesized_data', None)
     if synthesized_data is None:
         return
+    # print(synthesized_data)
     for key, key_property in synthesized_data.items():
         cannot_synthesize = False
+        # print(key)
         if key_property.get('debug', False):
             import pdb; pdb.set_trace()
         if key_property.get('prerequisite', None):

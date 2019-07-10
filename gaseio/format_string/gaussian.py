@@ -20,18 +20,18 @@ from .. import ext_methods
 
 
 ENERGY_ORDER = [
-                r"CCSD\(?T\)?",
-                r"CCSD", 
-                r"CBSQ", 
-                r"QCISD\(?T\)?", 
-                r"QCISD", 
-                r"MP4\(?SDQ\)?", 
-                r"MP4\(?DQ\)?", 
-                r"MP4\(?D\)?", 
-                r"MP3", 
-                r"MP2", 
-                r"HF",
-                ]
+    r"CCSD\(?T\)?",
+    r"CCSD",
+    r"CBSQ",
+    r"QCISD\(?T\)?",
+    r"QCISD",
+    r"MP4\(?SDQ\)?",
+    r"MP4\(?DQ\)?",
+    r"MP4\(?D\)?",
+    r"MP3",
+    r"MP2",
+    r"HF",
+],
 
 
 def get_value_by_order(properties, order):
@@ -50,7 +50,7 @@ def gaussian_extract_frequency(logline, arrays):
     """
 
     item_pattern = r'\s+(.*?)\s*-- '
-    def parse_freq_lines(origin_lines, startline, num_lines, 
+    def parse_freq_lines(origin_lines, startline, num_lines,
                          index, num_items, natoms, mode=3):
         """
         #           1              2              3
@@ -133,7 +133,7 @@ def gaussian_extract_frequency(logline, arrays):
     natoms_pattern = r'  Atom  [\s\S]*?(?:                     |$)'
     string = re.findall(natoms_pattern, logline)
     natoms = len(string[0].strip().split('\n')) - 1
-    
+
     items_name = set(re.findall(item_pattern, logline))
     num_line_each = 2 + len(items_name) + 1 + natoms
 
@@ -256,7 +256,6 @@ def process_population_analysis(data, ndim, drop_length=None, rm_header_regex=r'
     return outdata
 
 
-
 def process_orbital_basis(data):
     pattern = r'^ *\d+ '
     data = [re.sub(pattern, '', _[:20].strip()) for _ in data.split('\n')]
@@ -265,97 +264,160 @@ def process_orbital_basis(data):
         data[i] = data[i-1][:length] + data[i][length:]
     return data
 
+
+def process_connectivity(data, arrays):
+    natoms = len(arrays['positions'])
+    connectivity = np.zeros((natoms, natoms))
+    for line in data.split('\n'):
+        _elements = line.split()
+        nums_i = int(_elements[0]) - 1
+        for nums_j, order in zip(_elements[1::2], _elements[2::2]):
+            nums_j, order = int(nums_j) - 1, float(order)
+            connectivity[nums_i][nums_j] = connectivity[nums_j][nums_i] = order
+    return connectivity
+
+
+
+def process_genecp_basis(data, arrays):
+    symbols = arrays['symbols']
+    natoms = len(symbols)
+    print(symbols)
+    basis = [None] * natoms
+    basis_data, ecp_data = (data.split('\n\n') + [None])[:2]
+    if not basis_data:
+        return [None] * natoms
+    for seg in basis_data.split('*'*4):
+        seg = seg.strip()
+        if not seg:
+            continue
+        lines = seg.split('\n')
+        elements, basis_type = lines[0], '\n'.join(lines[1:])
+        for ele in elements.split()[:-1]:
+            if ele.isdigit():
+                basis[int(ele)-1] = basis_type
+            elif ele in chemdata.chemical_symbols:
+                for i, symb in enumerate(symbols):
+                    if symb == ele:
+                        basis[i] = basis_type
+            else:
+                raise NotImplementedError(ele, 'cannot be parsed')
+    return basis
+
+def process_genecp_ecp(data, arrays):
+    symbols = arrays['symbols']
+    natoms = len(symbols)
+    basis_data, ecp_data = (data.split('\n\n') + [None])[:2]
+    ecp = [None] * natoms
+    if not ecp_data:
+        return None
+    ECP_PATTERN = r'([A-Z\d][ a-z].*0\n[\s\S]*?)(?:[A-Z]|\n\n|\n$|$)'
+    for seg in re.findall(ECP_PATTERN, ecp_data):
+        lines = seg.split('\n')
+        elements, ecp_type = lines[0], '\n'.join(lines[1:])
+        for ele in elements.split()[:-1]:
+            if ele.isdigit():
+                ecp[int(ele)-1] = ecp_type
+            elif ele in chemdata.chemical_symbols:
+                for i, symb in enumerate(symbols):
+                    if symb == ele:
+                        ecp[i] = ecp_type
+            else:
+                raise NotImplementedError(ele, 'cannot be parsed')
+    return ecp
+
+
 FORMAT_STRING = {
     'gaussian': {
         'calculator': 'Gaussian',
-        'primitive_data' : {
+        'primitive_data' : OrderedDict({
             r'%npro.*=(\d+)\s*\n' : {
-                    'important': False,
-                    'selection' : -1,
-                    'type': int,
-                    'key' : 'calc_arrays/maxcore',
+                'important': False,
+                'selection' : -1,
+                'type': int,
+                'key' : 'calc_arrays/maxcore',
             },
             r'%mem.*=(\d+.*)\s*\n' : {
-                    'important': False,
-                    'selection' : -1,
-                    'type': str,
-                    'key' : 'maxmem',
+                'important': False,
+                'selection' : -1,
+                'type': str,
+                'key' : 'maxmem',
             },
             r'#\s*([\s\S]*?)\n\s*\n' : {
-                    'important': True,
-                    'selection' : 0,
-                    'type': str,
-                    'key' : 'calc_arrays/command',
-                    'process' : lambda data, arrays: data.replace('\n', ' ').strip(),
+                'important': True,
+                'selection' : 0,
+                'type': str,
+                'key' : 'calc_arrays/command',
+                'process' : lambda data, arrays: data.replace('\n', ' ').strip(),
             },
             r'#\s*[\s\S]*?\n\s*\n([\s\S]*?)\n\s*\n' : {
-                    'important' : True,
-                    'selection' : 0,
-                    'type' : str,
-                    'key' : 'comments',
-                    'process' : lambda data, arrays: data.replace('\n', ' ').strip(),
+                'important' : True,
+                'selection' : 0,
+                'type' : str,
+                'key' : 'comments',
+                'process' : lambda data, arrays: data.replace('\n', ' ').strip(),
             },
             r'#\s*[\s\S]*?\n\s*\n[\s\S]*?\n\s*\n\s*([+-]?\d+)[, ]*\d+.*' : {
-                    'important' : True,
-                    'selection' : 0,
-                    'type' : int,
-                    'key' : 'charge'
+                'important' : True,
+                'selection' : 0,
+                'type' : int,
+                'key' : 'charge'
             },
             r'#\s*[\s\S]*?\n\s*\n[\s\S]*?\n\s*\n\s*[+-]?\d+[, ]*(\d+).*' : {
-                    'important' : True,
-                    'selection' : 0, 
-                    'type' : int,
-                    'key' : 'multiplicity'
+                'important' : True,
+                'selection' : 0,
+                'type' : int,
+                'key' : 'multiplicity'
             },
             r'\n\s*[+-]?\d+[, ]*\d+.*\s*\n([\s\S]*?)\n\s*\n' : {
-                    'important' : True,
-                    'selection' : 0, 
-                    'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-                    'key' : 'gaussian_coord_datablock',
-                    # 'key' : [
-                    #     {
-                    #         'key' : 'symbols',
-                    #         'type' : str,
-                    #         'index' : ':,0',
-                    #         'process' : lambda data, arrays: ext_types.ExtList(data.tolist()),
-                    #     },
-                    #     {
-                    #         'key' : 'positions',
-                    #         'type' : float,
-                    #         'index' : ':,1:4',
-                    #     },
-                    #     {
-                    #         'key' : 'tags',
-                    #         'type' : str,
-                    #         'index' : ':,4',
-                    #     },
-                    # ],
+                'important' : True,
+                'selection' : 0,
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key' : 'gaussian_coord_datablock',
+                # 'key' : [
+                #     {
+                #         'key' : 'symbols',
+                #         'type' : str,
+                #         'index' : ':,0',
+                #         'process' : lambda data, arrays: ext_types.ExtList(data.tolist()),
+                #     },
+                #     {
+                #         'key' : 'positions',
+                #         'type' : float,
+                #         'index' : ':,1:4',
+                #     },
+                #     {
+                #         'key' : 'tags',
+                #         'type' : str,
+                #         'index' : ':,4',
+                #     },
+                # ],
             },
             r'\n\s*[+-]?\d+[, ]*\d+.*\s*\n[\s\S]*?\n\s*\n([\s\S]*)' : {
-                    'important' : True,
-                    'selection' : -1,
-                    'type' : str,
-                    'key' : 'calc_arrays/appendix'
+                'important' : True,
+                'selection' : -1,
+                'type' : str,
+                'key' : 'calc_arrays/appendix'
             },
             r'#[\s\S]*?connectivity[\s\S]*?\n\n[\s\S]*?\n\s*\n\s*([\d\n\. ]*)\n\n':{
-                    'important': False,
-                    'selection' : -1,
-                    'type' : str,
-                    'key' : 'calc_arrays/connectivity',
+                'important': False,
+                'selection' : -1,
+                'type' : str,
+                'key' : '_connectivity',
             },
-            r'#[\s\S]*?gen[\s\S]*?\n\n[\s\S]*?\n\s*\n\s*[\d\n\. ]*\n\n([A-Z][a-z]?[\s\S]*?\n\n[A-Z][a-z]?.*\d\n[\s\S]*?)\n\n':{
-                    'important': False,
-                    'selection' : -1,
-                    'type' : str,
-                    'key' : 'calc_arrays/genecp',
+            r'#[\s\S]*?[ /]gen(?:ecp| )[\s\S]*?\n *\n[\s\S]*?\n *\n\s*[+-0-9 ]*[\s\S]*?\n\s*\n *((?:[A-Z][ a-z]|\d+ 0\n)[\s\S]*?(?:\n *\n(?:[A-Z][ a-z]|\d+ 0\n)[\s\S]*?|))\n *\n':{
+                # 'debug' : True,
+                'important': False,
+                'selection' : -1,
+                'type' : str,
+                'key' : 'calc_arrays/genecp',
             },
             r'(\$NBO.*\$END)':{
-                    'important': False,
-                    'selection' : -1,
-                    'type' : str,
-                    'key' : 'calc_arrays/nbo',
+                'important': False,
+                'selection' : -1,
+                'type' : str,
+                'key' : 'calc_arrays/nbo',
             },
-            },
+        }),
         'synthesized_data' : OrderedDict({
             'symbols' : {
                 'prerequisite' : ['gaussian_coord_datablock'],
@@ -364,7 +426,8 @@ FORMAT_STRING = {
             'constraint' : {
                 'prerequisite' : ['gaussian_coord_datablock'],
                 'condition' : lambda arrays: arrays['gaussian_coord_datablock'].shape[1] >= 5 and \
-                                             np.logical_or(arrays['gaussian_coord_datablock'][:,1]==0, arrays['gaussian_coord_datablock'][:,1]==-1).all(),
+                                np.logical_or(arrays['gaussian_coord_datablock'][:,1]==0, \
+                                arrays['gaussian_coord_datablock'][:,1]==-1).all(),
                 'equation' : lambda arrays: arrays['gaussian_coord_datablock'][:,1] == -1,
             },
             'positions' : {
@@ -379,6 +442,19 @@ FORMAT_STRING = {
                                             arrays['gaussian_coord_datablock'][:,4],
                 'delete' : ['gaussian_coord_datablock'],
             },
+            'connectivity' : {
+                'prerequisite' : ['_connectivity'],
+                'equation' : lambda arrays: process_connectivity(arrays['_connectivity'], arrays),
+                'delete' : ['_connectivity'],
+            },
+            'calc_arrays/basis' : {
+                'prerequisite' : ['calc_arrays/genecp'],
+                'equation' : lambda arrays: process_genecp_basis(arrays['calc_arrays']['genecp'], arrays),
+            },
+            'calc_arrays/ecp' : {
+                'prerequisite' : ['calc_arrays/genecp'],
+                'equation' : lambda arrays: process_genecp_ecp(arrays['calc_arrays']['genecp'], arrays),
+            }
             }),
     },
     'gaussian-out': {
@@ -614,7 +690,7 @@ FORMAT_STRING = {
             },
             'calc_arrays/results' : {
                 'prerequisite' : ['gaussian_datastring'],
-                'equation' : lambda arrays: ext_methods.string_to_dict(re.findall(r'\|\|(Version=.*?)\|\|', 
+                'equation' : lambda arrays: ext_methods.string_to_dict(re.findall(r'\|\|(Version=.*?)\|\|',
                                             arrays['gaussian_datastring'])[-1]),
                 'delete' : ['gaussian_datastring'],
             },
@@ -623,7 +699,7 @@ FORMAT_STRING = {
                 # 'prerequisite' : ['possible_potential_energy'],
                 'condition' : lambda arrays: arrays.get('calc_arrays/results', None) is not None or\
                                              arrays.get('possible_potential_energy', None) is not None,
-                'equation' : lambda arrays: float(get_value_by_order(arrays.get('calc_arrays/results', None), 
+                'equation' : lambda arrays: float(get_value_by_order(arrays.get('calc_arrays/results', None),
                                                   ENERGY_ORDER) or arrays.get('possible_potential_energy', None))\
                                             * atomtools.unit.trans_energy('au', 'eV'),
                 'delete' : ['possible_potential_energy'],

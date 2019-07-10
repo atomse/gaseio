@@ -1,0 +1,203 @@
+Element (and appendix)	default cutoff ENMAX (eV)	valency
+H	250	1
+H AE	1000	1
+H h	700	1
+H s	200	1
+He	479	2
+Li	140	1
+Li sv	499	3
+Be	248	2
+Be sv	309	4
+B	319	3
+B h	700	3
+B s	269	3
+C	400	4
+C h	700	4
+C s	274	4
+N	400	5
+N h	700	5
+N s	280	5
+O	400	6
+O h	700	6
+O s	283	6
+F	400	7
+F h	700	7
+F s	290	7
+Ne	344	8
+Na	102	1
+Na pv	260	7
+Na sv	646	9
+Mg	200	2
+Mg pv	404	8
+Mg sv	495	10
+Al	240	3
+Si	245	4
+P	255	5
+P h	390	5
+S	259	6
+S h	402	6
+Cl	262	7
+Cl h	409	7
+Ar	266	8
+K pv	117	7
+K sv	259	9
+Ca pv	120	8
+Ca sv	267	10
+Sc	155	3
+Sc sv	223	11
+Ti	178	4
+Ti pv	222	10
+Ti sv	275	12
+V	193	5
+V pv	264	11
+V sv	264	13
+Cr	227	6
+Cr pv	266	12
+Cr sv	395	14
+Mn	270	7
+Mn pv	270	13
+Mn sv	387	15
+Fe	268	8
+Fe pv	293	14
+Fe sv	391	16
+Co	268	9
+Co pv	271	15
+Co sv	390	17
+Ni	270	10
+Ni pv	368	16
+Cu	295	11
+Cu pv	369	17
+Zn	277	12
+Ga	135	3
+Ga d	283	13
+Ga h	405	13
+Ge	174	4
+Ge d	310	14
+Ge h	410	14
+As	209	5
+As d	289	15
+Se	212	6
+Br	216	7
+Kr	185	8
+Rb pv	122	7
+Rb sv	220	9
+Sr sv	229	10
+Y sv	203	11
+Zr sv	230	12
+Nb pv	209	11
+Nb sv	293	13
+Mo	225	6
+Mo pv	225	12
+Mo sv	243	14
+Tc	229	7
+Tc pv	264	13
+Tc sv	319	15
+Ru	213	8
+Ru pv	240	14
+Ru sv	319	16
+Rh	229	9
+Rh pv	247	15
+Pd	251	10
+Pd pv	251	16
+Ag	250	11
+Ag pv	298	17
+Cd	274	12
+In	96	3
+In d	239	13
+Sn	103	4
+Sn d	241	14
+Sb	172	5
+Te	175	6
+I	176	7
+Xe	153	8
+Cs sv	220	9
+Ba sv	187	10
+La	219	11
+La s	137	9
+Ce	273	12
+Ce h	300	12
+Ce 3	177	11
+Pr	273	13
+Pr 3	182	11
+Nd	253	14
+Nd 3	183	11
+Pm	259	15
+Pm 3	177	11
+Sm	258	16
+Sm 3	177	11
+Eu	250	17
+Eu 2	99	8
+Eu 3	129	9
+Gd	256	18
+Gd 3	154	9
+Tb	265	19
+Tb 3	156	9
+Dy	255	20
+Dy 3	156	9
+Ho	257	21
+Ho 3	154	9
+Er 2	120	8
+Er 3	155	9
+Er	298	22
+Tm	257	23
+Tm 3	149	9
+Yb	253	24
+Yb 2	113	8
+Lu	256	25
+Lu 3	155	9
+Hf	220	4
+Hf pv	220	10
+Hf sv	237	12
+Ta	224	5
+Ta pv	224	11
+W	223	6
+W pv	223	12
+Re	226	7
+Re pv	226	13
+Os	228	8
+Os pv	228	14
+Ir	211	9
+Pt	230	10
+Pt pv	295	16
+Au	230	11
+Hg	233	12
+Tl	90	3
+Tl d	237	13
+Pb	98	4
+Pb d	238	14
+Bi	105	5
+Bi d	243	15
+Po	160	6
+Po d	265	16
+At	161	7
+At d	266	17
+Rn	152	8
+Fr sv	215	9
+Ra sv	237	10
+Ac	172	11
+Th	247	12
+Th s	169	10
+Pa	252	13
+Pa s	193	11
+U	253	14
+U s	209	14
+Np	254	15
+Np s	208	15
+Pu	254	16
+Pu s	208	16
+Am	256	17
+Cm	258	18
+Hydrogen like potentials are supplied for a valency between 0.25 and 1.75 as listed in the table below:
+Element (and appendix)	default cutoff ENMAX (eV)	valency
+H .25	250	0.2500
+H .33	250	0.3300
+H .42	250	0.4200
+H .5	250	0.5000
+H .58	250	0.5800
+H .66	250	0.6600
+H .75	250	0.7500
+H 1.25	250	1.2500
+H 1.33	250	1.3300
+H 1.5	250	1.5000
+H 1.66	250	1.6600
+H 1.75	250	1.7500

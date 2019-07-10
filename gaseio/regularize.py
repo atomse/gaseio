@@ -1,9 +1,15 @@
 """
-gase interface to gaseio
+regularize arrays
+
+
+
 """
 
 import numpy as np
 import chemdata
+import atomtools
+
+
 from .ext_types import ExtList
 from . import ext_methods
 
@@ -47,12 +53,18 @@ def reg_comments(arrays):
         arrays['comments'] = ' '.join(arrays['comments'])
 
 
+def reg_atoms_size(arrays):
+    if 'positions' in arrays:
+        atoms_size = atomtools.geo.get_atoms_size(arrays['positions'])
+        arrays['atoms_size'] = atoms_size
+
 reg_functions = [
     reg_customized_symbols,
     reg_numbers_symbols,
     reg_charge,
     reg_spin,
     reg_comments,
+    reg_atoms_size,
 ]
 
 
@@ -63,5 +75,3 @@ def regularize_arrays(arrays):
         return
     for func in reg_functions:
         func(arrays)
-
-

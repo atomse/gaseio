@@ -44,7 +44,7 @@ def reg_spin(arrays):
         arrays['spin'] = int(arrays['multiplicity']) - 1
     if not 'spin' in arrays: # auto min spin
         arrays['spin'] = int(sum((arrays['numbers']) - arrays['charge'])) % 2
-
+    arrays['multiplicity'] = arrays['spin'] + 1
 
 def reg_comments(arrays):
     if not 'comments' in arrays:

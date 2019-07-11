@@ -201,6 +201,7 @@ FORMAT_STRING = {
             'calc_arrays/frequency' : {
                 'prerequisite' : ['_frequency_data'],
                 'equation' : lambda arrays: arrays['_frequency_data'],
+                'delete' : ['_frequency_data'],
             }
             }),
     },

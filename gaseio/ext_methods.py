@@ -107,10 +107,18 @@ def datablock_to_dataframe(datablock, sep=r'\s+',header=None):
                        error_bad_lines=False, warn_bad_lines=False)
 
 
-def datablock_to_numpy(datablock, sep=r'\s+',header=None):
+def datablock_to_numpy(datablock, sep=r'\s+', header=None):
     """
     datablock is a string that contains a block of data
     """
+    if not header:
+        max_width = 0
+        for line in datablock.split('\n'):
+            if len(line.split()) > max_width:
+                max_width = len(line.split())
+        header_line = ' '.join([str(i) for i in range(max_width)])
+        datablock = header_line + '\n' + datablock
+        header = 0
     return datablock_to_dataframe(datablock, sep, header).values
 
 

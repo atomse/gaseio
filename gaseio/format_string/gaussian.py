@@ -395,7 +395,7 @@ FORMAT_STRING = {
                 # 'debug' : True,
                 'important' : True,
                 'selection' : 0,
-                'process' : lambda data, arrays: process_gaussian_coord_datablock(data),
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data), # process_gaussian_coord_datablock(data),
                 'key' : 'gaussian_coord_datablock',
             },
             r'\n\s*[+-]?\d+[, ]*\d+.*\s*\n[\s\S]*?\n\s*\n([\s\S]*)' : {

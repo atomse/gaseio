@@ -99,6 +99,8 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
         if pattern_property.get('type', None):
             if isinstance(value, np.ndarray):
                 value = value.astype(pattern_property['type'])
+            elif isinstance(value, list):
+                value = [pattern_property['type'](_) for _ in value]
             else:
                 value = pattern_property['type'](value)
         arrays.update(construct_depth_dict(key, value, arrays))

@@ -37,7 +37,7 @@ def read(fileobj, index=-1, format=None, show_file_content=False, warning=False,
     if format_dict is None:
         raise NotImplementedError(file_format, 'not available now')
     filename = atomtools.file.get_absfilename(fileobj)
-    
+
     if format_dict.get('file_format', None) == 'dict':
         conf = configparser.ConfigParser()
         conf.read_string('[vasp]\n' + all_file_string)
@@ -55,6 +55,8 @@ def read(fileobj, index=-1, format=None, show_file_content=False, warning=False,
         arrays['basedir'] = os.path.basename(filename) if filename else None
         arrays['frame_i'] = frame_i
         process_primitive_data(arrays, file_string, format_dict, warning, debug)
+        if format_dict.get('primitive_data_function', None):
+            format_dict.get('primitive_data_function')(file_string, arrays)
         process_synthesized_data(arrays, format_dict, debug)
         process_calculator(arrays, format_dict, debug)
         if not show_file_content:
@@ -73,11 +75,11 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
     selection = pattern_property.get('selection', -1) # default select the last one
     if pattern_property.get('debug', False):
         import pdb; pdb.set_trace()
-    selectAll = selection == 'all'
-        
+    select_all = selection == 'all'
+
     assert isinstance(selection, int) or selection == 'all', 'selection must be int or all'
     match = finder.find_pattern(pattern)
-        
+
     if not match:
         if important:
             raise ValueError(key, 'not match, however important')
@@ -88,12 +90,12 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
     if pattern_property.get('join', None):
         match = [pattern_property['join'].join(match)]
     process = pattern_property.get('process', None)
-    if not selectAll:
+    if not select_all:
         match = [match[selection]]
     if process:
         match = [process(x, arrays) for x in match]
     if isinstance(key, str):
-        value = match[0] if not selectAll else match
+        value = match[0] if not select_all else match
         if pattern_property.get('type', None):
             if isinstance(value, np.ndarray):
                 value = value.astype(pattern_property['type'])
@@ -117,7 +119,7 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
             key, dtype, index = key_group.get('key'), key_group.get('type', None), key_group.get('index')
             if key_group.get('debug', False):
                 import pdb; pdb.set_trace()
-            if not selectAll:
+            if not select_all:
                 value = np_select(match[0], dtype, index)
             else:
                 value = [np_select(data, dtype, index) for data in match]
@@ -191,5 +193,3 @@ def process_synthesized_data(arrays, formats, debug=False):
 def process_calculator(arrays, formats, debug=False):
     if 'calculator' in formats:
         arrays['calculator'] = formats.get('calculator')
-
-

@@ -728,5 +728,364 @@ FORMAT_STRING = {
             },
             }),
     },
+    'gaussian-fchk': {
+        'calculator': 'Gaussian',
+        'primitive_data': OrderedDict({
+            r'^(.*)\n' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'comments',
+                'type' : str,
+            },
+            r'^.*\n(.*)\n' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'calc_arrays/command',
+                'type' : str,
+            },
+            r'Number of atoms +I +(\d+)\n' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'natoms',
+                'type' : int,
+            },
+            r'Charge +I +(\d+)\n' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'charge',
+                'type' : int,
+            },
+            r'Multiplicity +I +(\d+)\n' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'multiplicity',
+                'type' : int,
+            },
+            r'Number of electrons +I +(\d+)\n' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'n_electrons',
+                'type' : int,
+            },
+            r'Number of alpha electrons +I +(\d+)\n' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'n_alpha_electrons',
+                'type' : int,
+            },
+            r'Number of beta electrons +I +(\d+)\n' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'n_beta_electrons',
+                'type' : int,
+            },
+            r'Number of basis functions +I +(\d+)\n' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'calc_arrays/n_basis_functions',
+                'type' : int,
+            },
+            r'Number of independent functions +I +(\d+)\n' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'calc_arrays/n_independent_functions',
+                'type' : int,
+            },
+            r'Number of translation vectors +I +(\d+)\n' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'calc_arrays/n_translation_vectors',
+                'type' : int,
+            },
+            r'Atomic numbers.*\n([\s\S]*?)\n[A-Za-z]' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'numbers',
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data).flatten().tolist(),
+                'type' : int,
+            },
+            r'Nuclear charges.*\n([\s\S]*?)\n[A-Za-z]' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'calc_arrays/nuclear_charges',
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data).flatten(),
+                'type' : float,
+            },
+            r'Current cartesian coordinates.*\n([\s\S]*?)\n[A-Za-z]' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'positions',
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data).reshape((-1, 3)) * \
+                            atomtools.unit.trans_length('au', 'Ang'),
+                'type' : float,
+            },
+            r'MM charges.*\n([\s\S]*?)\n[A-Za-z]' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'calc_arrays/MM_charges',
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data).flatten(),
+                'type' : float,
+            },
+            r'Integer atomic weights.*\n([\s\S]*?)\n[A-Za-z]' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'masses',
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data).flatten(),
+                'type' : int,
+            },
+            r'Nuclear ZEff.*\n([\s\S]*?)\n[A-Za-z]' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'calc_arrays/nuclear_zeff',
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data).flatten(),
+                'type' : int,
+            },
+            # r'\n (1[\\|\|]1[\\|\|][\s\S]*?[\\|\|]\s*[\\|\|])\s*@\n': {
+            #     # 'important' : True,
+            #     'selection' : -1,
+            #     'key' : 'gaussian_datastring',
+            #     'type' : str,
+            #     'process' : lambda data, arrays: data.replace('\n ', '').replace('\\', '|').strip()
+            # },
+            # r'Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n' : {
+            #     'important' : True,
+            #     'selection' : -1,
+            #     'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+            #     'key' : [
+            #         {
+            #             'key' : 'numbers',
+            #             'type' : int,
+            #             'index' : ':,1',
+            #         },
+            #         {
+            #             'key' : 'positions',
+            #             'type' : float,
+            #             'index' : ':,3:',
+            #         }
+            #         ],
+            # },
+            # r'\n Dipole moment.*\n\s*(X=\s+.*)\n': {
+            #     'important' : False,
+            #     'selection' : -1,
+            #     'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+            #     'key' : [
+            #         {
+            #             'key' : 'calc_arrays/dipole_moment',
+            #             'type' : float,
+            #             'index' : '[0],[1,3,5]',
+            #             'postprocess': lambda x: x.flatten()
+            #         },
+            #         ],
+            # },
+            # r'\n Quadrupole moment.*\n\s*(XX=\s+.*\n.*)\n': {
+            #     'important' : False,
+            #     'selection' : -1,
+            #     'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+            #     'key' : [
+            #         {
+            #             'key' : 'calc_arrays/quadrupole_moment',
+            #             'type' : float,
+            #             'index' : ':,[1,3,5]',
+            #         }
+            #         ],
+            # },
+            # r'and normal coordinates:\n[\s\S]*? {20,}([\s\S]*?)\n -{10,}\n - Thermochemistry -' : {
+            #     # 'debug' : True,
+            #     'important' : False,
+            #     'selection' : -1,
+            #     'process' : lambda data, arrays: gaussian_extract_frequency(data.split('coordinates:\n')[-1], arrays),
+            #     'key' : 'calc_arrays/frequency',
+            # },
+            # r'Initial Parameters[\s\S]*?Name.*\n\s-*\n([\s\S]*?)\n\s----*': {
+            #     # 'debug' : True,
+            #     'important' : False,
+            #     'selection' : -1,
+            #     'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data.replace('!', ' '), sep='\s+'),
+            #     'key' : [
+            #         {
+            #             'key' : 'calc_arrays/internal_coords',
+            #             'type' : str,
+            #             'index' : ':,0',
+            #         },
+            #         # {
+            #         #     'key' : 'calc_arrays/internal_coords_definition',
+            #         #     'type' : str,
+            #         #     'index' : ':,2',
+            #         # },
+            #         # {
+            #         #     'key' : 'calc_arrays/internal_coords_value',
+            #         #     'type' : float,
+            #         #     'index' : ':,3',
+            #         # },
+            #         ]
+            # },
+            # r' The second derivative matrix:\n([\s\S]*?)\n ITU' : {
+            #     'important' : False,
+            #     'selection' : -1,
+            #     'process' : lambda data, arrays: gaussian_extract_second_derivative_matrix(data, arrays),
+            #     'key' : 'Hessian',
+            # },
+            # r'Normal termination' : {
+            #     'important' : False,
+            #     'selection' : 'all',
+            #     'key' : 'normal_termination',
+            # },
+            # r'Error termination' : {
+            #     'important' : False,
+            #     'selection' : 'all',
+            #     'key' : 'error_termination',
+            # },
+            # r'SCF Done:  E\(.*?\)\s=\s*([+-]?\d+\.\d+E?[+-]?[0-9]*)\s+' : {
+            #     'important' : False,
+            #     'selection' : -1,
+            #     'key' : 'possible_potential_energy',
+            #     'type' : float,
+            # },
+            # r'Center     Atomic {10,}Forces[\s\S]*?-{10,}\n([\s\S]*?)-{10,}' : {
+            #     'important' : False,
+            #     'selection' : -1,
+            #     'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+            #     'key' : [
+            #         {
+            #             'key' : 'calc_arrays/forces',
+            #             'index' : ':,2:5',
+            #             'process' : lambda data, arrays: data * atomtools.unit.trans_force('au', 'eV/Ang'),
+            #         },
+            #         ],
+            # },
+            # r'electronic state is (.*?)\.' : {
+            #     'important' : False,
+            #     'selection' : -1,
+            #     'key' : 'calc_arrays/electronic_state',
+            # },
+            # r'Alpha  occ. eigenvalues --(.*?)\n' : {
+            #     'important' : False,
+            #     'selection' : 'all',
+            #     'key' : 'calc_arrays/occupied_eigenvalues',
+            #     'join' : ' ',
+            #     'process' : lambda data, arrays : ext_methods.datablock_to_numpy(data),
+            # },
+            # r'Alpha virt. eigenvalues --(.*?)\n' : {
+            #     'important' : False,
+            #     'selection' : 'all',
+            #     'key' : 'calc_arrays/virtual_eigenvalues',
+            #     'join' : ' ',
+            #     'process' : lambda data, arrays : ext_methods.datablock_to_numpy(data),
+            # },
+            # r'Molecular Orbital Coefficients:\n[\s\S]*?Eigenvalues.*\n([\s\S]*?)\n {20,}' : {
+            #     'important' : False,
+            #     'selection' : -1,
+            #     'process' : lambda data, arrays: process_orbital_basis(data),
+            #     'key' : 'calc_arrays/orbital_basis',
+            # },
+            # r'Molecular Orbital Coefficients:\n([\s\S]*?)\n.*Density Matrix:' : {
+            #     # 'debug' : True,
+            #     'important' : False,
+            #     'selection' : -1,
+            #     'process' : lambda data, arrays: process_population_analysis(\
+            #                                      re.sub(r'.*[OV].*\n.*Eigenvalues.*\n', '', data),
+            #                                      len(arrays['calc_arrays/orbital_basis']), 20, rm_header_regex=r' {20,}\d.*\n'),
+            #     'key' : 'calc_arrays/molecular_orbital',
+            # },
+            # r'Density Matrix:\n([\s\S]*?)\n.*Full Mulliken population analysis:' : {
+            #     'important' : False,
+            #     'selection' : -1,
+            #     'process' : lambda data, arrays: process_population_analysis(data,
+            #                                      len(arrays['calc_arrays/orbital_basis']), 20, rm_header_regex=r' {20,}\d.*\n',
+            #                                      dtype='lower_triangular'),
+            #     'key' : 'calc_arrays/density_matrix'
+            # },
+            # r'Full Mulliken population analysis:\n([\s\S]*?)\n.*Gross orbital populations' : {
+            #     'important' : False,
+            #     'selection' : -1,
+            #     'process' : lambda data, arrays: process_population_analysis(data,
+            #                                      len(arrays['calc_arrays/orbital_basis']), 20, rm_header_regex=r' {20,}\d.*\n',
+            #                                      dtype='lower_triangular'),
+            #     'key' : 'calc_arrays/mulliken_population'
+            # },
+            # r'Gross orbital populations:\n([\s\S]*?)\n.*Condensed to atoms (all electrons):' : {
+            #     'important' : False,
+            #     'selection' : -1,
+            #     'process' : lambda data, arrays: ext_methods.datablock_to_numpy(re.sub(r'\n.{20}', '\n', data)[data.index('\n'):]).flatten(),
+            #     'key' : 'calc_arrays/gross_orbital_population'
+            # },
+            # r'Condensed to atoms.*all electrons.*:\n([\s\S]*?)\n.*Mulliken charges:' : {
+            #     'important' : False,
+            #     'selection' : -1,
+            #     'process' : lambda data, arrays: process_population_analysis(data,
+            #                                      len(arrays['positions']), 12, rm_header_regex=r' {12,}\d.*\n'),
+            #     'key' : 'calc_arrays/condense_to_atoms'
+            # },
+            # r'Mulliken charges:([\s\S]*?)\n.*Sum of Mulliken charges' : {
+            #     'important' : False,
+            #     'selection' : -1,
+            #     'process' : lambda data, arrays: ext_methods.datablock_to_numpy(re.sub(r'\n.{10}', '\n', data)[data.index('\n'):]).flatten(),
+            #     'key' : 'calc_arrays/mulliken_charge'
+            # },
+            }),
+        'synthesized_data' : OrderedDict({
+            # 'calc_arrays/status' : {
+            #     'equation' : lambda arrays: Status.error if 'error_termination' in arrays else \
+            #                                 Status.complete if 'normal_termination' in arrays else \
+            #                                 Status.running if atomtools.file.file_active(arrays['absfilename']) else\
+            #                                 Status.stopped,
+            #     'delete' : ['error_termination', 'normal_termination'],
+            # },
+            # 'symbols' : {
+            #     'prerequisite' : ['numbers'],
+            #     'equation' : lambda arrays: np.array([chemdata.get_element(_) for _ in arrays['numbers']]),
+            #     'process' : lambda data, arrays: ext_types.ExtList(data.tolist()),
+            # },
+            # 'gaussian_datablock' : {
+            #     'prerequisite' : ['gaussian_datastring'],
+            #     'equation' : lambda arrays: arrays['gaussian_datastring'].split('||'),
+            # },
+            # 'calc_arrays/config' : {
+            #     'prerequisite' : ['gaussian_datablock'],
+            #     'equation' : lambda arrays: arrays['gaussian_datablock'][0],
+            # },
+            # 'calc_arrays/command' : {
+            #     'prerequisite' : ['gaussian_datablock'],
+            #     'equation' : lambda arrays: re.match(r'\s*#\s*(.*?)$', arrays['gaussian_datablock'][1])[1],
+            # },
+            # 'comments' : {
+            #     'prerequisite' : ['gaussian_datablock'],
+            #     'equation' : lambda arrays: arrays['gaussian_datablock'][2],
+            # },
+            # 'gaussian_datablock_geometry' : {
+            #     'prerequisite' : ['gaussian_datablock'],
+            #     'equation' : lambda arrays: arrays['gaussian_datablock'][3],
+            # },
+            # 'calc_arrays/results' : {
+            #     'prerequisite' : ['gaussian_datastring'],
+            #     'equation' : lambda arrays: ext_methods.string_to_dict(re.findall(r'\|\|(Version=.*?)\|\|',
+            #                                 arrays['gaussian_datastring'])[-1]),
+            #     'delete' : ['gaussian_datastring'],
+            # },
+            # 'calc_arrays/potential_energy' : {
+            #     # 'debug' : True,
+            #     # 'prerequisite' : ['possible_potential_energy'],
+            #     'condition' : lambda arrays: arrays.get('calc_arrays/results', None) is not None or\
+            #                                  arrays.get('possible_potential_energy', None) is not None,
+            #     'equation' : lambda arrays: float(get_value_by_order(arrays.get('calc_arrays/results', None),
+            #                                       ENERGY_ORDER) or arrays.get('possible_potential_energy', None))\
+            #                                 * atomtools.unit.trans_energy('au', 'eV'),
+            #     'delete' : ['possible_potential_energy'],
+            # },
+            # 'calc_arrays/zero_point_energy' : {
+            #     'prerequisite' : ['calc_arrays/results/ZeroPoint'],
+            #     'equation' : lambda arrays: float(arrays['calc_arrays/results/ZeroPoint']) *\
+            #                                 atomtools.unit.trans_energy('au', 'eV'),
+            # },
+            # 'charge' : {
+            #     'prerequisite' : ['gaussian_datablock_geometry'],
+            #     'equation' : lambda arrays: int(arrays['gaussian_datablock_geometry'].split('|')[0].split(',')[0]),
+            # },
+            # 'multiplicity' : {
+            #     'prerequisite' : ['gaussian_datablock_geometry'],
+            #     'equation' : lambda arrays: int(arrays['gaussian_datablock_geometry'].split('|')[0].split(',')[1]),
+            # },
+            }),
+    },
 }
 

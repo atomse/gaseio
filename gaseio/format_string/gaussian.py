@@ -297,9 +297,9 @@ def process_genecp_basis(data, arrays):
         for ele in elements_split:
             if ele.isdigit():
                 basis[int(ele)-1] = basis_type
-            elif ele in chemdata.chemical_symbols:
+            elif ele in chemdata.chemical_symbols or ele[1:] in chemdata.chemical_symbols:
                 for i, symb in enumerate(symbols):
-                    if symb == ele:
+                    if symb == ele or symb == ele[1:]:
                         basis[i] = basis_type
             else:
                 raise NotImplementedError(ele, 'cannot be parsed')
@@ -313,7 +313,7 @@ def process_genecp_ecp(data, arrays):
     if not ecp_data:
         return None
     # ECP_PATTERN = re.compile('((?:^|\\n)(?:{0}|[0-9 ]+ 0\\n)[\s\S]*?)\\n(?:{0}|[0-9 ]+ 0\\n|\\n\\n|\\n$|$)'.format('|'.join([_+' ' for _ in chemdata.chemical_symbols])))
-    ECP_SPLITER = re.compile('\n({0}|[0-9 ]+ 0\\n)'.format('|'.join([_+' ' for _ in chemdata.chemical_symbols])))
+    ECP_SPLITER = re.compile('\n({0}|[0-9 ]+ 0\\n)'.format('|'.join(['[-]?'+_+' ' for _ in chemdata.chemical_symbols])))
     # print(ECP_PATTERN.pattern)
     # print(re.findall(ECP_PATTERN, ecp_data))
     # import pdb; pdb.set_trace()
@@ -328,9 +328,9 @@ def process_genecp_ecp(data, arrays):
         for ele in elements_split:
             if ele.isdigit():
                 ecp[int(ele)-1] = ecp_type
-            elif ele in chemdata.chemical_symbols:
+            elif ele in chemdata.chemical_symbols or ele[1:] in chemdata.chemical_symbols:
                 for i, symb in enumerate(symbols):
-                    if symb == ele:
+                    if symb == ele or symb == ele[1:]:
                         ecp[i] = ecp_type
             else:
                 raise NotImplementedError(ele, 'cannot be parsed')
@@ -346,6 +346,13 @@ def process_genecp_ecp(data, arrays):
 #     data = header + '\n' + data
 #     df = ext_methods.datablock_to_numpy(data, header=0)
 #     return df
+
+
+def process_gaussian_coord_datablock_to_positions(arrays):
+    coord_datablock = arrays['gaussian_coord_datablock']
+    return arrays['gaussian_coord_datablock'][:,2:5].astype(float) \
+        if 'constraint' in arrays else arrays['gaussian_coord_datablock'][:,1:4].astype(float)
+
 
 
 def process_fchk(data, arrays):
@@ -417,7 +424,7 @@ FORMAT_STRING = {
                 # 'debug' : True,
                 'important' : True,
                 'selection' : 0,
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data), # process_gaussian_coord_datablock(data),
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
                 'key' : 'gaussian_coord_datablock',
             },
             r'\n\s*[+-]?\d+[, ]*\d+.*\s*\n[\s\S]*?\n\s*\n([\s\S]*)' : {
@@ -461,8 +468,7 @@ FORMAT_STRING = {
             },
             'positions' : {
                 'prerequisite' : ['gaussian_coord_datablock'],
-                'equation' : lambda arrays: arrays['gaussian_coord_datablock'][:,2:5].astype(float) \
-                    if 'constraint' in arrays else arrays['gaussian_coord_datablock'][:,1:4].astype(float),
+                'equation' : process_gaussian_coord_datablock_to_positions,
             },
             'tags' : {
                 'prerequisite' : ['gaussian_coord_datablock'],
@@ -563,7 +569,8 @@ FORMAT_STRING = {
                 # 'debug' : True,
                 'important' : False,
                 'selection' : -1,
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data.replace('!', ' '), sep='\s+'),
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data.replace('!', \
+                                        ' '), sep='\s+'),
                 'key' : [
                     {
                         'key' : 'calc_arrays/internal_coords',

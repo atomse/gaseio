@@ -11,4 +11,4 @@ fi
 
 
 
-python -c "import json_tricks, gaseio; x = gaseio.read(\"$filename\"); print(json_tricks.dumps(x))"
+python -c "import json_tricks, gaseio; x = gaseio.read(\"$filename\", force_gase=True); print(json_tricks.dumps(x))"

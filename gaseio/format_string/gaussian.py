@@ -281,7 +281,6 @@ def process_connectivity(data, arrays):
 def process_genecp_basis(data, arrays):
     symbols = arrays['symbols']
     natoms = len(symbols)
-    print(symbols)
     basis = [None] * natoms
     basis_data, ecp_data = (data.split('\n\n') + [None])[:2]
     if not basis_data:
@@ -313,8 +312,14 @@ def process_genecp_ecp(data, arrays):
     ecp = [None] * natoms
     if not ecp_data:
         return None
-    ECP_PATTERN = r'([A-Z\d][ a-z].*0\n[\s\S]*?)(?:[A-Z]|\n\n|\n$|$)'
-    for seg in re.findall(ECP_PATTERN, ecp_data):
+    # ECP_PATTERN = re.compile('((?:^|\\n)(?:{0}|[0-9 ]+ 0\\n)[\s\S]*?)\\n(?:{0}|[0-9 ]+ 0\\n|\\n\\n|\\n$|$)'.format('|'.join([_+' ' for _ in chemdata.chemical_symbols])))
+    ECP_SPLITER = re.compile('\n({0}|[0-9 ]+ 0\\n)'.format('|'.join([_+' ' for _ in chemdata.chemical_symbols])))
+    # print(ECP_PATTERN.pattern)
+    # print(re.findall(ECP_PATTERN, ecp_data))
+    # import pdb; pdb.set_trace()
+    segs = re.split(ECP_SPLITER, ecp_data)
+    segs = [segs[0]] + [a+b for a,b in zip(segs[1::2], segs[2::2])]
+    for seg in segs:
         lines = seg.split('\n')
         elements, ecp_type = lines[0], '\n'.join(lines[1:])
         elements_split = elements.split()
@@ -340,7 +345,6 @@ def process_gaussian_coord_datablock(data):
     header = ' '.join([str(_) for _ in range(max_block)])
     data = header + '\n' + data
     df = ext_methods.datablock_to_numpy(data, header=0)
-    import pdb; pdb.set_trace()
     return df
 
 
@@ -422,6 +426,7 @@ FORMAT_STRING = {
         }),
         'synthesized_data' : OrderedDict({
             'symbols' : {
+                # 'debug' : True,
                 'prerequisite' : ['gaussian_coord_datablock'],
                 'equation' : lambda arrays: ext_types.ExtList(arrays['gaussian_coord_datablock'][:,0].flatten().tolist()),
             },

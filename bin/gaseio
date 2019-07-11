@@ -1,78 +1,14 @@
-#!/usr/bin/env python3
-
-import os
-import shutil
-import argparse
-
-from io import StringIO
-import atomtools
-
-import gaseio
+#!/bin/bash
 
 
+filename=$1
 
-
-TMP_DIR = '/tmp/gaseio'
-compress_command = {
-    '.xz' : 'xz -d -f',
-    '.zip' : 'unzip',
-    '.gz' : 'gzip -d ',
-    '.Z' : 'uncompress',
-    '.bz2' : 'bzip2 -d',
-    '.bz' : 'bzip2 -d',
-    '.rar' : 'rar x',
-    '.lha' : 'lha -e',
-}
-
-def get_uncompressed_fileobj(filename):
-    if not os.path.exists(TMP_DIR):
-        os.makedirs(TMP_DIR)
-    for extension, cmd in compress_command.items():
-        if filename.endswith(extension):
-            tmpfilename = os.path.join(TMP_DIR, os.path.basename(filename))
-            newfilename = os.path.splitext(tmpfilename)[0]
-            shutil.copyfile(os.path.abspath(filename), tmpfilename)
-            cmd += ' ' + tmpfilename + '; dos2unix {0} > /dev/null 2>&1 '.format(newfilename)
-            os.system(cmd)
-            with open(newfilename) as fd:
-                fileobj = StringIO(fd.read())
-                fileobj.name = os.path.basename(newfilename)
-            os.remove(newfilename)
-            return fileobj
-    return filename
-
-def main(args):
-    filename = args.filename
-    if not os.path.exists(filename):
-        raise ValueError(filename, 'not exist')
-    fileobj = atomtools.file.get_uncompressed_fileobj(filename)
-    _type = gaseio.filetype.filetype(fileobj)
-    if args.format != None and args.format != _type:
-        print(args.filename, _type)
-        return 0
-    arrays = gaseio.read(fileobj, index=args.index, force_gase=not args.allow_ase)
-    if args.preview:
-        print(arrays)
-    if args.output:
-        gaseio.write(args.output, arrays, format=args.output_format, force_gase=not args.allow_ase, preview=args.preview)
-        
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='')
-    parser.add_argument("filename")
-    parser.add_argument("-o", "--output")
-    parser.add_argument("-i", "--index", default=-1)
-    parser.add_argument("-f", "--output_format")
-    parser.add_argument("--format", default=None)
-    parser.add_argument("--allow_ase", action='store_true')
-    parser.add_argument("-p", "--preview", action='store_true')
-    args = parser.parse_args()
-    print(args)
-    main(args)
+if [ ! -e $filename ]; then
+    echo $filename not exist
+    exit 1
+fi
 
 
 
 
-
-
+python -c "import json_tricks, gaseio; x = gaseio.read(\"$filename\"); print(json_tricks.dumps(x))"

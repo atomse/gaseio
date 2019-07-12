@@ -39,6 +39,42 @@ test:
 	# coverage run --source $(Project) `which $(Project)` LISTSUBCOMMAND | xargs -n 1 -I [] bash -c '(coverage run --source $(Project) `which $(Project)` [] -h >/dev/null 2>&1 || echo ERROR: [])'
 	coverage report -m
 
+
+server:
+	bash -c 'python -m gaseio.server'
+
+
+
+test_chemio:
+	make test_chemio_info
+	make test_chemio_convert
+	echo read error
+	cat /tmp/testresult
+	echo 
+	echo write error
+	cat /tmp/testfiletype
+
+
+test_chemio_info:
+	rm -rf /tmp/testresult
+	for filename in tests/Testcases/*.*; \
+	do \
+		[ -f $$filename ] && chemio info $$filename || echo $$filename >> /tmp/testresult; \
+	done;
+	echo read error
+	cat /tmp/testresult
+
+
+test_chemio_convert:
+	rm -rf /tmp/testfiletype
+	for filetype in `python -c 'import gaseio; print(gaseio.list_supported_write_formats("string"))'`; \
+	do \
+		chemio convert  tests/Testcases/test.xyz - -o $$filetype || echo $$filetype >> /tmp/testfiletype; \
+	done;
+	echo write error
+	cat /tmp/testfiletype
+
+
 test_env:
 	bash -c ' \
 	rm -rf venv; \

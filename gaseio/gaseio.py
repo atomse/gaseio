@@ -113,7 +113,9 @@ def preview(images, format=None, force_ase=False, force_gase=False):
     write('-', images, format, force_ase=force_ase, force_gase=force_gase, preview=True)
 
 
-def list_supported_write_formats():
+def list_supported_write_formats(dtype=None):
     from . import gase_writer
-    return gase_writer.list_supported_write_formats()
-
+    types_list = gase_writer.list_supported_write_formats()
+    if dtype == 'string':
+        return ' '.join(types_list)
+    return types_list

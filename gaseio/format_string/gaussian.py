@@ -250,7 +250,7 @@ def process_population_analysis(data, ndim, drop_length=None, rm_header_regex=r'
     # print('newdata', newdata)
     outdata = ext_methods.datablock_to_numpy(newdata, header=0)
     if dtype != 'square':
-        print(outdata)
+        # print(outdata)
         outdata[np.isnan(outdata)] = 0
         outdata += np.triu(outdata.T, 1)
     return outdata
@@ -270,7 +270,7 @@ def process_connectivity(data, arrays):
     connectivity = np.zeros((natoms, natoms))
     for line in data.split('\n'):
         _elements = line.split()
-        print(_elements)
+        # print(_elements)
         if not _elements:
             continue
         nums_i = int(_elements[0]) - 1

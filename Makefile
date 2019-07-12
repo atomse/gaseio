@@ -52,7 +52,7 @@ test_env:
 	make test'
 	
 upload:
-	twine upload dist/*
+	echo "\033[41;37m This Project is not allowed to upload to pypi! \033[0m"
 
 clean:
 	rm -rf venv build *.egg-info dist

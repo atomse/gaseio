@@ -1,5 +1,5 @@
 {% if calc_arrays is defined and 'maxcore' in calc_arrays %}
-%nproc={{calc_arrays['maxcore']}}
+%nproc={{calc_arrays['maxcore'] | int}}
 {% else %}
 %nproc=4
 {% endif %}

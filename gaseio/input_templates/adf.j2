@@ -10,7 +10,7 @@ cd ${0/\.run/}
 
 
 {% if calc_arrays is defined and 'maxcore' in calc_arrays %}
-$ADFBIN/adf -n {{calc_arrays['maxcore']}} << EOF 1>>${0/run/out} 2>>${0/run/err}
+$ADFBIN/adf -n {{calc_arrays['maxcore'] | int }} << EOF 1>>${0/run/out} 2>>${0/run/err}
 {% else %}
 $ADFBIN/adf -n 4 << EOF 1>>${0/run/out} 2>>${0/run/err}
 ! default run with 4 cores

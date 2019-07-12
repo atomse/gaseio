@@ -2,6 +2,16 @@
 
 
 
+## 2.4.5
+
+### 功能
+
+* 使用Tornado部署，调整原有server.py-->app.py，Tornado部分为server.py
+
+
+### 调整
+
+### 修复
 
 
 
@@ -13,8 +23,12 @@
 
 ### 调整
 
+* requirements
+
 ### 修复
 
+* gaseio.py-->main.py,防止server.py导入gaseio包出错
+* maxcore 强制整数
 
 
 ## 2.4.3

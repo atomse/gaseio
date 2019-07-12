@@ -95,8 +95,8 @@ def read_from_request(inp_request):
     elif isinstance(arrays, list):
         for arr in arrays:
             arr['filename'] = filename
-    if app.debug and filename:
-        print(filename)
+    # if app.debug and filename:
+    #     print(filename)
     return arrays
 
 
@@ -120,8 +120,8 @@ def write_with_request(inp_request, arrays):
         elif isinstance(arrays, list):
             for arr in arrays:
                 arr['filename'] = filename
-    if app.debug and filename:
-        print(filename)
+    # if app.debug and filename:
+    #     print(filename)
     output = gaseio.get_write_content(filename, arrays, fileformat, force_gase=True)
     return output
 

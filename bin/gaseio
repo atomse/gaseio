@@ -3,9 +3,17 @@
 
 filename=$1
 
+seg1=${filename:0:2};
+seg2=${filename:2:2};
+dirname=$seg1/$seg2
+
 if [ ! -e $filename ]; then
-    echo $filename not exist
-    exit 1
+    if [ -e $dirname/$filename ]; then
+        filename=$dirname/$filename
+    else
+        echo $filename not exist
+        exit 1
+    fi
 fi
 
 

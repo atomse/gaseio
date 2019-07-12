@@ -9,7 +9,6 @@ import configparser
 import numpy as np
 import atomtools
 
-from atomtools import filetype
 from .ext_types import ExtList, ExtDict
 from .ext_methods import astype, xml_parameters, datablock_to_numpy,\
                          datablock_to_numpy, construct_depth_dict, \
@@ -30,7 +29,7 @@ def read(fileobj, index=-1, format=None, show_file_content=False, warning=False,
     if isinstance(index, int):
         index = slice(index, None, None)
     all_file_string = atomtools.file.get_file_content(fileobj)
-    file_format = format or filetype(fileobj)
+    file_format = format or atomtools.filetype(fileobj)
 
     assert file_format is not None
     format_dict = FORMAT_STRING.get(file_format, None)
@@ -51,16 +50,15 @@ def read(fileobj, index=-1, format=None, show_file_content=False, warning=False,
     all_arrays = []
     for frame_i, file_string in zip(frame_indices, file_string_sections):
         arrays = ExtDict()
-        arrays['absfilename'] = filename if filename else None
-        arrays['basedir'] = os.path.basename(filename) if filename else None
+        arrays['filename'] = os.path.basename(filename) if filename else None
         arrays['frame_i'] = frame_i
         process_primitive_data(arrays, file_string, format_dict, warning, debug)
         if format_dict.get('primitive_data_function', None):
             format_dict.get('primitive_data_function')(file_string, arrays)
         process_synthesized_data(arrays, format_dict, debug)
         process_calculator(arrays, format_dict, debug)
-        if not show_file_content:
-            del arrays['absfilename'], arrays['basedir']
+        # if not show_file_content:
+        #     del arrays['absfilename'], arrays['basedir']
         if not format_dict.get('non_regularize', False):
             regularize_arrays(arrays)
         all_arrays.append(arrays)
@@ -99,8 +97,8 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
         if pattern_property.get('type', None):
             if isinstance(value, np.ndarray):
                 value = value.astype(pattern_property['type'])
-            elif isinstance(value, list):
-                value = [pattern_property['type'](_) for _ in value]
+            # elif isinstance(value, list):
+            #     value = [pattern_property['type'](_) for _ in value]
             else:
                 value = pattern_property['type'](value)
         arrays.update(construct_depth_dict(key, value, arrays))

@@ -135,18 +135,18 @@ FORMAT_STRING = {
                 'key' : 'cell',
             },
             r'^(?:.*\n.*\n.*\n.*\n.*\n)(.*)\n' : {
+                # 'debug' : True,
                 'important' : True,
                 'selection' : -1,
-                'process' : lambda data, arrays: data.split(),
+                'process' : lambda data, arrays: ext_types.ExtList(data.strip().split()),
                 'key' : 'element_types',
-                'type' : ext_types.ExtList,
             },
             r'^(?:.*\n.*\n.*\n.*\n.*\n.*\n)(.*)\n' : {
                 'important' : True,
                 'selection' : -1,
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data)[0],
+                'process' : lambda data, arrays: ext_types.ExtList(ext_methods.datablock_to_numpy(data)[0].flatten().tolist()),
                 'key' : 'element_number',
-                'type' : ext_types.ExtList,
+                # 'type' : ext_types.ExtList,
             },
             r'\n(S.*)\n' : {
                 'important' : False,
@@ -261,6 +261,7 @@ FORMAT_STRING = {
                 ]
                 },
             '//atominfo/array[@name="atomtypes"]/set/rc/c[1]/text()' : {
+                # 'debug' : True,
                 'important' : True,
                 'selection' : 'all',
                 'process' : lambda data, arrays: int(data),

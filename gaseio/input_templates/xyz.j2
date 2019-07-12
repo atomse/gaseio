@@ -2,14 +2,14 @@
 {{symbols|length}}
 {{comments}}
 {% for i in range(symbols|length) %}
-{{symbols[i]}}    {{positions[i][0]}}    {{positions[i][1]}}    {{positions[i][2]}}
+{{symbols[i]}}    {{"%.6f" | format(positions[i][0])}}    {{"%.6f" | format(positions[i][1])}}    {{"%.6f" | format(positions[i][2])}}
 {% endfor %}
 {% else %}
 {% for arr in arrays %}
 {{arr['symbols']|length}}
 {{arr['comments']}}
 {% for i in range(arr['symbols']|length) %}
-{{arr['symbols'][i]}}    {{arr['positions'][i][0]}}    {{arr['positions'][i][1]}}    {{arr['positions'][i][2]}}
+{{arr['symbols'][i]}}    {{"%.6f" | format(arr['positions'][i][0])}}    {{"%.6f" | format(arr['positions'][i][1])}}    {{"%.6f" | format(arr['positions'][i][2])}}
 {% endfor %}
 {% endfor %}
 {% endif %}

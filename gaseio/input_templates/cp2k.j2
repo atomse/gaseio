@@ -1,6 +1,7 @@
 {# https://manual.cp2k.org/ #}
+{% set min_cell_size=10.0 %}
 &GLOBAL
-   PROJECT {{ calc_arrays['project'] | upper  if calc_arrays is defined and 'project' in calc_arrays else 'CP2K' }}
+   PROJECT {{ calc_arrays['project'] if calc_arrays is defined and 'project' in calc_arrays else 'CP2K' }}
    PRINT_LEVEL {{ calc_arrays['print_level'] | upper  if calc_arrays is defined and 'print_level' in calc_arrays else 'MEDIUM' }}
    RUN_TYPE {{ calc_arrays['runtype'] | upper  if calc_arrays is defined and 'runtype' in calc_arrays else 'ENERGY' }}
    # ENERGY WAVEFUNCTION_OPTIMIZATION WFN_OPT
@@ -33,8 +34,8 @@
 &FORCE_EVAL
    METHOD QuickStep
    &DFT
-      BASIS_SET_FILE_NAME {{calc_arrays['basis_set_filename'] | upper if calc_arrays is defined and 'basis_set_filename' in calc_arrays else 'BASIS_SET'}}
-      POTENTIAL_FILE_NAME {{calc_arrays['potential_filename'] | upper if calc_arrays is defined and 'potential_filename' in calc_arrays else 'POTENTIAL'}}
+      BASIS_SET_FILE_NAME {{calc_arrays['cp2k_basis_set_filename'] if calc_arrays is defined and 'cp2k_basis_set_filename' in calc_arrays else 'BASIS_SET'}}
+      POTENTIAL_FILE_NAME {{calc_arrays['cp2k_potential_filename'] if calc_arrays is defined and 'cp2k_potential_filename' in calc_arrays else 'POTENTIAL'}}
       WFN_RESTART_FILE_NAME ./cp2k-RESTART.wfn
       CHARGE {{charge}}
       &MGRID
@@ -88,14 +89,14 @@
             B {{cell[1][0]}} {{cell[1][1]}} {{cell[1][2]}}
             C {{cell[2][0]}} {{cell[2][1]}} {{cell[2][2]}}
          {% else %}
-            A {{[(positions.T[0].max() - positions.T[0].min())*2, 10.0] | max}} 0. 0.
-            B 0. {{[(positions.T[1].max() - positions.T[1].min())*2, 10.0] | max}} 0.
-            C 0. 0. {{[(positions.T[2].max() - positions.T[2].min())*2, 10.0] | max}}
+            A  {{"%.6f" | format([atoms_size[0]*2, min_cell_size] | max)}} 0. 0.
+            B 0.  {{"%.6f" | format([atoms_size[1]*2, min_cell_size] | max)}} 0.
+            C 0. 0.  {{"%.6f" | format([atoms_size[2]*2, min_cell_size] | max)}}
          {% endif %}
       &END CELL
       &COORD
 {% for i in range(symbols|length) %}
-{{symbols[i]}}    {{positions[i][0]}}    {{positions[i][1]}}    {{positions[i][2]}}
+{{symbols[i]}}    {{"%.6f" | format(positions[i][0])}}    {{"%.6f" | format(positions[i][1])}}    {{"%.6f" | format(positions[i][2])}}
 {% endfor %}
       &END COORD
       &PRINT

@@ -250,7 +250,7 @@ def process_population_analysis(data, ndim, drop_length=None, rm_header_regex=r'
     # print('newdata', newdata)
     outdata = ext_methods.datablock_to_numpy(newdata, header=0)
     if dtype != 'square':
-        # print(outdata)
+        print(outdata)
         outdata[np.isnan(outdata)] = 0
         outdata += np.triu(outdata.T, 1)
     return outdata
@@ -270,6 +270,9 @@ def process_connectivity(data, arrays):
     connectivity = np.zeros((natoms, natoms))
     for line in data.split('\n'):
         _elements = line.split()
+        print(_elements)
+        if not _elements:
+            continue
         nums_i = int(_elements[0]) - 1
         for nums_j, order in zip(_elements[1::2], _elements[2::2]):
             nums_j, order = int(nums_j) - 1, float(order)
@@ -392,7 +395,7 @@ FORMAT_STRING = {
                 'important': False,
                 'selection' : -1,
                 'type': str,
-                'key' : 'maxmem',
+                'key' : 'calc_arrays/maxmem',
             },
             r'#\s*([\s\S]*?)\n\s*\n' : {
                 'important': True,
@@ -424,7 +427,7 @@ FORMAT_STRING = {
                 # 'debug' : True,
                 'important' : True,
                 'selection' : 0,
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy_extend(data),
                 'key' : 'gaussian_coord_datablock',
             },
             r'\n\s*[+-]?\d+[, ]*\d+.*\s*\n[\s\S]*?\n\s*\n([\s\S]*)' : {
@@ -497,6 +500,18 @@ FORMAT_STRING = {
     'gaussian-out': {
         'calculator': 'Gaussian',
         'primitive_data': OrderedDict({
+            r'%npro.*=(\d+)\s*\n' : {
+                'important': False,
+                'selection' : -1,
+                'type': int,
+                'key' : 'calc_arrays/maxcore',
+            },
+            r'%mem.*=(\d+.*)\s*\n' : {
+                'important': False,
+                'selection' : -1,
+                'type': str,
+                'key' : 'calc_arrays/maxmem',
+            },
             r'Charge\s+=\s+(-?\d+)' : {
                 'important' : False,
                 'selection' : -1,
@@ -697,8 +712,7 @@ FORMAT_STRING = {
             'calc_arrays/status' : {
                 'equation' : lambda arrays: Status.error if 'error_termination' in arrays else \
                                             Status.complete if 'normal_termination' in arrays else \
-                                            Status.running if atomtools.file.file_active(arrays['absfilename']) else\
-                                            Status.stopped,
+                                            Status.unfinished,
                 'delete' : ['error_termination', 'normal_termination'],
             },
             'symbols' : {

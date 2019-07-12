@@ -9,11 +9,19 @@ from gaseio import gase_writer
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 TEST_DIR = os.path.join(BASEDIR, 'Testcases')
 SUPPORTED_TEMPS = gase_writer.list_supported_write_formats()
+print('SUPPORTED_TEMPS', SUPPORTED_TEMPS)
 
 
 print(gaseio)
 print(gaseio.__version__)
 
+
+CONTINUE_FILE = os.environ.get("GASEIO_CONTINUE_FILE", None)
+CONTINUE_START_ITEM = 0
+if CONTINUE_FILE:
+    print("CONTINUE_FILE", CONTINUE_FILE)
+    if os.path.exists(CONTINUE_FILE):
+        CONTINUE_START_ITEM = int(open(CONTINUE_FILE).read().strip())
 
 
 def test_basic():
@@ -22,7 +30,7 @@ def test_basic():
 
 def test(test_types=None):
     
-    for filename in os.listdir(TEST_DIR):
+    for filename in os.listdir(TEST_DIR)[CONTINUE_START_ITEM:]:
         filename = os.path.join(TEST_DIR, filename)
         if filename.startswith('.') or not os.path.isfile(filename):
             continue
@@ -48,7 +56,7 @@ def test_no_catch():
     """
     test gaseio without catching errors
     """
-    for filename in os.listdir(TEST_DIR):
+    for item_i, filename in enumerate(os.listdir(TEST_DIR)[CONTINUE_START_ITEM:]):
         print(filename)
         if filename.startswith('.'):
             continue
@@ -60,13 +68,14 @@ def test_no_catch():
         # print(arrays)
         print('\n' * 4)
         for write_temp_type in SUPPORTED_TEMPS:
-            write_temp_type = os.path.basename(write_temp_type).split('.')[0]
             print('\n'*4, )
             print(write_temp_type, filename)
             gaseio.write('/tmp/test', arrays, write_temp_type, force_gase=True, preview=True)
         arrays = gaseio.read(filename, index=':', force_gase=True)
+        open(CONTINUE_FILE, 'w').write(str(item_i+CONTINUE_START_ITEM))
         # print(arrays)
         print('\n' * 4)
+    os.remove(CONTINUE_FILE)
 
 if __name__ == '__main__':
     test_no_catch()

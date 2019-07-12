@@ -9,6 +9,8 @@ import os
 import glob
 import jinja2
 import json_tricks
+import atomtools
+
 
 from . import ext_types
 from .regularize import regularize_arrays
@@ -21,10 +23,16 @@ INPUT_TEMPLATE_DIR = os.path.join(BASEDIR, INPUT_TEMPLATE_DIR)
 def islist(value):
     return isinstance(value, list)
 
+def file_basename(value):
+    return os.path.splitext(value)[0]
+
 jinja_loader = jinja2.FileSystemLoader(INPUT_TEMPLATE_DIR)
 jinja_environment = jinja2.Environment(loader=jinja_loader, lstrip_blocks=True)
 jinja_environment.trim_blocks = True
-jinja_environment.filters.update({'islist': islist,})
+jinja_environment.filters.update({
+    'islist': islist,
+    'file_basename' : file_basename,
+})
 
 
 # def include_vasppot(fname):
@@ -59,10 +67,13 @@ def generate_input_content(arrays, filetype):
     regularize_arrays(arrays)
     # print(arrays['symbols'])
     if isinstance(arrays, list):
-        output = template.render(arrays=arrays, arrays_json=json_tricks.dumps(arrays))
+        output = template.render(arrays=arrays, arrays_json=json_tricks.dumps(arrays),
+                                 randString=atomtools.name.randString())
     else:
-        output = template.render(arrays=arrays, arrays_json=json_tricks.dumps(arrays), **arrays)
+        output = template.render(arrays=arrays, arrays_json=json_tricks.dumps(arrays),
+                                 randString=atomtools.name.randString(), **arrays)
     return output
+
 
 def preview(arrays, filetype):
     print('\n\n\n-------preview start from here------')
@@ -76,5 +87,6 @@ def generate_inputfile(arrays, filetype, inputfilename):
 
 
 def list_supported_write_formats():
-    return glob.glob(os.path.join(INPUT_TEMPLATE_DIR, '*.j2'))
+    return [os.path.splitext(os.path.basename(_))[0] \
+        for _ in glob.glob(os.path.join(INPUT_TEMPLATE_DIR, '*.j2'))]
 

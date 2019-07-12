@@ -111,6 +111,13 @@ def datablock_to_numpy(datablock, sep=r'\s+', header=None):
     """
     datablock is a string that contains a block of data
     """
+    return datablock_to_dataframe(datablock, sep, header).values
+
+
+def datablock_to_numpy_extend(datablock, sep=r'\s+', header=None):
+    """
+    datablock is a string that contains a block of data
+    """
     if not header:
         max_width = 0
         for line in datablock.split('\n'):

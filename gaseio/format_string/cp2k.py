@@ -63,6 +63,38 @@ FORMAT_STRING = {
                 'selection' : -1,
                 'key' : '_cell_data'
             },
+            r'PROJECT\s+(\w+)\s*\n' : {
+                'important' : False,
+                'selection' : -1,
+                'key' : 'comments',
+                'type' : str,
+            },
+            r'PRINT_LEVEL\s+(\w+)\s*\n' : {
+                'important' : False,
+                'selection' : -1,
+                'key' : 'calc_arrays/print_level',
+                'type' : str,
+                'process' : lambda data, arrays: data.lower(),
+            },
+            r'RUN_TYPE\s+(\w+)\s*\n' : {
+                'important' : False,
+                'selection' : -1,
+                'key' : 'calc_arrays/runtype',
+                'type' : str,
+                'process' : lambda data, arrays: data.lower(),
+            },
+            r'BASIS_SET_FILE_NAME\s+(\w+)\s*\n' : {
+                'important' : False,
+                'selection' : -1,
+                'key' : 'calc_arrays/cp2k_basis_set_filename',
+                'type' : str,
+            },
+            r'POTENTIAL_FILE_NAME\s+(\w+)\s*\n' : {
+                'important' : False,
+                'selection' : -1,
+                'key' : 'calc_arrays/cp2k_potential_filename',
+                'type' : str,
+            },
             r'CHARGE\s+(\d+)\s*\n' : {
                 'important' : False,
                 'selection' : -1,

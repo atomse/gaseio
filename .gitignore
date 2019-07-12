@@ -139,3 +139,6 @@ line.select
 
 
 .DS_Store
+
+!tests/Testcases/*
+!tests/Testcases/*/*

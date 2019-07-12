@@ -8,8 +8,8 @@ do
 	fname=`basename $i`
 	for host in `echo "work bwg"`; 
 	do
-		scp -P 5522 $i ${host}.atomse.net:
-		ssh -p 5522 ${host}.atomse.net "bash -c \"sudo /usr/bin/python3 -m pip uninstall gaseio -yy; sudo /usr/bin/python3 -m pip install $fname; rm -f $fname\""
+		scp -P 5522 $i ${host}.atomse.net:/tmp/$fname
+		ssh -p 5522 ${host}.atomse.net "bash -c \"pip3 uninstall gaseio -yy; pip3 install /tmp/$fname || pip3 install /tmp/$fname --user ; rm -f /tmp/$fname\""
 	done
 done
 

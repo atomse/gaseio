@@ -7,4 +7,6 @@ __version__ = '2.4.4'
 def version():
     return __version__
 
-from .gaseio import read, write, read_preview, write_preview, preview, get_write_content, list_supported_write_formats
+from .main import read, write
+from .main import read_preview, write_preview, preview, get_write_content
+from .main import list_supported_write_formats

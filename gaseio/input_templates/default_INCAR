@@ -1,6 +1,6 @@
 #####  This is a standard INCAR in VASP for sp opt calcualtion made by Linus.Denghui.Xing   #####
  
- SYSTEM = Ru-TiO2
+ SYSTEM = VASP_SYSTEM
 
 #numbers of cores per compute node
 TPAR = 1

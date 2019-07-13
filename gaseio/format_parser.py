@@ -22,7 +22,7 @@ BASEDIR = os.path.dirname(os.path.abspath(__file__))
 
 
 
-def read(fileobj, index=-1, format=None, show_file_content=False, warning=False, debug=False):
+def read(fileobj, index=-1, format=None, warning=False, debug=False):
     from .format_string import FORMAT_STRING
     assert isinstance(index, int) or isinstance(index, slice)
     orig_index = index
@@ -31,14 +31,17 @@ def read(fileobj, index=-1, format=None, show_file_content=False, warning=False,
     all_file_string = atomtools.file.get_file_content(fileobj)
     file_format = format or atomtools.filetype(fileobj)
 
-    assert file_format is not None
+    assert file_format is not None, \
+        'format: {0}, fileobj {1}, file_format {2}'.format(format, fileobj, file_format)
     format_dict = FORMAT_STRING.get(file_format, None)
     if format_dict is None:
         raise NotImplementedError(file_format, 'not available now')
     filename = atomtools.file.get_absfilename(fileobj)
 
     if format_dict.get('file_format', None) == 'dict':
-        conf = configparser.ConfigParser()
+        ignorance = format_dict.get('ignorance', None)
+        conf = configparser.ConfigParser(inline_comment_prefixes=ignorance)
+        header = format_dict.get('file_format', 'default')
         conf.read_string('[vasp]\n' + all_file_string)
         return conf._sections
 

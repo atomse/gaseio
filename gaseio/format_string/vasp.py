@@ -463,5 +463,6 @@ FORMAT_STRING = {
     'INCAR' : {
         'ignorance' : ('#', ),
         'file_format' : 'dict',
+        'destination' : 'calc_arrays/vasp_input',
     }
 }

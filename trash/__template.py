@@ -19,7 +19,7 @@ FORMAT_STRING = {
                     'important': False,
                     'selection' : -1,
                     'type': str,
-                    'key' : 'maxmem',
+                    'key' : 'max_memory',
                 },
             r'#\s*([\s\S]*?)\n\n.*\n\n.*-?\d+\s*\d+\s*\n' : {
                     'important': True,
@@ -89,7 +89,7 @@ FORMAT_STRING = {
             },
         'synthesized_data' : OrderedDict({
             }),
-        # 'writer_formats': '%nproc={atoms.maxcore}\n%mem={atoms.maxmem}B\n%chk={randString()}.chk\n#p force b3lyp/6-31g(d)\n\ngase\n\n{atoms.charge} {atoms.multiplicity}\n{atoms.get_symbols_positions()}{atoms.calc.connectivity}{atoms.calc.genecp}',
+        # 'writer_formats': '%nproc={atoms.maxcore}\n%mem={atoms.max_memory}B\n%chk={randString()}.chk\n#p force b3lyp/6-31g(d)\n\ngase\n\n{atoms.charge} {atoms.multiplicity}\n{atoms.get_symbols_positions()}{atoms.calc.connectivity}{atoms.calc.genecp}',
     },
     'adf' : {
         'calculator': 'ADF',

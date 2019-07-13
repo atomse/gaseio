@@ -1,5 +1,13 @@
+{% set VASP_GGA_MAP = {'pbe' : 'PE', 'pw91' : '91', 'rpbe' : 'RP', 'am05' : 'AM', 'pbesol' : 'PS'} %}
 {% if calc_arrays is defined and 'vasp_input' in calc_arrays %}
 {% for key, val in calc_arrays['vasp_input'].iteritems() %}
-{{key}} = {{val}}
+{% if key | lower == 'gga' and val | lower in VASP_GGA_MAP %}
+{{key|upper}} = {{VASP_GGA_MAP[val|lower]}}
+{% else %}
+{{key|upper}} = {{val if not val | islist else ' '.join(val)}}
+{% endif %}
 {% endfor %}
+{% else %}
+{# default_INCAR #}
+{% include 'default_INCAR' %}
 {% endif %}

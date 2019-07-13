@@ -57,6 +57,7 @@ test_chemio:
 
 test_chemio_info:
 	rm -rf /tmp/testresult
+	export CHEMIO_SERVER_URLS=http://localhost:5000/; \
 	for filename in tests/Testcases/*.*; \
 	do \
 		[ -f $$filename ] && chemio info $$filename || echo $$filename >> /tmp/testresult; \
@@ -67,6 +68,7 @@ test_chemio_info:
 
 test_chemio_convert:
 	rm -rf /tmp/testfiletype
+	export CHEMIO_SERVER_URLS=http://localhost:5000/; \
 	for filetype in `python -c 'import gaseio; print(gaseio.list_supported_write_formats("string"))'`; \
 	do \
 		chemio convert  tests/Testcases/test.xyz - -o $$filetype || echo $$filetype >> /tmp/testfiletype; \

@@ -395,7 +395,7 @@ FORMAT_STRING = {
                 'important': False,
                 'selection' : -1,
                 'type': str,
-                'key' : 'calc_arrays/maxmem',
+                'key' : 'calc_arrays/max_memory',
             },
             r'#\s*([\s\S]*?)\n\s*\n' : {
                 'important': True,
@@ -510,7 +510,7 @@ FORMAT_STRING = {
                 'important': False,
                 'selection' : -1,
                 'type': str,
-                'key' : 'calc_arrays/maxmem',
+                'key' : 'calc_arrays/max_memory',
             },
             r'Charge\s+=\s+(-?\d+)' : {
                 'important' : False,

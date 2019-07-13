@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+
+## 2.4.7
+
+### 功能
+
+* 拆分update 和 deploy, 初次运行`deploy.sh`，升级使用`update.sh`
+
+### 修复
+
+* requirements.txt 缺少 Tornado
+
+
+
+
+
 ## 2.4.6
 
 ### 功能
@@ -8,9 +23,7 @@
 * version模块
 * VASP 默认 INCAR
 
-### 调整
 
-### 修复
 
 
 ## 2.4.5
@@ -18,11 +31,6 @@
 ### 功能
 
 * 使用Tornado部署，调整原有server.py-->app.py，Tornado部分为server.py
-
-
-### 调整
-
-### 修复
 
 
 
@@ -40,6 +48,9 @@
 
 * gaseio.py-->main.py,防止server.py导入gaseio包出错
 * maxcore 强制整数
+
+
+
 
 
 ## 2.4.3

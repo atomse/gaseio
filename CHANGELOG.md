@@ -9,8 +9,9 @@
 
 * VASP INCAR 完整解析
 
+### 调整
 
-
+* maxmem --> max_memory
 
 
 

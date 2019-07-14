@@ -284,7 +284,7 @@ def process_connectivity(data, arrays):
 def process_genecp_basis(data, arrays):
     symbols = arrays['symbols']
     natoms = len(symbols)
-    basis = [None] * natoms
+    basis = [''] * natoms
     basis_data, ecp_data = (data.split('\n\n') + [None])[:2]
     if not basis_data:
         return [None] * natoms
@@ -312,7 +312,7 @@ def process_genecp_ecp(data, arrays):
     symbols = arrays['symbols']
     natoms = len(symbols)
     basis_data, ecp_data = (data.split('\n\n') + [None])[:2]
-    ecp = [None] * natoms
+    ecp = [''] * natoms
     if not ecp_data:
         return None
     # ECP_PATTERN = re.compile('((?:^|\\n)(?:{0}|[0-9 ]+ 0\\n)[\s\S]*?)\\n(?:{0}|[0-9 ]+ 0\\n|\\n\\n|\\n$|$)'.format('|'.join([_+' ' for _ in chemdata.chemical_symbols])))

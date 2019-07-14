@@ -2,6 +2,15 @@
 
 
 
+## 2.4.9
+
+### 功能
+
+* gaussian input 输出 basis, ecp, connectivity部分
+* requirements.txt 添加 basis_set_exchange
+
+
+
 
 ## 2.4.8
 

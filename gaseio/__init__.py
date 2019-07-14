@@ -3,7 +3,7 @@ GASEIO
 """
 
 
-__version__ = '2.4.8'
+__version__ = '2.4.9'
 
 def version():
     return __version__

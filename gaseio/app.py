@@ -12,7 +12,7 @@ import gaseio
 
 
 
-UPLOAD_DIR = os.path.expanduser('~/chemio')
+UPLOAD_DIR = os.environ.get("GASEIO_UPLOAD_DIR", os.path.expanduser('~/chemio'))
 if not os.path.exists(UPLOAD_DIR):
     raise IOError(UPLOAD_DIR, 'not exist')
 

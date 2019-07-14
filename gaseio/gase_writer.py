@@ -10,7 +10,7 @@ import glob
 import jinja2
 import json_tricks
 import atomtools
-
+import basis_set_exchange as bse
 
 from . import ext_types
 from .regularize import regularize_arrays
@@ -26,6 +26,7 @@ def islist(value):
 def file_basename(value):
     return os.path.splitext(value)[0]
 
+
 jinja_loader = jinja2.FileSystemLoader(INPUT_TEMPLATE_DIR)
 jinja_environment = jinja2.Environment(loader=jinja_loader, lstrip_blocks=True)
 jinja_environment.trim_blocks = True
@@ -33,7 +34,7 @@ jinja_environment.filters.update({
     'islist': islist,
     'file_basename' : file_basename,
 })
-
+jinja_environment.globals.update(get_basis=bse.get_basis, get_all_basis_names=bse.get_all_basis_names)
 
 # def include_vasppot(fname):
 #     print(fname)

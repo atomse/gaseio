@@ -2,6 +2,15 @@
 
 
 
+## 2.4.9
+
+### 功能
+
+* gaussian input 输出 basis, ecp, connectivity部分
+
+
+
+
 
 ## 2.4.8
 

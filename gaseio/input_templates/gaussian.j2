@@ -3,8 +3,8 @@
 {% else %}
 %nproc=4
 {% endif %}
-{% if calc_arrays is defined and 'maxmem' in calc_arrays %}
-%mem={{calc_arrays['maxmem']}}
+{% if calc_arrays is defined and 'max_memory' in calc_arrays %}
+%mem={{calc_arrays['max_memory']}}
 {% else %}
 %mem=2GB
 {% endif %}

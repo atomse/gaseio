@@ -5,7 +5,7 @@ project=$(basename $name)
 username=gase
 
 
-HOSTS="bwg"
+HOSTS="work bwg"
 echo $project
 for i in dist/${project}*.whl;
 do

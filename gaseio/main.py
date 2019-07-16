@@ -18,7 +18,7 @@ BASEDIR = os.path.dirname(os.path.abspath(__file__))
 def read(fileobj, index=-1, format=None, parallel=True, force_ase=False, 
          force_gase=False, **kwargs):
     fileobj = atomtools.file.get_uncompressed_fileobj(fileobj)
-    _filetype = atomtools.filetype(fileobj)
+    _filetype = format or atomtools.filetype(fileobj)
     assert isinstance(index, int) or\
            re.match(r'^[+-:0-9]+$', str(index)) 
     if isinstance(index, str):

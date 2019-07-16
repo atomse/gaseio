@@ -2,6 +2,7 @@
 
 
 filename=$1
+format=$2
 
 seg1=${filename:0:2};
 seg2=${filename:2:2};
@@ -19,4 +20,8 @@ fi
 
 
 
-python -c "import json_tricks, gaseio; x = gaseio.read(\"$filename\", force_gase=True); print(json_tricks.dumps(x))"
+if [ $format ]; then
+	python -c "import json_tricks, gaseio; x = gaseio.read(\"$filename\", format=\"$format\", index=':', force_gase=True); print(json_tricks.dumps(x, indent=4))"
+else
+	python -c "import json_tricks, gaseio; x = gaseio.read(\"$filename\", index=':', force_gase=True); print(json_tricks.dumps(x, indent=4))"
+fi

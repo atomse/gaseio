@@ -129,6 +129,15 @@ def datablock_to_numpy_extend(datablock, sep=r'\s+', header=None):
     return datablock_to_dataframe(datablock, sep, header).values
 
 
+def datablock_to_numpy_fixed_width(datablock, colspecs, header=None, nan_fill=None):
+    """
+    https://stackoverflow.com/questions/4914008/how-to-efficiently-parse-fixed-width-files
+    """
+    df = pd.read_fwf(StringIO(datablock), colspecs=colspecs, header=header)
+    df = df.where((pd.notnull(df)), None)
+    return df.values
+
+
 def datablock_to_dict(datablock, sep=r'\s*=\s*', dtype=float):
     rsdict = {}
     # print(datablock)

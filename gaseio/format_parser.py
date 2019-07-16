@@ -104,7 +104,8 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
             #     value = [pattern_property['type'](_) for _ in value]
             else:
                 value = pattern_property['type'](value)
-        arrays.update(construct_depth_dict(key, value, arrays))
+        if value is not None:
+            arrays.update(construct_depth_dict(key, value, arrays))
     else: # array
         key_groups = key
         def np_select(data, dtype, index):
@@ -130,7 +131,8 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
                 continue
             if key_group.get('process', None):
                 value = key_group.get('process')(value, arrays)
-            arrays.update(construct_depth_dict(key, value, arrays))
+            if value is not None:
+                arrays.update(construct_depth_dict(key, value, arrays))
 
 
 def process_primitive_data(arrays, file_string, formats, warning=False, debug=False):

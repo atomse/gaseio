@@ -15,7 +15,7 @@ class ExtList(list):
     """
     def __mul__(self, a):
         assert isinstance(a, Iterable),\
-            'multiplier should be Iterable, instead of {1}'.format(a, type(a))
+            'multiplier should be Iterable, instead of {0} of {1}'.format(a, type(a))
         assert len(self) == len(a),\
             'multiple length should be same'
         return self.__class__([x for i, x in enumerate(self) for time in range(a[i])])
@@ -105,12 +105,12 @@ class ExtDict(dict):
 
     def __getattr__(self, name):
         if name.startswith('__'):
-            return dict.__getattr__(name)
+            return dict.__getitem__(name)
         if name.startswith('get_'):
             _name = name[len('get_'):]
-            return lambda : self['calc_arrays'].get(_name, None) \
-                            if self.get(_name, None) is None and dict.get(self, 'calc_arrays', None) \
-                            else self.get(_name, None)
+            return lambda: self['calc_arrays'].get(_name, None) \
+                    if self.get(_name, None) is None and dict.get(self, 'calc_arrays', None)\
+                    else self.get(_name, None)
         return dict.__getitem__(self, name)
 
     def has_key(self, name):

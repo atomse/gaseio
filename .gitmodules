@@ -1,0 +1,3 @@
+[submodule "tests/chem_file_samples"]
+	path = tests/chem_file_samples
+	url = ssh://git@git.atomse.com:29418/skyzhang/chem_file_samples.git

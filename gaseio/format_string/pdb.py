@@ -203,7 +203,7 @@ FORMAT_STRING = {
                 # 'debug' : True,
                 'important': True,
                 'selection' : -1,
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy_fixed_width(data, colspecs=PDB_COL_SPECIFICATION, nan_fill=None),
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy_fixed_width(data, colspecs=PDB_COL_SPECIFICATION, nan_fill=''),
                 'key' : [
                     {
                         "key" :    "customized_symbols",
@@ -234,7 +234,7 @@ FORMAT_STRING = {
                     {
                         "key" :    "iCode",
                         "index" : ":,9",
-                        # 'type' : int,
+                        'type' : str,
                     },
                     {
                         "key" :   "positions",
@@ -260,6 +260,7 @@ FORMAT_STRING = {
                     {
                         "key" :   "pdb_charge",
                         "index" : ":,18",
+                        'type' : str,
                     },
                 ],
             },

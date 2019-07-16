@@ -1,6 +1,15 @@
 # CHANGELOG
 
 
+## 2.5.1
+
+## fix
+
+* pdb chemio read error
+
+
+
+
 
 ## 2.5.0
 

@@ -131,8 +131,9 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
                 continue
             if key_group.get('process', None):
                 value = key_group.get('process')(value, arrays)
-            if value is not None:
-                arrays.update(construct_depth_dict(key, value, arrays))
+            if value is None or isinstance(value, np.ndarray) and (value==None).all():
+                continue
+            arrays.update(construct_depth_dict(key, value, arrays))
 
 
 def process_primitive_data(arrays, file_string, formats, warning=False, debug=False):

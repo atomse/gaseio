@@ -813,4 +813,75 @@ FORMAT_STRING = {
             },
         }),
     },
+    'gaussian-nbo-out' : {
+        'calculator': 'Gaussian',
+        'primitive_data': OrderedDict({
+            r'^(.*)\n' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'comments',
+                'type' : str,
+            },
+            r'ALPHA SPIN' : {
+                'important' : False,
+                'selection' : -1,
+                'key' : '_has_alpha_spin',
+                'type' : str,
+            },
+            r'BETA  SPIN' : {
+                'important' : False,
+                'selection' : -1,
+                'key' : '_has_beta_spin',
+                'type' : str,
+            },
+            r'NAOs in the AO basis:\n -{10,}\n([\s\S]*?)\n[ 0-9]+\n' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'nao_in_ao_basis',
+                'type' : str,
+            },
+            r'NAOs in the AO basis:\n -{10,}\n[\s\S]*?\n([ 0-9]+\n[\s\S]*?)\n.*\n PNAO overlap matrix' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'nao_in_ao_basis_appendix',
+                'type' : str,
+            },
+            r' PNAO overlap matrix:\n -{10,}\n([\s\S]*?)\n.*\n NAO density matrix' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'pnao_overlap_matrix',
+            },
+            r' NAO density matrix:\n -{10,}(?:\n ALPHA SPIN\n|\n)([\s\S]*?)\n.*\n NAO Fock matrix:' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'nao_density_matrix',
+            },
+            r' NAO Fock matrix:\n -{10,}(?:\n ALPHA SPIN\n|\n)([\s\S]*?)\n.*\n$' : {
+                'important' : True,
+                'selection' : -1,
+                'key' : 'nao_fock_matrix',
+            },
+        }),
+        'synthesized_data' : OrderedDict({
+            'alpha_nao_density_matrix' : {
+                # 'prerequisite' : ['_has_alpha_spin', '_has_beta_spin'],
+                'equation' : lambda arrays: ext_methods.datablock_to_numpy(arrays['nao_density_matrix'].replace('\n', '')),
+            },
+            'alpha_nao_fock_matrix' : {
+                # 'prerequisite' : ['_has_alpha_spin', '_has_beta_spin'],
+                'equation' : lambda arrays: ext_methods.datablock_to_numpy(arrays['nao_fock_matrix'].split('BETA  SPIN')[0].replace('\n', '')),
+            },
+            'beta_nao_density_matrix' : {
+                'prerequisite' : ['_has_alpha_spin', '_has_beta_spin'],
+                'equation' : lambda arrays: ext_methods.datablock_to_numpy(arrays['nao_fock_matrix'].split('BETA  SPIN')[1].replace('\n', '')),
+            },
+            'beta_nao_fock_matrix' : {
+                'prerequisite' : ['_has_alpha_spin', '_has_beta_spin'],
+                'equation' : lambda arrays: ext_methods.datablock_to_numpy(arrays['nao_fock_matrix'].split('BETA  SPIN')[2].replace('\n', '')),
+                'delete' : ['_has_alpha_spin', '_has_beta_spin', 'nao_fock_matrix', 'nao_density_matrix'],
+            },
+
+            }),
+        'non_regularize' : True,
+    }
 }

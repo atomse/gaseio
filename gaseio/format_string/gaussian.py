@@ -838,49 +838,71 @@ FORMAT_STRING = {
                 'important' : True,
                 'selection' : -1,
                 'key' : 'nao_in_ao_basis',
-                'type' : str,
+                'type' : float,
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(\
+                                    re.sub(r'\s+', '\n', data.strip())).flatten(),
             },
             r'NAOs in the AO basis:\n -{10,}\n[\s\S]*?\n([ 0-9]+\n[\s\S]*?)\n.*\n PNAO overlap matrix' : {
                 'important' : True,
                 'selection' : -1,
                 'key' : 'nao_in_ao_basis_appendix',
-                'type' : str,
+                'type' : int,
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n', \
+                                data.strip())).flatten(),
             },
             r' PNAO overlap matrix:\n -{10,}\n([\s\S]*?)\n.*\n NAO density matrix' : {
                 'important' : True,
                 'selection' : -1,
                 'key' : 'pnao_overlap_matrix',
+                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n', \
+                                data.strip())).flatten(),
             },
             r' NAO density matrix:\n -{10,}(?:\n ALPHA SPIN\n|\n)([\s\S]*?)\n.*\n NAO Fock matrix:' : {
                 'important' : True,
                 'selection' : -1,
                 'key' : 'nao_density_matrix',
             },
-            r' NAO Fock matrix:\n -{10,}(?:\n ALPHA SPIN\n|\n)([\s\S]*?)\n.*\n$' : {
+            r' NAO Fock matrix:\n -{10,}(?:\n ALPHA SPIN\n|\n)([\s\S]*?)\n$' : {
                 'important' : True,
                 'selection' : -1,
                 'key' : 'nao_fock_matrix',
             },
         }),
         'synthesized_data' : OrderedDict({
+            'number_of_ao' : {
+                'prerequisite' : ['nao_in_ao_basis'],
+                'equation' : lambda arrays: int(math.sqrt(len(arrays['nao_in_ao_basis']))),
+            },
+            'nao_in_ao_basis' : {
+                'prerequisite' : ['number_of_ao', 'nao_in_ao_basis'],
+                'equation' : lambda arrays: arrays['nao_in_ao_basis'].reshape((-1, arrays['number_of_ao'])),
+            },
+            'nao_in_ao_basis_appendix' : {
+                'prerequisite' : ['number_of_ao', 'nao_in_ao_basis_appendix'],
+                'equation' : lambda arrays: arrays['nao_in_ao_basis_appendix'].reshape((-1, arrays['number_of_ao'])),
+            },
             'alpha_nao_density_matrix' : {
                 # 'prerequisite' : ['_has_alpha_spin', '_has_beta_spin'],
-                'equation' : lambda arrays: ext_methods.datablock_to_numpy(arrays['nao_density_matrix'].replace('\n', '')),
+                'equation' : lambda arrays: ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n', \
+                                (arrays['nao_density_matrix']).strip())).flatten(),
             },
             'alpha_nao_fock_matrix' : {
                 # 'prerequisite' : ['_has_alpha_spin', '_has_beta_spin'],
-                'equation' : lambda arrays: ext_methods.datablock_to_numpy(arrays['nao_fock_matrix'].split('BETA  SPIN')[0].replace('\n', '')),
+                'equation' : lambda arrays: ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n', \
+                                (arrays['nao_fock_matrix'].split('BETA  SPIN')[0]).strip())).flatten(),
             },
             'beta_nao_density_matrix' : {
                 'prerequisite' : ['_has_alpha_spin', '_has_beta_spin'],
-                'equation' : lambda arrays: ext_methods.datablock_to_numpy(arrays['nao_fock_matrix'].split('BETA  SPIN')[1].replace('\n', '')),
+                'equation' : lambda arrays: ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n', \
+                                (arrays['nao_fock_matrix'].split('BETA  SPIN')[1]).strip())).flatten(),
             },
             'beta_nao_fock_matrix' : {
                 'prerequisite' : ['_has_alpha_spin', '_has_beta_spin'],
-                'equation' : lambda arrays: ext_methods.datablock_to_numpy(arrays['nao_fock_matrix'].split('BETA  SPIN')[2].replace('\n', '')),
-                'delete' : ['_has_alpha_spin', '_has_beta_spin', 'nao_fock_matrix', 'nao_density_matrix'],
+                'equation' : lambda arrays: ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n', \
+                                (arrays['nao_fock_matrix'].split('BETA  SPIN')[2]).strip())).flatten(),
+                'delete' : ['_has_alpha_spin', '_has_beta_spin',
+                            'nao_fock_matrix', 'nao_density_matrix'],
             },
-
             }),
         'non_regularize' : True,
     }

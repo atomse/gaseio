@@ -302,3 +302,10 @@ def regularize_symbols(symbols):
             else symbol[0].upper() for symbol in symbols]
 
 
+
+def reshape_to_square(array):
+    assert isinstance(array, np.ndarray)
+    array = array.flatten()
+    length = int(np.sqrt(len(array)))
+    array = array.reshape((length, length))
+    return array

@@ -58,7 +58,7 @@ def test_no_catch():
     """
     for item_i, filename in enumerate(os.listdir(TEST_DIR)[CONTINUE_START_ITEM:]):
         print(filename)
-        if filename.startswith('.'):
+        if filename.startswith('.') or filename=='README.md':
             continue
         filename = os.path.join(TEST_DIR, filename)
         if not os.path.isfile(filename):

@@ -6,7 +6,7 @@
 ## fix
 
 * pdb chemio read error
-
+* gaussian-nbo-out .49 parse
 
 
 

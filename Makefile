@@ -57,25 +57,25 @@ test_chemio:
 
 
 test_chemio_info:
-	rm -rf /tmp/testresult
+	rm -rf /tmp/gaseio_testresult
 	export CHEMIO_SERVER_URLS=http://localhost:5000/; \
 	for filename in tests/Testcases/*.*; \
 	do \
-		[ -f $$filename ] && chemio info $$filename || echo $$filename >> /tmp/testresult; \
+		[ -f $$filename ] && chemio info $$filename || echo $$filename >> /tmp/gaseio_testresult; \
 	done;
 	echo read error
-	cat /tmp/testresult
+	cat /tmp/gaseio_testresult
 
 
 test_chemio_convert:
-	rm -rf /tmp/testfiletype
+	rm -rf /tmp/gaseio_testfiletype
 	export CHEMIO_SERVER_URLS=http://localhost:5000/; \
 	for filetype in `python -c 'import gaseio; print(gaseio.list_supported_write_formats("string"))'`; \
 	do \
-		chemio convert  tests/Testcases/test.xyz - -o $$filetype || echo $$filetype >> /tmp/testfiletype; \
+		chemio convert  tests/Testcases/test.xyz - -o $$filetype || echo $$filetype >> /tmp/gaseio_testfiletype; \
 	done;
 	echo write error
-	cat /tmp/testfiletype
+	cat /tmp/gaseio_testfiletype
 
 
 test_env:

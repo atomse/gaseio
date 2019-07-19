@@ -20,46 +20,8 @@ if not os.path.exists(UPLOAD_DIR):
 app = Flask(__name__)
 
 
-MAXSIZE = 100000000
-CHUNKSIZE = 1000000
 
 
-# def print_error(data):
-#     return data
-
-
-# def get_file_and_index():
-#     if 'file' not in form:
-#         print_error('Not found parameter: file')
-#         return
-#     form_file = form['file']
-#     if not form_file.file:
-#         print_error('Not found parameter: file')
-#         return
-#     if not form_file.filename:
-#         print_error('Not found parameter: file')
-#         return
-#     filename = os.path.basename(form_file.filename)
-#     uploaded_file_path = os.path.join(UPLOAD_DIR, atomtools.name.randString() + '_' + filename)
-#     start = True
-#     leftsize = MAXSIZE
-#     with open(uploaded_file_path.encode('utf-8'), 'wb') as fout:
-#         while True:
-#             chunk = form_file.file.read(CHUNKSIZE)
-#             if not chunk:
-#                 break
-#             if start:
-#                 md5 = hashlib.md5(chunk).hexdigest()
-#                 start = False
-#             fout.write(chunk)
-#     newfilename = md5 + '_' + filename
-#     dir1, dir2 = md5[:2], md5[2:4]
-#     newpath = os.path.join(UPLOAD_DIR, dir1, dir2, newfilename)
-#     if not os.path.exists(os.path.dirname(newpath)):
-#         os.makedirs(os.path.dirname(newpath))
-#     os.rename(uploaded_file_path, newpath)
-#     index = form.getvalue('index')
-#     return (newpath, index)
 
 def return_msg(code, msg):
     return {
@@ -74,7 +36,7 @@ def allowed_file(filename):
 
 def read_from_request(inp_request):
     "read_from_request"
-    upload_file = inp_request.files['file']
+    upload_file = inp_request.files['read_file']
     if upload_file and allowed_file(upload_file.filename):
         filename = secure_filename(upload_file.filename)
         # 将文件保存到 static/uploads 目录，文件名同上传时使用的文件名
@@ -84,12 +46,13 @@ def read_from_request(inp_request):
     else:
         return return_msg(200, 'file not allow to upload')
     form = inp_request.form
-    index = form.get('index', None)
+    format = form.get('read_formats', None)
+    index = form.get('read_index', None)
     if index == 'on':
         index = ':'
     elif index == 'off' or index is None:
         index = -1
-    arrays = gaseio.read(dest_filename, index, force_gase=True)
+    arrays = gaseio.read(dest_filename, index, format, force_gase=True)
     if isinstance(arrays, dict):
         arrays['filename'] = filename
     elif isinstance(arrays, list):
@@ -110,8 +73,8 @@ def app_read():
 def write_with_request(inp_request, arrays):
     "write_with_request"
     form = inp_request.form
-    filename = form.get('filename', None)
-    fileformat = form.get('format', None)
+    filename = form.get('write_filename', None)
+    fileformat = form.get('write_format', None)
     if not filename and not fileformat:
         raise ValueError('filename and format cannot be None at the same time')
     if filename:

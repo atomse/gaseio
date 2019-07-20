@@ -2,12 +2,13 @@
 
 import os
 import hashlib
-import json_tricks
 
 from werkzeug.utils import secure_filename
 from flask import Flask, request
+from flask_compress import Compress
 
 import atomtools
+import json_tricks
 import gaseio
 
 
@@ -18,7 +19,7 @@ if not os.path.exists(UPLOAD_DIR):
 
 
 app = Flask(__name__)
-
+Compress(app)
 
 
 
@@ -107,4 +108,6 @@ def app_convert():
 
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    DEFAULT_GASEIO_PORT = 5000
+    port = os.environ.get("GASEIO_PORT", DEFAULT_GASEIO_PORT)
+    app.run(port=port)

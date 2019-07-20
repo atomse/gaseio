@@ -1,6 +1,18 @@
 # CHANGELOG
 
 
+
+## 2.5.3
+
+## improve
+
+* flask app compress
+* adjust port with environment `GASEIO_PORT`, default 5000
+
+
+
+
+
 ## 2.5.2
 
 ## improve

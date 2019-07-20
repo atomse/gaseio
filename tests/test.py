@@ -1,4 +1,10 @@
+"""
 
+
+test
+
+
+"""
 
 
 
@@ -67,6 +73,8 @@ def test_no_catch():
         arrays = gaseio.read(filename, index=-1, force_gase=True)
         # print(arrays)
         print('\n' * 4)
+        if not 'symbols' in arrays:
+            continue
         for write_temp_type in SUPPORTED_TEMPS:
             print('\n'*4, )
             print(write_temp_type, filename)

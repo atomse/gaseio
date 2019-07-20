@@ -359,21 +359,28 @@ def process_gaussian_coord_datablock_to_positions(arrays):
 
 
 def process_fchk(data, arrays):
-    FCHK_KEY_VAL_PATTERN = r'\n[A-Z].* {2,}[IR] {3}[\s\S]*?(?=\n[A-Z]|\n$)'
+    FCHK_KEY_VAL_PATTERN = r'\n[A-Z].* {2,}[IRC] {3}N=.*\n.*[\s\S]*?(?=\n[A-Z]|$)|\n[A-Z].* {2,}[IRC] {3}.*'
     for dblock in re.findall(FCHK_KEY_VAL_PATTERN, data):
-        lines = dblock.strip().split('\n')
-        key, dtype, array_length = [_.strip() for _ in re.split(r'  ([IR])  ', lines[0])]
-        key = key.lower().replace(' ', '_')
+        lines = dblock.strip('\n').split('\n')
+        key, dtype, array_length = [_.strip() for _ in re.split(r'  ([IRC])  ', lines[0])]
+        key = key.replace(' ', '_')
+        # print('-'*10, '\n')
+        # print(dblock, lines)
+        # print('key : ', key)
+        # print('-'*10, '\n')
         if dtype == 'I':
             dtype = int
         elif dtype == 'R':
             dtype = float
-        else:
-            raise NotImplementedError(dtype, ' really exist???')
+        elif dtype == 'C':
+            dtype = str
         if not 'N=' in array_length: # This is not a array
             ddata = dtype(array_length)
-        else:
+        elif dtype in [int, float]:
             ddata = np.array(' '.join(lines[1:]).split()).astype(dtype)
+        else:
+            # print(lines)
+            ddata = '\n'.join(lines[1:])
         if key in arrays['calc_arrays']:
             import warnings
             warnings.warn(key+' again')
@@ -791,26 +798,28 @@ FORMAT_STRING = {
         'primitive_data_function' : lambda data, arrays: process_fchk(data, arrays),
         'synthesized_data' : OrderedDict({
             'numbers' : {
-                'prerequisite' : ['calc_arrays/atomic_numbers'],
-                'equation' : lambda arrays: arrays['calc_arrays/atomic_numbers'],
+                'prerequisite' : ['calc_arrays/Atomic_numbers'],
+                'equation' : lambda arrays: arrays['calc_arrays/Atomic_numbers'],
                 'process' : lambda data, arrays: ext_types.ExtList(data.tolist()),
             },
             'charge' : {
-                'prerequisite' : ['calc_arrays/charge'],
-                'equation' : lambda arrays: arrays['calc_arrays/charge'],
+                'prerequisite' : ['calc_arrays/Charge'],
+                'equation' : lambda arrays: arrays['calc_arrays/Charge'],
             },
             'multiplicity' : {
-                'prerequisite' : ['calc_arrays/multiplicity'],
-                'equation' : lambda arrays: arrays['calc_arrays/multiplicity'],
+                'prerequisite' : ['calc_arrays/Multiplicity'],
+                'equation' : lambda arrays: arrays['calc_arrays/Multiplicity'],
             },
             'positions' : {
-                'prerequisite' : ['calc_arrays/current_cartesian_coordinates'],
-                'equation' : lambda arrays: arrays['calc_arrays/current_cartesian_coordinates'].reshape((-1, 3)) * atomtools.unit.trans_length('au'),
+                'prerequisite' : ['calc_arrays/Current_cartesian_coordinates'],
+                'equation' : lambda arrays: arrays['calc_arrays/Current_cartesian_coordinates'].reshape((-1, 3))\
+                                            * atomtools.unit.trans_length('au'),
             },
-            'calc_arrays/coordinates_of_each_shell' : {
-                'prerequisite' : ['calc_arrays/coordinates_of_each_shell'],
-                'equation' : lambda arrays: arrays['calc_arrays/coordinates_of_each_shell'].reshape((-1, 3)) * atomtools.unit.trans_length('au'),
-            },
+            # 'calc_arrays/coordinates_of_each_shell' : {
+            #     'prerequisite' : ['calc_arrays/Coordinates_of_each_shell'],
+            #     'equation' : lambda arrays: arrays['calc_arrays/Coordinates_of_each_shell'].reshape((-1, 3))\
+            #                                 * atomtools.unit.trans_length('au'),
+            # },
         }),
     },
     'gaussian-nbo-out' : {
@@ -903,7 +912,7 @@ FORMAT_STRING = {
                 'delete' : ['_has_alpha_spin', '_has_beta_spin',
                             'nao_fock_matrix', 'nao_density_matrix'],
             },
-            }),
+        }),
         'non_regularize' : True,
     }
 }

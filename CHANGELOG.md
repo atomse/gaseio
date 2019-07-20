@@ -1,6 +1,13 @@
 # CHANGELOG
 
 
+## 2.5.2
+
+## improve
+
+* gaussian-neb-out key: case unchangd, space-->underlinet
+
+
 ## 2.5.1
 
 ## fix

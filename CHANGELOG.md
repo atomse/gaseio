@@ -4,11 +4,26 @@
 
 ## 2.5.3
 
+<<<<<<< HEAD
 ## improve
 
 * flask app compress
 * adjust port with environment `GASEIO_PORT`, default 5000
 
+=======
+
+## fix
+
+* gaussian-nbo-out lower_diagnal_order_2_square
+
+
+
+
+## improve:
+
+* interface: read/write/convert
+* update chem_file_samples
+>>>>>>> 04cbbdf2fb1a0f1dc49f3ca0efca9fb08c00992c
 
 
 

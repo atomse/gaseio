@@ -3,7 +3,7 @@ format_string
 """
 from collections import OrderedDict
 
-import atomtools
+import atomtools.unit
 
 from .. import ext_types
 from .. import ext_methods

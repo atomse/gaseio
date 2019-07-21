@@ -7,7 +7,8 @@
 1.00000
 {% if cell is defined %}
     {% for i in range(3) %}
-{{cell[i][0]}}  {{cell[i][1]}}  {{cell[i][2]}}
+{% for j in range(3) %} {{"%.6f" | format(cell[i][j])}} {% endfor %}
+
     {% endfor %}
 {% else %}
  {{"%.6f" | format([atoms_size[0]*2, min_cell_size] | max)}} 0. 0.

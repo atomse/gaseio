@@ -7,7 +7,8 @@ import os
 import re
 import configparser
 import numpy as np
-import atomtools
+import atomtools.file
+import atomtools.filetype
 
 from .ext_types import ExtList, ExtDict
 from .ext_methods import astype, xml_parameters, datablock_to_numpy,\
@@ -29,7 +30,7 @@ def read(fileobj, index=-1, format=None, warning=False, debug=False):
     if isinstance(index, int):
         index = slice(index, None, None)
     all_file_string = atomtools.file.get_file_content(fileobj)
-    file_format = format or atomtools.filetype(fileobj)
+    file_format = format or atomtools.filetype.filetype(fileobj)
 
     assert file_format is not None, \
         'format: {0}, fileobj {1}, file_format {2}'.format(format, fileobj, file_format)

@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 from flask import Flask, request
 from flask_compress import Compress
 
-import atomtools
+import atomtools.name
 import json_tricks
 import gaseio
 
@@ -110,4 +110,4 @@ def app_convert():
 if __name__ == '__main__':
     DEFAULT_GASEIO_PORT = 5000
     port = os.environ.get("GASEIO_PORT", DEFAULT_GASEIO_PORT)
-    app.run(port=port)
+    app.run(port=port, debug=True)

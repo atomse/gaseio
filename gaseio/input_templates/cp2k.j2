@@ -38,6 +38,7 @@
       POTENTIAL_FILE_NAME {{calc_arrays['cp2k_potential_filename'] if calc_arrays is defined and 'cp2k_potential_filename' in calc_arrays else 'POTENTIAL'}}
       WFN_RESTART_FILE_NAME ./cp2k-RESTART.wfn
       CHARGE {{charge}}
+      MULTIPLICITY {{multiplicity}}
       &MGRID
          CUTOFF {{calc_arrays['cutoff'] if calc_arrays is defined and 'cutoff' in calc_arrays else 280.000000}}
       &END MGRID

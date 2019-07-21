@@ -4,7 +4,7 @@ format_string
 import re
 from collections import OrderedDict
 import numpy as np
-import atomtools
+import atomtools.geo
 from .. import ext_methods
 
 def cif_construct_cell(arrays):

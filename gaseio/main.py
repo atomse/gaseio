@@ -5,8 +5,10 @@ gaseio
 
 import os
 import re
-import atomtools
-from atomtools import filetype
+import atomtools.file
+import atomtools.name
+import atomtools.filetype
+
 
 
 
@@ -18,7 +20,7 @@ BASEDIR = os.path.dirname(os.path.abspath(__file__))
 def read(fileobj, index=-1, format=None, parallel=True, force_ase=False, 
          force_gase=False, **kwargs):
     fileobj = atomtools.file.get_uncompressed_fileobj(fileobj)
-    _filetype = format or atomtools.filetype(fileobj)
+    _filetype = format or atomtools.filetype.filetype(fileobj)
     assert isinstance(index, int) or\
            re.match(r'^[+-:0-9]+$', str(index)) 
     if isinstance(index, str):
@@ -75,7 +77,7 @@ def write(fileobj, images, format=None, parallel=True, append=False, force_ase=F
 
 def get_write_content(fileobj, images, format=None, parallel=True, append=False,
                       force_ase=False, force_gase=False, preview=False, **kwargs):
-    _filetype = format or atomtools.filetype(fileobj)
+    _filetype = format or atomtools.filetype.filetype(fileobj)
     print(_filetype)
     if force_gase:
         return gase_writer_content(images, _filetype)

@@ -4,7 +4,8 @@ format_string
 from collections import OrderedDict
 import numpy as np
 import parse
-import atomtools
+
+import atomtools.unit
 
 from .. import ext_types
 from .. import ext_methods
@@ -123,7 +124,8 @@ FORMAT_STRING = {
                         'key' : 'velocities',
                         'type' : float,
                         'index' : ':,7:10',
-                        'process' : lambda data, arrays: None if (data==None).all else data * atomtools.unit.trans_velocity('nm/ps', 'Ang/fs'),
+                        'process' : lambda data, arrays: None if (data==None).all \
+                                           else data * atomtools.unit.trans_velocity('nm/ps', 'Ang/fs'),
                     },
                     ],
             },

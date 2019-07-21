@@ -16,8 +16,9 @@ import numpy as np
 import pandas as pd
 
 import chemdata
-import atomtools
-from atomtools import filetype
+import atomtools.file
+import atomtools.string
+import atomtools.filetype
 
 
 from .ext_types import ExtList, ExtDict
@@ -309,3 +310,18 @@ def reshape_to_square(array):
     length = int(np.sqrt(len(array)))
     array = array.reshape((length, length))
     return array
+
+
+
+
+
+def lower_diagnal_order_2_square(tri, dim = None):
+    assert tri.ndim == 1
+    if not dim:
+        dim = int((tri.shape[0]*2) ** 0.5)
+    assert tri.shape == (dim*(dim+1)/2,)
+    square = np.zeros((dim, dim))
+    id = np.tril_indices(dim)
+    square[id] = tri
+    square[id[::-1]] = tri
+    return square

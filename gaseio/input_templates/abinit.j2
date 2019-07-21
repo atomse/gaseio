@@ -21,5 +21,6 @@ typat    {% for i in range(positions|length) %} {{numbers.deep_contract_items().
 
 znucl    {{numbers.deep_contract_items("string")}}
 xred     {% for i in range(positions | length) %}
-         {{positions[numbers.deep_contract_index()[i]][0]}}  {{positions[numbers.deep_contract_index()[i]][1]}}  {{positions[numbers.deep_contract_index()[i]][2]}}
+         {% for j in range(3) %} {{"%.6f" | format(positions[numbers.deep_contract_index()[i]][j])}}  {% endfor %}
+
          {% endfor %}

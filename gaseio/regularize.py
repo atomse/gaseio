@@ -7,7 +7,7 @@ regularize arrays
 
 import numpy as np
 import chemdata
-import atomtools
+import atomtools.geo
 
 
 from .ext_types import ExtList

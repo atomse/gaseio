@@ -9,8 +9,6 @@ from io import StringIO
 import numpy as np
 import pandas as pd
 
-import chemdata
-import atomtools
 from .. import ext_types
 from .. import ext_methods
 

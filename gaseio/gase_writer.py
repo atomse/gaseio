@@ -9,7 +9,9 @@ import os
 import glob
 import jinja2
 import json_tricks
-import atomtools
+import atomtools.name
+import atomtools.filetype
+
 import basis_set_exchange as bse
 
 from . import ext_types
@@ -34,7 +36,9 @@ jinja_environment.filters.update({
     'islist': islist,
     'file_basename' : file_basename,
 })
-jinja_environment.globals.update(get_basis=bse.get_basis, get_all_basis_names=bse.get_all_basis_names)
+jinja_environment.globals.update(get_basis=bse.get_basis, 
+                                 get_all_basis_names=bse.get_all_basis_names
+)
 
 # def include_vasppot(fname):
 #     print(fname)
@@ -66,7 +70,8 @@ def generate_input_content(arrays, filetype):
         else: # gase
             arrays = arrays.arrays
     regularize_arrays(arrays)
-    # print(arrays['symbols'])
+    if not atomtools.filetype.support_multiframe(filetype) and isinstance(arrays, (list, tuple)):
+        arrays = arrays[-1]
     if isinstance(arrays, list):
         output = template.render(arrays=arrays, arrays_json=json_tricks.dumps(arrays),
                                  randString=atomtools.name.randString())

@@ -32,7 +32,7 @@ install:
 	cd /tmp; pip uninstall -yy $(Project); cd -; python setup.py install || python setup.py install --user
 
 test:
-	bash -c "export PYTHONPATH="$(PYTHONPATH):$(PWD)"; export GASEIO_CONTINUE_FILE="$(GASEIO_CONTINUE_FILE)"; coverage run --source $(Project) ./tests/test.py" 
+	bash -c "export PYTHONPATH="$(PYTHONPATH):$(pes_parent_dir)"; export GASEIO_CONTINUE_FILE="$(GASEIO_CONTINUE_FILE)"; coverage run --source $(Project) ./tests/test.py" 
 	echo `which $(Project)`
 	# coverage run --source $(Project) `which $(Project)` -h
 	# coverage run --source $(Project) `which $(Project)` LISTSUBCOMMAND
@@ -41,9 +41,12 @@ test:
 	converge report -m > coverage.log
 
 
-server:
-	bash -c 'python -m gaseio.server'
+test_app:
+	bash -c "export GASEIO_PORT=5001; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python -m gaseio.app"
 
+
+test_server:
+	bash -c "export GASEIO_PORT=5001; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python -m gaseio.server"
 
 
 test_chemio:

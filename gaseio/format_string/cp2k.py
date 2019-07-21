@@ -6,15 +6,17 @@ format_string
 
 import re
 from collections import OrderedDict
-import atomtools
 import numpy as np
 
 
 
 
+import atomtools.geo
+import atomtools.unit
+
+
 from .. import ext_types
 from .. import ext_methods
-from ..format_parser import read
 
 
 def parse_cp2k_cell(arrays):

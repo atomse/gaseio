@@ -892,23 +892,27 @@ FORMAT_STRING = {
             },
             'alpha_nao_density_matrix' : {
                 # 'prerequisite' : ['_has_alpha_spin', '_has_beta_spin'],
-                'equation' : lambda arrays: ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n', \
-                                (arrays['nao_density_matrix']).strip())).flatten(),
+                'equation' : lambda arrays: ext_methods.lower_diagnal_order_2_square(\
+                                ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n', \
+                                (arrays['nao_density_matrix']).strip())).flatten()),
             },
             'alpha_nao_fock_matrix' : {
                 # 'prerequisite' : ['_has_alpha_spin', '_has_beta_spin'],
-                'equation' : lambda arrays: ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n', \
-                                (arrays['nao_fock_matrix'].split('BETA  SPIN')[0]).strip())).flatten(),
+                'equation' : lambda arrays: ext_methods.lower_diagnal_order_2_square(\
+                                ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n', \
+                                (arrays['nao_fock_matrix'].split('BETA  SPIN')[0]).strip())).flatten()),
             },
             'beta_nao_density_matrix' : {
                 'prerequisite' : ['_has_alpha_spin', '_has_beta_spin'],
-                'equation' : lambda arrays: ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n', \
-                                (arrays['nao_fock_matrix'].split('BETA  SPIN')[1]).strip())).flatten(),
+                'equation' : lambda arrays: ext_methods.lower_diagnal_order_2_square(\
+                                ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n', \
+                                (arrays['nao_fock_matrix'].split('BETA  SPIN')[1]).strip())).flatten()),
             },
             'beta_nao_fock_matrix' : {
                 'prerequisite' : ['_has_alpha_spin', '_has_beta_spin'],
-                'equation' : lambda arrays: ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n', \
-                                (arrays['nao_fock_matrix'].split('BETA  SPIN')[2]).strip())).flatten(),
+                'equation' : lambda arrays: ext_methods.lower_diagnal_order_2_square(\
+                                ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n', \
+                                (arrays['nao_fock_matrix'].split('BETA  SPIN')[2]).strip())).flatten()),
                 'delete' : ['_has_alpha_spin', '_has_beta_spin',
                             'nao_fock_matrix', 'nao_density_matrix'],
             },

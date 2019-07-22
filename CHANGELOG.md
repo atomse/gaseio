@@ -1,43 +1,45 @@
 # CHANGELOG
 
 
+## 2.5.4
 
-## 2.5.3
+### functions
 
-<<<<<<< HEAD
-## improve
+* add mod iolist to list supported parse/gen formats
+* improve atomtools to speed up.
+* update requirements
 
-* flask app compress
-* adjust port with environment `GASEIO_PORT`, default 5000
-
-=======
-
-## fix
+### fix
 
 * gaussian-nbo-out lower_diagnal_order_2_square
 
 
 
 
-## improve:
+## 2.5.3
 
+### improve
+
+* flask app compress
+* adjust port with environment `GASEIO_PORT`, default 5000
 * interface: read/write/convert
 * update chem_file_samples
->>>>>>> 04cbbdf2fb1a0f1dc49f3ca0efca9fb08c00992c
+
+
 
 
 
 
 ## 2.5.2
 
-## improve
+### improve
 
 * gaussian-neb-out key: case unchangd, space-->underlinet
 
 
 ## 2.5.1
 
-## fix
+### fix
 
 * pdb chemio read error
 * gaussian-nbo-out .49 parse
@@ -47,7 +49,7 @@
 
 ## 2.5.0
 
-## functions
+### functions
 
 * pdb supported, HETATM in arrays['hetatoms']
 * add pdb test case

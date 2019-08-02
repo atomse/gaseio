@@ -18,5 +18,5 @@ DEFAULT_GASEIO_PORT = 5000
 port = os.environ.get("GASEIO_PORT", DEFAULT_GASEIO_PORT)
 
 http_server = HTTPServer(WSGIContainer(app))
-http_server.listen(port)
+http_server.listen(port, '127.0.0.1')
 IOLoop.instance().start()

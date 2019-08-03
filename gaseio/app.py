@@ -4,7 +4,7 @@ import os
 import hashlib
 
 from werkzeug.utils import secure_filename
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 from flask_compress import Compress
 
 import atomtools.name
@@ -18,7 +18,10 @@ if not os.path.exists(UPLOAD_DIR):
     raise IOError(UPLOAD_DIR, 'not exist')
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
+BASEDIR = os.path.dirname(os.path.realpath(__file__))
+HTMLDIR = os.path.join(BASEDIR, 'html')
+
 Compress(app)
 
 
@@ -107,7 +110,13 @@ def app_convert():
     return output
 
 
+
+@app.route('/')
+def index():
+    return send_from_directory(HTMLDIR, "index.html")
+
+
 if __name__ == '__main__':
-    DEFAULT_GASEIO_PORT = 5000
+    DEFAULT_GASEIO_PORT = 5000 + 1
     port = os.environ.get("GASEIO_PORT", DEFAULT_GASEIO_PORT)
     app.run(port=port, debug=True)

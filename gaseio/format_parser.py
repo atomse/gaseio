@@ -7,7 +7,7 @@ import os
 import re
 import configparser
 import numpy as np
-import atomtools.file
+import atomtools.fileutil
 import atomtools.filetype
 
 from .ext_types import ExtList, ExtDict
@@ -29,7 +29,7 @@ def read(fileobj, index=-1, format=None, warning=False, debug=False):
     orig_index = index
     if isinstance(index, int):
         index = slice(index, None, None)
-    all_file_string = atomtools.file.get_file_content(fileobj)
+    all_file_string = atomtools.fileutil.get_file_content(fileobj)
     file_format = format or atomtools.filetype.filetype(fileobj)
 
     assert file_format is not None, \
@@ -37,7 +37,7 @@ def read(fileobj, index=-1, format=None, warning=False, debug=False):
     format_dict = FORMAT_STRING.get(file_format, None)
     if format_dict is None:
         raise NotImplementedError(file_format, 'not available now')
-    filename = atomtools.file.get_absfilename(fileobj)
+    filename = atomtools.fileutil.get_absfilename(fileobj)
 
     if format_dict.get('file_format', None) == 'dict':
         ignorance = format_dict.get('ignorance', None)

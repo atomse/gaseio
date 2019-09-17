@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 
 import chemdata
-import atomtools.file
+import atomtools.fileutil
 import atomtools.string
 import atomtools.filetype
 
@@ -275,9 +275,9 @@ class FileFinder(object):
         super(FileFinder, self).__init__()
         self.fileobj = fileobj
         self.file_format = file_format
-        file_string = atomtools.file.get_file_content(fileobj)
+        file_string = atomtools.fileutil.get_file_content(fileobj)
         # print(fileobj)
-        file_format = file_format or filetype(fileobj)
+        file_format = file_format or atomtools.filetype.filetype(fileobj)
         if not file_format in self.SUPPOTED_FILETYPE:
             raise NotImplementedError('only {0} are supported'.format(self.SUPPOTED_FILETYPE))
         # assert isinstance(filename, str) and os.path.exists(filename), '{0} not exists'.format(filename)

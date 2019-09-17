@@ -5,7 +5,7 @@ gaseio
 
 import os
 import re
-import atomtools.file
+import atomtools.fileutil
 import atomtools.name
 import atomtools.filetype
 
@@ -19,7 +19,7 @@ BASEDIR = os.path.dirname(os.path.abspath(__file__))
 
 def read(fileobj, index=-1, format=None, parallel=True, force_ase=False, 
          force_gase=False, **kwargs):
-    fileobj = atomtools.file.get_uncompressed_fileobj(fileobj)
+    fileobj = atomtools.fileutil.get_uncompressed_fileobj(fileobj)
     _filetype = format or atomtools.filetype.filetype(fileobj)
     assert isinstance(index, int) or\
            re.match(r'^[+-:0-9]+$', str(index)) 
@@ -43,7 +43,7 @@ def read(fileobj, index=-1, format=None, parallel=True, force_ase=False,
 
 def ase_reader(fileobj, index=None, format=None, parallel=True, **kwargs):
     from ase.io import read
-    filename = atomtools.file.get_filename(fileobj)
+    filename = atomtools.fileutil.get_filename(fileobj)
     # format = format or atomtools.filetype(filename)
     _atoms = read(fileobj, index, format, parallel, **kwargs)
     return _atoms.arrays

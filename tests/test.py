@@ -13,7 +13,7 @@ import gaseio
 from gaseio import gase_writer
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
-TEST_DIR = os.path.join(BASEDIR, 'chem_file_samples')
+TEST_DIR = os.path.join(BASEDIR, 'chem_file_samples/files')
 SUPPORTED_TEMPS = gase_writer.list_supported_write_formats()
 print('SUPPORTED_TEMPS', SUPPORTED_TEMPS)
 

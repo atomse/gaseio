@@ -11,6 +11,8 @@ test
 import os
 import gaseio
 from gaseio import gase_writer
+import tempfile
+import json_tricks
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 TEST_DIR = os.path.join(BASEDIR, 'chem_file_samples/files')
@@ -38,8 +40,6 @@ def test(test_types=None):
     
     for filename in os.listdir(TEST_DIR)[CONTINUE_START_ITEM:]:
         filename = os.path.join(TEST_DIR, filename)
-        if filename.startswith('.') or not os.path.isfile(filename):
-            continue
         print('\n'*4, filename)
         try:
             arrays = gaseio.read(filename, force_gase=True)
@@ -54,7 +54,7 @@ def test(test_types=None):
             except Exception as e:
                 print(write_temp_type, 'tempelate wrong!', filename)
                 print(e)
-                print(arrays)
+                print(json_tricks.dumps(arrays)[1000])
     return error
 
 
@@ -64,8 +64,6 @@ def test_no_catch():
     """
     for item_i, filename in enumerate(os.listdir(TEST_DIR)[CONTINUE_START_ITEM:]):
         print(filename)
-        if filename.startswith('.') or filename=='README.md':
-            continue
         filename = os.path.join(TEST_DIR, filename)
         if not os.path.isfile(filename):
             continue
@@ -78,7 +76,8 @@ def test_no_catch():
         for write_temp_type in SUPPORTED_TEMPS:
             print('\n'*4, )
             print(write_temp_type, filename)
-            gaseio.write('/tmp/test', arrays, write_temp_type, force_gase=True, preview=True)
+            tmpfname = tempfile.mktemp()
+            gaseio.write(tmpfname, arrays, write_temp_type, force_gase=True, preview=True)
         arrays = gaseio.read(filename, index=':', force_gase=True)
         open(CONTINUE_FILE, 'w').write(str(item_i+CONTINUE_START_ITEM))
         # print(arrays)

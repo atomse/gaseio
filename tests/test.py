@@ -11,6 +11,8 @@ test
 import os
 import gaseio
 from gaseio import gase_writer
+
+import argparse
 import tempfile
 import json_tricks
 
@@ -23,8 +25,8 @@ print('SUPPORTED_TEMPS', SUPPORTED_TEMPS)
 print(gaseio)
 print(gaseio.__version__)
 
-
-CONTINUE_FILE = os.environ.get("GASEIO_CONTINUE_FILE", None)
+tmpbasedir = tempfile.gettempdir()
+CONTINUE_FILE = os.environ.get("GASEIO_CONTINUE_FILE", f"{tmpbasedir}/gaseio_test_continue_file")
 CONTINUE_START_ITEM = 0
 if CONTINUE_FILE:
     print("CONTINUE_FILE", CONTINUE_FILE)
@@ -58,11 +60,21 @@ def test(test_types=None):
     return error
 
 
-def test_no_catch():
+def test_no_catch(test_extensions=None):
     """
     test gaseio without catching errors
     """
+    print(f"test_extensions: {test_extensions}")
     for item_i, filename in enumerate(os.listdir(TEST_DIR)[CONTINUE_START_ITEM:]):
+        open(CONTINUE_FILE, 'w').write(str(item_i+CONTINUE_START_ITEM))
+        if isinstance(test_extensions, (tuple, list)):
+            cont_flag = True
+            for ext in test_extensions:
+                if filename.endswith(ext):
+                    cont_flag = False
+                    break
+            if cont_flag:
+                continue
         print(filename)
         filename = os.path.join(TEST_DIR, filename)
         if not os.path.isfile(filename):
@@ -79,10 +91,14 @@ def test_no_catch():
             tmpfname = tempfile.mktemp()
             gaseio.write(tmpfname, arrays, write_temp_type, force_gase=True, preview=True)
         arrays = gaseio.read(filename, index=':', force_gase=True)
-        open(CONTINUE_FILE, 'w').write(str(item_i+CONTINUE_START_ITEM))
-        # print(arrays)
+        print(arrays)
+        print(arrays[0]['calc_arrays'].get('basis', 'basis: None'))
         print('\n' * 4)
     os.remove(CONTINUE_FILE)
 
 if __name__ == '__main__':
-    test_no_catch()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('test_types', nargs='*')
+    args = parser.parse_args()
+    print(args.__dict__)
+    test_no_catch(args.test_types)

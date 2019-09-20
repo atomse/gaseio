@@ -51,8 +51,10 @@ CHARGE {{charge|int}}
 
 
 ! unrestricted/restricted
-{% if calc_arrays is defined and calc_arrays['restriction'] %}
-{{calc_arrays['restriction']}}
+{% if spin is defined and spin != 0 %}
+unrestricted
+{% elif calc_arrays is defined and calc_arrays['restriction'] %}
+{{"unrestricted" if calc_arrays['restriction'][0]|lower=="u" else "restricted"}}
 {% endif %}
 
 
@@ -66,12 +68,13 @@ END
 
 
 
+
 BASIS
-{% if calc_arrays is defined and calc_arrays['basis'] %}
+{% if calc_arrays is defined and calc_arrays['basis'] and not calc_arrays['basis']|islist %}
 {{calc_arrays['basis']}}
 {% else %}
     TYPE TZP
-    CORE SMALL
+    CORE LARGE
 {% endif %}
 END
 

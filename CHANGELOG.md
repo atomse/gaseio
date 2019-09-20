@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.5.8 
+
+* fix adf bug
+
 
 
 ## 2.5.7

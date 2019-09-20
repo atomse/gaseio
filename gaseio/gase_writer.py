@@ -31,6 +31,12 @@ def file_basename(value):
     return os.path.splitext(value)[0]
 
 
+def include_qcdata(filename):
+    filename = f"{qcdata_dir}/{filename}"
+    with open(filename) as fd:
+        result = fd.read()
+    return result
+
 jinja_loader = jinja2.FileSystemLoader(INPUT_TEMPLATE_DIR)
 jinja_environment = jinja2.Environment(loader=jinja_loader, lstrip_blocks=True)
 jinja_environment.trim_blocks = True
@@ -39,7 +45,8 @@ jinja_environment.filters.update({
     'file_basename': file_basename,
 })
 jinja_environment.globals.update(get_basis=bse.get_basis,
-                                 get_all_basis_names=bse.get_all_basis_names)
+                                 get_all_basis_names=bse.get_all_basis_names,
+                                 include_qcdata=include_qcdata)
 
 # def include_vasppot(fname):
 #     print(fname)

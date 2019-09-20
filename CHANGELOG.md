@@ -1,8 +1,19 @@
 # CHANGELOG
 
+
+
+## 2.5.7
+
+* rm bigfiles out to qcdata
+
+
+## 2.5.6
+
+* gromacs cell min 21Ang.
+
 ## 2.5.5
 
-update atomtools to make it faster & no misunderstanding
+* update atomtools to make it faster & no misunderstanding
 
 
 

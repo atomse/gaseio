@@ -18,8 +18,7 @@ do
             source /app/${project}/bin/activate; \
             export HOME=/home/${username}; \
             sudo -u ${username} /app/${project}/bin/pip uninstall -yy ${project}; \
-            sudo -u ${username} /app/${project}/bin/pip install http://free.atomse.xyz/qcdata-1.1.0-py2.py3-none-any.whl
-            sudo -u ${username} /app/${project}/bin/pip install http://bwg.atomse.net/qcdata-1.1.0-py2.py3-none-any.whl
+            ping -c 1 -W 1 free.atomse.xyz && sudo -u ${username} /app/${project}/bin/pip install http://free.atomse.xyz/qcdata-1.1.0-py2.py3-none-any.whl|| sudo -u ${username} /app/${project}/bin/pip install http://bwg.atomse.net/qcdata-1.1.0-py2.py3-none-any.whl;
             sudo -u ${username} /app/${project}/bin/pip install /tmp/${fname}; \
             rm -f /tmp/$fname;  \
             sudo supervisorctl restart ${project}; \""

@@ -38,8 +38,9 @@ test:
 	# coverage run --source $(Project) `which $(Project)` -h
 	# coverage run --source $(Project) `which $(Project)` LISTSUBCOMMAND
 	# coverage run --source $(Project) `which $(Project)` LISTSUBCOMMAND | xargs -n 1 -I [] bash -c '(coverage run --source $(Project) `which $(Project)` [] -h >/dev/null 2>&1 || echo ERROR: [])'
-	coverage report -m
-	converge report -m > coverage.log
+	# coverage report -m
+	coverage report -m > coverage.log
+	cat coverage.log
 
 
 test_app:

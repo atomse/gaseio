@@ -63,7 +63,7 @@ test_chemio:
 
 test_chemio_info:
 	rm -rf /tmp/gaseio_testresult
-	export CHEMIO_SERVER_URLS=http://localhost:5000/; \
+	export CHEMIO_SERVER_URLS=http://localhost:5001/; \
 	for filename in tests/Testcases/*.*; \
 	do \
 		[ -f $$filename ] && chemio info $$filename || echo $$filename >> /tmp/gaseio_testresult; \

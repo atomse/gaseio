@@ -18,11 +18,11 @@ FORMAT_STRING = {
         # 'ignorance' : r'\s*#.*\n',
         'ignorance' : ('#',),
         'primitive_data' : {
-            r'%maxcore\s+(\d+)\s*\n' : {
+            r'%max_core\s+(\d+)\s*\n' : {
                 'important': False,
                 'selection' : -1,
                 'type': int,
-                'key' : 'maxcore',
+                'key' : 'max_core',
                 },
             r'%max_memory(\d+.*)\s*\n' : {
                 'important': False,

@@ -1,5 +1,13 @@
 # CHANGELOG
 
+
+
+## 2.5.9
+
+* `max_core`, `max_memory`
+* supporting `data`/`calc_data`
+
+
 ## 2.5.8 
 
 * fix adf bug

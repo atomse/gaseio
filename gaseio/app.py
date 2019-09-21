@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 import hashlib
 
 from werkzeug.utils import secure_filename
@@ -38,6 +39,16 @@ def allowed_file(filename):
     return True
 
 
+def parse_data(data):
+    data_array = dict()
+    for d in data.split(';'):
+        match = re.match('^(.*?)=(.*)$', d)
+        if match:
+            key, val = match[1], match[2]
+            data_array[key] = val
+    return data_array
+
+
 def read_from_request(inp_request):
     "read_from_request"
     upload_file = inp_request.files['read_file']
@@ -52,6 +63,11 @@ def read_from_request(inp_request):
     form = inp_request.form
     format = form.get('read_formats', None)
     index = form.get('read_index', None)
+    filename = form.get('read_filename', filename)
+    data_array = parse_data(form.get('data', ''))
+    data_calc_array = parse_data(form.get('calc_data', ''))
+    print("data_array: ", data_array)
+    print("data_calc_array: ", data_calc_array)
     if index == 'on':
         index = ':'
     elif index == 'off' or index is None:
@@ -59,11 +75,23 @@ def read_from_request(inp_request):
     arrays = gaseio.read(dest_filename, index, format, force_gase=True)
     if isinstance(arrays, dict):
         arrays['filename'] = filename
+        arrays.update(data_array)
+        if not 'calc_arrays' in arrays:
+            arrays['calc_arrays'] = dict()
+        arrays['calc_arrays'].update(data_calc_array)
+        gaseio.regularize.regularize_arrays(arrays)
     elif isinstance(arrays, list):
         for arr in arrays:
             arr['filename'] = filename
+            arr.update(data_array)
+            if not 'calc_arrays' in arr:
+                arr['calc_arrays'] = dict()
+            arr['calc_arrays'].update(data_calc_array)
+            gaseio.regularize.regularize_arrays(arr)
     # if app.debug and filename:
     #     print(filename)
+    if app.debug:
+        print(json_tricks.dumps(arrays, indent=4))
     return arrays
 
 

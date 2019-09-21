@@ -397,7 +397,7 @@ FORMAT_STRING = {
                 'important': False,
                 'selection' : -1,
                 'type': int,
-                'key' : 'calc_arrays/maxcore',
+                'key' : 'calc_arrays/max_core',
             },
             r'%mem.*=(\d+.*)\s*\n' : {
                 'important': False,
@@ -512,7 +512,7 @@ FORMAT_STRING = {
                 'important': False,
                 'selection' : -1,
                 'type': int,
-                'key' : 'calc_arrays/maxcore',
+                'key' : 'calc_arrays/max_core',
             },
             r'%mem.*=(\d+.*)\s*\n' : {
                 'important': False,

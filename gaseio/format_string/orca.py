@@ -16,11 +16,11 @@ FORMAT_STRING = {
         # 'ignorance' : r'\s*#.*\n',
         'ignorance' : ('#',),
         'primitive_data' : {
-            r'%maxcore\s+(\d+)\s*\n' : {
+            r'%max_core\s+(\d+)\s*\n' : {
                 'important': False,
                 'selection' : -1,
                 'type': int,
-                'key' : 'calc_arrays/maxcore',
+                'key' : 'calc_arrays/max_core',
                 },
             r'%max_memory(\d+.*)\s*\n' : {
                 'important': False,
@@ -139,7 +139,7 @@ FORMAT_STRING = {
                 'equation' : lambda arrays: read(arrays['xyzfile'], format='xyz')['symbols']
                 },
             }),
-        # 'writer_formats': '%nproc={atoms.maxcore}\n%mem={atoms.max_memory}B\n%chk={randString()}.chk\n#p force b3lyp/6-31g(d)\n\ngase\n\n{atoms.charge} {atoms.multiplicity}\n{atoms.get_symbols_positions()}{atoms.calc.connectivity}{atoms.calc.genecp}',
+        # 'writer_formats': '%nproc={atoms.max_core}\n%mem={atoms.max_memory}B\n%chk={randString()}.chk\n#p force b3lyp/6-31g(d)\n\ngase\n\n{atoms.charge} {atoms.multiplicity}\n{atoms.get_symbols_positions()}{atoms.calc.connectivity}{atoms.calc.genecp}',
     },
     'orca-out': {
         'calculator': 'ORCA',

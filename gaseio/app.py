@@ -3,18 +3,20 @@
 import os
 import re
 import hashlib
-
+import logging
 from werkzeug.utils import secure_filename
 from flask import Flask, request, send_from_directory
 from flask_compress import Compress
 
-import atomtools.name
+
 import json_tricks
+
+import atomtools.name
 import gaseio
 
 
-
-UPLOAD_DIR = os.environ.get("GASEIO_UPLOAD_DIR", os.path.expanduser('~/chemio'))
+UPLOAD_DIR = os.environ.get(
+    "GASEIO_UPLOAD_DIR", os.path.expanduser('~/chemio'))
 if not os.path.exists(UPLOAD_DIR):
     raise IOError(UPLOAD_DIR, 'not exist')
 
@@ -26,12 +28,10 @@ HTMLDIR = os.path.join(BASEDIR, 'html')
 Compress(app)
 
 
-
-
 def return_msg(code, msg):
     return {
-        'code' : code,
-        'msg' : msg,
+        'code': code,
+        'msg': msg,
     }
 
 
@@ -56,18 +56,21 @@ def read_from_request(inp_request):
         filename = secure_filename(upload_file.filename)
         # 将文件保存到 static/uploads 目录，文件名同上传时使用的文件名
         # dest_filename = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'], filename)
-        dest_filename = os.path.join(UPLOAD_DIR, atomtools.name.randString() + '_' + filename)
+        dest_filename = os.path.join(
+            UPLOAD_DIR,
+            atomtools.name.randString() + '_' + filename)
         upload_file.save(dest_filename)
     else:
         return return_msg(200, 'file not allow to upload')
     form = inp_request.form
     format = form.get('read_formats', None)
-    index = form.get('read_index', None)
     filename = form.get('read_filename', filename)
+    index = form.get('read_index', None)
     data_array = parse_data(form.get('data', ''))
     data_calc_array = parse_data(form.get('calc_data', ''))
-    print("data_array: ", data_array)
-    print("data_calc_array: ", data_calc_array)
+    logging.debug(f"filename: {filename}")
+    logging.debug(f"data_array: {data_array}")
+    logging.debug(f"data_calc_array: {data_calc_array}")
     if index == 'on':
         index = ':'
     elif index == 'off' or index is None:
@@ -88,10 +91,9 @@ def read_from_request(inp_request):
                 arr['calc_arrays'] = dict()
             arr['calc_arrays'].update(data_calc_array)
             gaseio.regularize.regularize_arrays(arr)
-    # if app.debug and filename:
-    #     print(filename)
-    if app.debug:
-        print(json_tricks.dumps(arrays, indent=4))
+    logging.debug(f"filename: {filename}")
+    logging.debug(f"arrays: {arrays}")
+    logging.debug(json_tricks.dumps(arrays, indent=4))
     return arrays
 
 
@@ -107,17 +109,21 @@ def write_with_request(inp_request, arrays):
     form = inp_request.form
     filename = form.get('write_filename', None)
     fileformat = form.get('write_format', None)
+    logging.debug(f"{form}\n{filename}\n{fileformat}")
     if not filename and not fileformat:
-        raise ValueError('filename and format cannot be None at the same time')
+        msg = 'filename and format cannot be None at the same time'
+        if app.debug:
+            raise ValueError(msg)
+        return {'success': False, 'msg': msg}
     if filename:
         if isinstance(arrays, dict):
             arrays['filename'] = filename
         elif isinstance(arrays, list):
             for arr in arrays:
                 arr['filename'] = filename
-    # if app.debug and filename:
-    #     print(filename)
-    output = gaseio.get_write_content(filename, arrays, fileformat, force_gase=True)
+    logging.debug(f"filename: {filename}")
+    output = gaseio.get_write_content(
+        filename, arrays, fileformat, force_gase=True)
     return output
 
 
@@ -138,13 +144,8 @@ def app_convert():
     return output
 
 
-
-@app.route('/')
-def index():
-    return send_from_directory(HTMLDIR, "index.html")
-
-
 if __name__ == '__main__':
     DEFAULT_GASEIO_PORT = 5000 + 1
     port = os.environ.get("GASEIO_PORT", DEFAULT_GASEIO_PORT)
+    logging.basicConfig(level=logging.DEBUG)
     app.run(port=port, debug=True)

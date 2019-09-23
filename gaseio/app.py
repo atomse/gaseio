@@ -5,9 +5,11 @@ import re
 import hashlib
 import logging
 from werkzeug.utils import secure_filename
-from flask import Flask, request, send_from_directory
+from flask import Flask
+from flask import request
+from flask import send_from_directory
+from flask import Response
 from flask_compress import Compress
-
 
 import json_tricks
 
@@ -101,7 +103,7 @@ def read_from_request(inp_request):
 def app_read():
     "app_read"
     arrays = read_from_request(request)
-    return json_tricks.dumps(arrays)
+    return Response(json_tricks.dumps(arrays), mimetype="application/json")
 
 
 def write_with_request(inp_request, arrays):
@@ -144,8 +146,13 @@ def app_convert():
     return output
 
 
+@app.route('/')
+def index():
+    return send_from_directory(HTMLDIR, "index.html")
+
+
 if __name__ == '__main__':
     DEFAULT_GASEIO_PORT = 5000 + 1
     port = os.environ.get("GASEIO_PORT", DEFAULT_GASEIO_PORT)
     logging.basicConfig(level=logging.DEBUG)
-    app.run(port=port, debug=True)
+    app.run(host='::', port=port, debug=True)

@@ -2,6 +2,11 @@
 
 
 
+## 2.6.0
+
+* reset logging as log output
+
+
 ## 2.5.9
 
 * `max_core`, `max_memory`

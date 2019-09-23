@@ -1,6 +1,9 @@
 # CHANGELOG
 
+## 2.6.1
 
+* Gaussian MO Coefficient fix
+* fix app bug
 
 ## 2.6.0
 

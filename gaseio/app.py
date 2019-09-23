@@ -16,6 +16,10 @@ import json_tricks
 import atomtools.name
 import gaseio
 
+logging.basicConfig(level=logging.INFO)
+
+logger = logging.getLogger(__name__)
+
 
 UPLOAD_DIR = os.environ.get(
     "GASEIO_UPLOAD_DIR", os.path.expanduser('~/chemio'))
@@ -70,9 +74,9 @@ def read_from_request(inp_request):
     index = form.get('read_index', None)
     data_array = parse_data(form.get('data', ''))
     data_calc_array = parse_data(form.get('calc_data', ''))
-    logging.debug(f"filename: {filename}")
-    logging.debug(f"data_array: {data_array}")
-    logging.debug(f"data_calc_array: {data_calc_array}")
+    logger.debug(f"filename: {filename}")
+    logger.debug(f"data_array: {data_array}")
+    logger.debug(f"data_calc_array: {data_calc_array}")
     if index == 'on':
         index = ':'
     elif index == 'off' or index is None:
@@ -84,7 +88,7 @@ def read_from_request(inp_request):
         if not 'calc_arrays' in arrays:
             arrays['calc_arrays'] = dict()
         arrays['calc_arrays'].update(data_calc_array)
-        gaseio.regularize.regularize_arrays(arrays)
+        # gaseio.regularize.regularize_arrays(arrays)
     elif isinstance(arrays, list):
         for arr in arrays:
             arr['filename'] = filename
@@ -92,10 +96,10 @@ def read_from_request(inp_request):
             if not 'calc_arrays' in arr:
                 arr['calc_arrays'] = dict()
             arr['calc_arrays'].update(data_calc_array)
-            gaseio.regularize.regularize_arrays(arr)
-    logging.debug(f"filename: {filename}")
-    logging.debug(f"arrays: {arrays}")
-    logging.debug(json_tricks.dumps(arrays, indent=4))
+            # gaseio.regularize.regularize_arrays(arr)
+    logger.debug(f"filename: {filename}")
+    logger.debug(f"arrays: {arrays}")
+    logger.debug(json_tricks.dumps(arrays, indent=4))
     return arrays
 
 
@@ -111,7 +115,7 @@ def write_with_request(inp_request, arrays):
     form = inp_request.form
     filename = form.get('write_filename', None)
     fileformat = form.get('write_format', None)
-    logging.debug(f"{form}\n{filename}\n{fileformat}")
+    logger.debug(f"{form}\n{filename}\n{fileformat}")
     if not filename and not fileformat:
         msg = 'filename and format cannot be None at the same time'
         if app.debug:
@@ -123,7 +127,7 @@ def write_with_request(inp_request, arrays):
         elif isinstance(arrays, list):
             for arr in arrays:
                 arr['filename'] = filename
-    logging.debug(f"filename: {filename}")
+    logger.debug(f"filename: {filename}")
     output = gaseio.get_write_content(
         filename, arrays, fileformat, force_gase=True)
     return output
@@ -154,5 +158,5 @@ def index():
 if __name__ == '__main__':
     DEFAULT_GASEIO_PORT = 5000 + 1
     port = os.environ.get("GASEIO_PORT", DEFAULT_GASEIO_PORT)
-    logging.basicConfig(level=logging.DEBUG)
+    # logger.setLevel(logging.DEBUG)
     app.run(host='::', port=port, debug=True)

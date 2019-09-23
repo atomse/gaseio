@@ -1,5 +1,11 @@
 # CHANGELOG
 
+
+
+## 2.6.2
+
+
+* `json_tricks` allow NaN
 ## 2.6.1
 
 * Gaussian MO Coefficient fix

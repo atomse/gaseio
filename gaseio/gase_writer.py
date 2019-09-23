@@ -61,6 +61,8 @@ jinja_environment.globals.update(get_basis=bse.get_basis,
 
 
 def generate_input_content(arrays, filetype):
+    if filetype == 'json':
+        return json_tricks.dumps(arrays, allow_nan=True)
     template_name = filetype + '.j2'
     template = jinja_environment.get_template(template_name)
     if not isinstance(arrays, dict) and hasattr(arrays, 'get_positions'):
@@ -81,11 +83,11 @@ def generate_input_content(arrays, filetype):
     if not atomtools.filetype.support_multiframe(filetype) and isinstance(arrays, (list, tuple)):
         arrays = arrays[-1]
     if isinstance(arrays, list):
-        output = template.render(arrays=arrays, arrays_json=json_tricks.dumps(arrays),
+        output = template.render(arrays=arrays, arrays_json=json_tricks.dumps(arrays, allow_nan=True),
                                  qcdata_dir=qcdata_dir,
                                  randString=atomtools.name.randString())
     else:
-        output = template.render(arrays=arrays, arrays_json=json_tricks.dumps(arrays),
+        output = template.render(arrays=arrays, arrays_json=json_tricks.dumps(arrays, allow_nan=True),
                                  qcdata_dir=qcdata_dir,
                                  randString=atomtools.name.randString(), **arrays)
     return output

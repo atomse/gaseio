@@ -99,7 +99,7 @@ def read_from_request(inp_request):
             # gaseio.regularize.regularize_arrays(arr)
     logger.debug(f"filename: {filename}")
     logger.debug(f"arrays: {arrays}")
-    logger.debug(json_tricks.dumps(arrays, indent=4))
+    logger.debug(json_tricks.dumps(arrays, indent=4, allow_nan=True))
     return arrays
 
 
@@ -107,7 +107,7 @@ def read_from_request(inp_request):
 def app_read():
     "app_read"
     arrays = read_from_request(request)
-    return Response(json_tricks.dumps(arrays), mimetype="application/json")
+    return Response(json_tricks.dumps(arrays, allow_nan=True), mimetype="application/json")
 
 
 def write_with_request(inp_request, arrays):
@@ -121,6 +121,8 @@ def write_with_request(inp_request, arrays):
         if app.debug:
             raise ValueError(msg)
         return {'success': False, 'msg': msg}
+    if fileformat == 'json':
+        return Response(json_tricks.dumps(arrays, allow_nan=True), mimetype="application/json")
     if filename:
         if isinstance(arrays, dict):
             arrays['filename'] = filename
@@ -156,7 +158,13 @@ def index():
 
 
 if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--debug', action='store_true')
+    args = parser.parse_args()
+
     DEFAULT_GASEIO_PORT = 5000 + 1
     port = os.environ.get("GASEIO_PORT", DEFAULT_GASEIO_PORT)
-    # logger.setLevel(logging.DEBUG)
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
     app.run(host='::', port=port, debug=True)

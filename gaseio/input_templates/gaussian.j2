@@ -48,21 +48,21 @@
 {% else %}
 %mem=2GB
 {% endif %}
-{% if chkfilename %}
-%chk={{chkfilename | file_basename }}.chk
+{% if 'chkfilename' in calc_arrays %}
+%chk={{ calc_arrays['chkfilename'] | file_basename }}.chk
 {% elif filename %}
 %chk={{filename | file_basename }}.chk
 {% else %}
 %chk=preview_gaussian_{{randString}}.chk
 {% endif %}
-{% if oldchkfilename %}
-%oldchk={{oldchkfilename | file_basename}}.chk
+{% if 'oldchkfilename' in calc_arrays %}
+%oldchk={{calc_arrays['oldchkfilename'] | file_basename}}.chk
 {% endif %}
 {% if calc_arrays is defined and calc_arrays['command'] %}
-{%if calc_arrays['command'].strip().startswith('p ') %}
-#{{calc_arrays['command'].strip()}}
+{% if calc_arrays['command'].lower().strip().startswith('p ') %}
+#{{calc_arrays['command'].lower().strip()}}
 {% else %}
-#p {{calc_arrays['command'].strip()}}
+#p {{calc_arrays['command'].lower().strip()}}
 {% endif %}
 {% else %}
 #p force b3lyp/lanl2dz

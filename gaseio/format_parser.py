@@ -35,7 +35,7 @@ def read(fileobj, index=-1, format=None, warning=False, debug=False):
     if isinstance(index, int):
         index = slice(index, None, None)
     all_file_string = atomtools.fileutil.get_file_content(fileobj)
-    fileobj.seek(0)
+    # fileobj.seek(0)
     file_format = format or atomtools.filetype.filetype(fileobj)
     if file_format == 'json':
         string = fileobj.read()

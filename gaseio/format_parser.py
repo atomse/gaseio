@@ -9,6 +9,9 @@ import configparser
 import numpy as np
 import atomtools.fileutil
 import atomtools.filetype
+import logging
+import json_tricks
+
 
 from .ext_types import ExtList, ExtDict
 from .ext_methods import astype, xml_parameters, datablock_to_numpy,\
@@ -17,10 +20,12 @@ from .ext_methods import astype, xml_parameters, datablock_to_numpy,\
 from .regularize import regularize_arrays
 
 
-
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 
 
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+# logger.setLevel(logging.DEBUG)
 
 
 def read(fileobj, index=-1, format=None, warning=False, debug=False):
@@ -30,10 +35,29 @@ def read(fileobj, index=-1, format=None, warning=False, debug=False):
     if isinstance(index, int):
         index = slice(index, None, None)
     all_file_string = atomtools.fileutil.get_file_content(fileobj)
+    fileobj.seek(0)
     file_format = format or atomtools.filetype.filetype(fileobj)
+    if file_format == 'json':
+        string = fileobj.read()
+        logger.debug(f"string: {all_file_string}")
+        arrays = json_tricks.loads(all_file_string)
+        logger.debug(f"orig_index: {orig_index}")
+        logger.debug(f"index: {index}")
+        if isinstance(arrays, dict):
+            regularize_arrays(arrays)
+        elif isinstance(arrays, list):
+            [regularize_arrays(_arr) for _arr in arrays]
+            if isinstance(orig_index, int):
+                arrays = arrays[orig_index]
+            else:
+                arrays = arrays[index]
+        logger.debug(f"{arrays}")
+        logger.debug(f"type: {type(arrays)}")
+        return arrays
 
     assert file_format is not None, \
-        'format: {0}, fileobj {1}, file_format {2}'.format(format, fileobj, file_format)
+        'format: {0}, fileobj {1}, file_format {2}'.format(
+            format, fileobj, file_format)
     format_dict = FORMAT_STRING.get(file_format, None)
     if format_dict is None:
         raise NotImplementedError(file_format, 'not available now')
@@ -48,7 +72,8 @@ def read(fileobj, index=-1, format=None, warning=False, debug=False):
 
     file_string_sections = [all_file_string]
     if format_dict.get('multiframe', False):
-        file_string_sections = re.findall(format_dict.get('frame_spliter'), all_file_string)
+        file_string_sections = re.findall(
+            format_dict.get('frame_spliter'), all_file_string)
     frame_indices = range(len(file_string_sections))[index]
     file_string_sections = file_string_sections[index]
     all_arrays = []
@@ -56,7 +81,8 @@ def read(fileobj, index=-1, format=None, warning=False, debug=False):
         arrays = ExtDict()
         arrays['filename'] = os.path.basename(filename) if filename else None
         arrays['frame_i'] = frame_i
-        process_primitive_data(arrays, file_string, format_dict, warning, debug)
+        process_primitive_data(arrays, file_string,
+                               format_dict, warning, debug)
         if format_dict.get('primitive_data_function', None):
             format_dict.get('primitive_data_function')(file_string, arrays)
         process_synthesized_data(arrays, format_dict, debug)
@@ -74,12 +100,15 @@ def read(fileobj, index=-1, format=None, warning=False, debug=False):
 def process_pattern(pattern, pattern_property, arrays, finder, warning=False, debug=False):
     key = pattern_property['key']
     important = pattern_property.get('important', False)
-    selection = pattern_property.get('selection', -1) # default select the last one
+    selection = pattern_property.get(
+        'selection', -1)  # default select the last one
     if pattern_property.get('debug', False):
-        import pdb; pdb.set_trace()
+        import pdb
+        pdb.set_trace()
     select_all = selection == 'all'
 
-    assert isinstance(selection, int) or selection == 'all', 'selection must be int or all'
+    assert isinstance(
+        selection, int) or selection == 'all', 'selection must be int or all'
     match = finder.find_pattern(pattern)
 
     if not match:
@@ -107,23 +136,26 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
                 value = pattern_property['type'](value)
         if value is not None:
             arrays.update(construct_depth_dict(key, value, arrays))
-    else: # array
+    else:  # array
         key_groups = key
+
         def np_select(data, dtype, index):
             try:
                 data = eval('data[{0}]'.format(index))
             except IndexError:
                 return None
             # print(all(data.shape))
-            if isinstance(data, np.ndarray) and not all(data.shape): # if contains no data
+            if isinstance(data, np.ndarray) and not all(data.shape):  # if contains no data
                 return None
             if dtype is not None:
                 return data.astype(dtype)
             return data
         for key_group in key_groups:
-            key, dtype, index = key_group.get('key'), key_group.get('type', None), key_group.get('index')
+            key, dtype, index = key_group.get('key'), key_group.get(
+                'type', None), key_group.get('index')
             if key_group.get('debug', False):
-                import pdb; pdb.set_trace()
+                import pdb
+                pdb.set_trace()
             if not select_all:
                 value = np_select(match[0], dtype, index)
             else:
@@ -132,28 +164,32 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
                 continue
             if key_group.get('process', None):
                 value = key_group.get('process')(value, arrays)
-            if value is None or isinstance(value, np.ndarray) and (value==None).all():
+            if value is None or isinstance(value, np.ndarray) and (value == None).all():
                 continue
             arrays.update(construct_depth_dict(key, value, arrays))
 
 
 def process_primitive_data(arrays, file_string, formats, warning=False, debug=False):
     warning = warning or debug
-    primitive_data, ignorance = formats['primitive_data'], formats.get('ignorance', None)
+    primitive_data, ignorance = formats['primitive_data'], formats.get(
+        'ignorance', None)
     if isinstance(ignorance, tuple):
-        file_string = '\n'.join([line for line in file_string.split('\n') \
-            if not (line.strip() and line.strip()[0] in ignorance)])
+        file_string = '\n'.join([line for line in file_string.split('\n')
+                                 if not (line.strip() and line.strip()[0] in ignorance)])
     # elif isinstance(ignorance, )
     file_format = formats.get('file_format', 'plain_text')
     finder = FileFinder(file_string, file_format=file_format)
     for pattern, pattern_property in primitive_data.items():
         if pattern_property.get("passerror", False):
             try:
-                process_pattern(pattern, pattern_property, arrays, finder, warning, debug)
+                process_pattern(pattern, pattern_property,
+                                arrays, finder, warning, debug)
             except:
                 pass
         else:
-            process_pattern(pattern, pattern_property, arrays, finder, warning, debug)
+            process_pattern(pattern, pattern_property,
+                            arrays, finder, warning, debug)
+
 
 def process_synthesized_data(arrays, formats, debug=False):
     """
@@ -167,7 +203,8 @@ def process_synthesized_data(arrays, formats, debug=False):
         cannot_synthesize = False
         # print(key)
         if key_property.get('debug', False):
-            import pdb; pdb.set_trace()
+            import pdb
+            pdb.set_trace()
         if key_property.get('prerequisite', None):
             for item in key_property.get('prerequisite'):
                 if isinstance(item, tuple):
@@ -197,6 +234,13 @@ def process_synthesized_data(arrays, formats, debug=False):
                     del arrays[item]
 
 
-def process_calculator(arrays, formats, debug=False):
-    if 'calculator' in formats:
-        arrays['calculator'] = formats.get('calculator')
+def process_calculator(arrays, formats_dict, debug=False):
+    if 'calculator' in formats_dict:
+        if not 'calc_arrays' in arrays:
+            arrays['calc_arrays'] = dict()
+        arrays['calc_arrays']['name'] = formats_dict.get('calculator')
+
+
+def setdebug():
+    logger.setLevel(logging.DEBUG)
+

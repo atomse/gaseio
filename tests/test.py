@@ -67,7 +67,7 @@ def test_no_catch(test_extensions=None):
     print(f"test_extensions: {test_extensions}")
     for item_i, filename in enumerate(os.listdir(TEST_DIR)[CONTINUE_START_ITEM:]):
         open(CONTINUE_FILE, 'w').write(str(item_i+CONTINUE_START_ITEM))
-        if isinstance(test_extensions, (tuple, list)):
+        if test_extensions and isinstance(test_extensions, (tuple, list)):
             cont_flag = True
             for ext in test_extensions:
                 if filename.endswith(ext):

@@ -1,9 +1,14 @@
 # CHANGELOG
 
+## 2.6.4
+
+* compatible with ASE, including
+    - Atoms: cell, pbc, masses, constraints, chemical_formula, ...
+    - Calculator: name, get_property, ...
+* json acceptable
 
 
 ## 2.6.2
-
 
 * `json_tricks` allow NaN
 ## 2.6.1

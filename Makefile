@@ -43,11 +43,11 @@ test:
 	cat coverage.log
 
 
-test_app:
+app:
 	bash -c "export GASEIO_PORT=5001; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python -m gaseio.app"
 
 
-test_server:
+server:
 	bash -c "export GASEIO_PORT=5001; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python -m gaseio.server"
 
 

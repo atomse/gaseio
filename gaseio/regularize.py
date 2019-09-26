@@ -4,46 +4,62 @@ regularize arrays
 
 
 """
-
+import sys
 import numpy as np
 import chemdata
+import inspect
+import logging
+
 import atomtools.geo
 from ase.symbols import Symbols as ASESymbols
 
 
-from .ext_types import ExtList
-from . import ext_methods
+
+
+current_module = sys.modules[__name__]
+
+
+logging.basicConfig()
+logger = logging.getLogger(__name__)
 
 
 def reg_customized_symbols(arrays):
+    from . import ext_methods
     if 'customized_symbols' in arrays and not 'symbols' in arrays:
-        arrays['symbols'] = ext_methods.regularize_symbols(arrays['customized_symbols'])
+        arrays['symbols'] = ext_methods.regularize_symbols(
+            arrays['customized_symbols'])
 
 
 def reg_symbols(arrays):
+    from . import ext_methods
     arrays['symbols'] = ext_methods.regularize_symbols(arrays['symbols'])
 
 
 def reg_numbers_symbols(arrays):
+    from .ext_types import ExtList
     if 'numbers' in arrays:
-        arrays['symbols'] = [chemdata.get_element(_) for _ in arrays['numbers']]
+        arrays['symbols'] = [chemdata.get_element(
+            _) for _ in arrays['numbers']]
     else:
         assert 'symbols' in arrays, 'either numbers or symbols should be in the arrays'
         reg_symbols(arrays)
-        arrays['numbers'] = np.array([chemdata.get_element_number(_) for _ in arrays['symbols']])
+        arrays['numbers'] = np.array(
+            [chemdata.get_element_number(_) for _ in arrays['symbols']])
     arrays['symbols'] = ExtList(arrays['symbols'])
     arrays['numbers'] = np.array(arrays['numbers'])
     # set chemical_formula
     _symbols_obj = ASESymbols(arrays['numbers'])
     formula_modes = ['all', 'reduce', 'hill', 'metal']
-    formula_content = [_symbols_obj.get_chemical_formula(mode) for mode in formula_modes]
+    formula_content = [_symbols_obj.get_chemical_formula(
+        mode) for mode in formula_modes]
     arrays['chemical_formula_dict'] = dict(zip(formula_modes, formula_content))
     arrays['chemical_formula'] = arrays['chemical_formula_dict']['hill']
 
 
 def reg_masses(arrays):
     if not 'masses' in arrays:
-        arrays['masses'] = np.array([chemdata.get_element_mass(x) for x in arrays['numbers']])
+        arrays['masses'] = np.array(
+            [chemdata.get_element_mass(x) for x in arrays['numbers']])
 
 
 def reg_charge(arrays):
@@ -54,7 +70,7 @@ def reg_charge(arrays):
 def reg_spin(arrays):
     if 'multiplicity' in arrays:
         arrays['spin'] = int(arrays['multiplicity']) - 1
-    if not 'spin' in arrays: # auto min spin
+    if not 'spin' in arrays:  # auto min spin
         arrays['spin'] = int(sum((arrays['numbers']) - arrays['charge'])) % 2
     arrays['multiplicity'] = arrays['spin'] + 1
 
@@ -91,12 +107,35 @@ def reg_calc_arrays(arrays):
 def reg_cell(arrays):
     if not 'cell' in arrays:
         arrays['cell'] = np.array([max(x, 21) for x in arrays['atoms_size']])
+        if not 'celldisp' in arrays:
+            arrays['celldisp'] = -1 * arrays['cell']/2
     if arrays['cell'].shape == (3, ):
         arrays['cell'] = np.diag(arrays['cell'])
+    if not 'celldisp' in arrays:
+        arrays['celldisp'] = np.zeros((3,))
+
 
 def reg_constraints(arrays):
     if not 'constraints' in arrays:
         arrays['constraints'] = []
+
+
+def reg_tags(arrays):
+    if not 'tags' in arrays:
+        arrays['tags'] = [None] * len(arrays['numbers'])
+
+
+def reg_initial_things(arrays):
+    if not 'initial_magnetic_moments' in arrays:
+        arrays['initial_magnetic_moments'] = np.zeros(
+            (len(arrays['numbers']),))
+    if not 'initial_charges' in arrays:
+        arrays['initial_charges'] = np.zeros((len(arrays['numbers']),))
+
+
+def reg_info(arrays):
+    if not 'info' in arrays:
+        arrays['info'] = {}
 
 
 reg_functions = [
@@ -111,7 +150,22 @@ reg_functions = [
     reg_pbc,
     reg_calc_arrays,
     reg_constraints,
+    reg_tags,
+    reg_initial_things,
+    reg_info,
 ]
+
+# all_functions = inspect.getmembers(current_module)
+# reg_functions = dict([o for o in all_functions
+#                       if inspect.isfunction(o) and o[0].startswith('reg_')])
+
+
+def _setdebug():
+    logger.setLevel(logging.DEBUG)
+    # logger.debug(__name__)
+    # all_functions = inspect.getmembers(mod)
+    logger.debug(all_functions)
+    logger.debug(reg_functions)
 
 
 def regularize_arrays(arrays):
@@ -121,3 +175,6 @@ def regularize_arrays(arrays):
         return
     for func in reg_functions:
         func(arrays)
+
+
+

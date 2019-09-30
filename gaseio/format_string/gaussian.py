@@ -35,6 +35,13 @@ ENERGY_ORDER = [
 ],
 
 
+def std_force_to_inp_force(std_positions, inp_positions, std_forces):
+    from .. import coordinations
+    inp_forces = coordinations.input_standard_pos_transform(
+        inp_positions, std_positions, std_forces)
+    return inp_forces
+
+
 def get_value_by_order(properties, order):
     if properties is None:
         return None
@@ -562,7 +569,7 @@ FORMAT_STRING = {
                 'type': str,
                 'process': lambda data, arrays: data.replace('\n ', '').replace('\\', '|').strip()
             },
-            r'Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n': {
+            r'Input orientation:[\s\S]*?Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n': {
                 'important': True,
                 'selection': -1,
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
@@ -579,6 +586,35 @@ FORMAT_STRING = {
                     }
                 ],
             },
+            r'Standard orientation:[\s\S]*?Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n': {
+                'important': False,
+                'selection': -1,
+                'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key': [
+                    {
+                        'key': '_standard_positions',
+                        'type': float,
+                        'index': ':,3:',
+                    }
+                ],
+            },
+            # r'Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n': {
+            #     'important': True,
+            #     'selection': -1,
+            #     'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
+            #     'key': [
+            #         {
+            #             'key': 'numbers',
+            #             'type': int,
+            #             'index': ':,1',
+            #         },
+            #         {
+            #             'key': 'positions',
+            #             'type': float,
+            #             'index': ':,3:',
+            #         }
+            #     ],
+            # },
             r'\n Dipole moment.*\n\s*(X=\s+.*)\n': {
                 'important': False,
                 'selection': -1,
@@ -665,7 +701,7 @@ FORMAT_STRING = {
                     {
                         'key': 'calc_arrays/forces',
                         'index': ':,2:5',
-                        'process': lambda data, arrays: data * atomtools.unit.trans_force('au', 'eV/Ang'),
+                        'process': lambda data, arrays: atomtools.unit.trans_force('au', 'eV/Ang') * (data if not '_standard_position' in arrays else std_force_to_inp_force(arrays['_standard_positions'], arrays['positions'], data)),
                     },
                 ],
             },

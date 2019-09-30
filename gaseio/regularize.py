@@ -134,6 +134,11 @@ def reg_info(arrays):
         arrays['info'] = {}
 
 
+def reg_kinetic_energy(arrays):
+    if not 'kinetic_energy' in arrays:
+        arrays['kinetic_energy'] = 0.0
+
+
 reg_functions = [
     reg_customized_symbols,
     reg_numbers_symbols,
@@ -149,6 +154,7 @@ reg_functions = [
     reg_tags,
     reg_initial_things,
     reg_info,
+    reg_kinetic_energy,
 ]
 
 # all_functions = inspect.getmembers(current_module)

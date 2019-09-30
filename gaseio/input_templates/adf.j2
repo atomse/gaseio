@@ -19,7 +19,7 @@ $ADFBIN/adf -n 4 << EOF 1>>${0/run/out} 2>>${0/run/err}
 {% if comments is defined %}
 TITLE {{comments}}
 {% else %}
-TITLE {{symbols.contract_items("string")}}
+TITLE {{ExtList(symbols).contract_items("string")}}
 {% endif %}
 
 

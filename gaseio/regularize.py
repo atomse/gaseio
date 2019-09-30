@@ -14,8 +14,6 @@ import atomtools.geo
 from ase.symbols import Symbols as ASESymbols
 
 
-
-
 current_module = sys.modules[__name__]
 
 
@@ -36,7 +34,6 @@ def reg_symbols(arrays):
 
 
 def reg_numbers_symbols(arrays):
-    from .ext_types import ExtList
     if 'numbers' in arrays:
         arrays['symbols'] = [chemdata.get_element(
             _) for _ in arrays['numbers']]
@@ -45,7 +42,6 @@ def reg_numbers_symbols(arrays):
         reg_symbols(arrays)
         arrays['numbers'] = np.array(
             [chemdata.get_element_number(_) for _ in arrays['symbols']])
-    arrays['symbols'] = ExtList(arrays['symbols'])
     arrays['numbers'] = np.array(arrays['numbers'])
     # set chemical_formula
     _symbols_obj = ASESymbols(arrays['numbers'])
@@ -175,6 +171,3 @@ def regularize_arrays(arrays):
         return
     for func in reg_functions:
         func(arrays)
-
-
-

@@ -9,115 +9,111 @@ from .. import ext_types
 from .. import ext_methods
 
 
-
-
 SIESTA_FORMAT_STRING = {
-    'calculator' : 'SIESTA',
+    'calculator': 'SIESTA',
     # 'ignorance' : r'\s*#.*\n',
-    'ignorance' : ('#',),
-    'primitive_data'  : {
-        r'%block AtomicCoordinatesAndAtomicSpecies([\s\S]*?)\n%endblock AtomicCoordinatesAndAtomicSpecies':{
+    'ignorance': ('#',),
+    'primitive_data': {
+        r'%block AtomicCoordinatesAndAtomicSpecies([\s\S]*?)\n%endblock AtomicCoordinatesAndAtomicSpecies': {
             'important': True,
-            'selection' : -1,
-            'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-            'key' : [
+            'selection': -1,
+            'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
+            'key': [
                 {
-                    'key' : 'species_nums',
+                    'key': 'species_nums',
                     # 'debug' : True,
-                    'type' : int,
-                    'index' : ':,3',
-                    'process' : lambda data, arrays: data.flatten() - 1,
+                    'type': int,
+                    'index': ':,3',
+                    'process': lambda data, arrays: data.flatten() - 1,
                 },
                 {
-                    'key' : 'positions',
-                    'type' : float,
-                    'index' : ':,0:3',
+                    'key': 'positions',
+                    'type': float,
+                    'index': ':,0:3',
                 },
-                ],
+            ],
         },
-        r'%block ChemicalSpeciesLabel([\s\S]*?)\n%endblock ChemicalSpeciesLabel':{
+        r'%block ChemicalSpeciesLabel([\s\S]*?)\n%endblock ChemicalSpeciesLabel': {
             'important': True,
-            'selection' : -1,
-            'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-            'key' : [
+            'selection': -1,
+            'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
+            'key': [
                 {
-                    'key' : 'species_syms',
+                    'key': 'species_syms',
                     # 'debug' : True,
-                    'type' : str,
-                    'index' : ':,2',
-                    'process' : lambda data, arrays: np.array([_.split('_')[0]\
-                                                     for _ in data.flatten().tolist()]),
+                    'type': str,
+                    'index': ':,2',
+                    'process': lambda data, arrays: np.array([_.split('_')[0]\
+                                                              for _ in data.flatten().tolist()]),
                 },
-                ],
+            ],
         },
-        r'%block LatticeVectors([\s\S]*?)\n%endblock LatticeVectors':{
+        r'%block LatticeVectors([\s\S]*?)\n%endblock LatticeVectors': {
             'important': True,
-            'selection' : -1,
-            'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-            'key' : 'cell',
+            'selection': -1,
+            'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
+            'key': 'cell',
         },
     },
-    'synthesized_data' : OrderedDict({
-        'symbols' : {
-            'prerequisite' : ['species_syms', 'species_nums'],
-            'equation' : lambda arrays: arrays['species_syms'][arrays['species_nums']].tolist(),
+    'synthesized_data': OrderedDict({
+        'symbols': {
+            'prerequisite': ['species_syms', 'species_nums'],
+            'equation': lambda arrays: arrays['species_syms'][arrays['species_nums']].tolist(),
         },
     }),
 }
 
 SIESTA_OUT_FORMAT_STRING = SIESTA_FORMAT_STRING.copy()
 ext_methods.update(SIESTA_OUT_FORMAT_STRING, {
-    'primitive_data'  : {
-        r'siesta: Final energy.*([\s\S]*?)\n\n' : {
+    'primitive_data': {
+        r'siesta: Final energy.*([\s\S]*?)\n\n': {
             'important': False,
-            'selection' : -1,
-            'process' : lambda data, arrays: ext_methods.datablock_to_dict(re.sub(r'siesta:\s+', '', data)),
-            'key' : 'energy_block',
+            'selection': -1,
+            'process': lambda data, arrays: ext_methods.datablock_to_dict(re.sub(r'siesta:\s+', '', data)),
+            'key': 'energy_block',
         },
-        r'siesta: Constrained forces.*([\s\S]*?)siesta: -{20,}' : {
+        r'siesta: Constrained forces.*([\s\S]*?)siesta: -{20,}': {
             'important': False,
-            'selection' : -1,
-            'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-            'key' : [
+            'selection': -1,
+            'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
+            'key': [
                 {
-                    'key' : 'forces',
-                    'type' : float,
-                    'index' : ':,2:',
+                    'key': 'forces',
+                    'type': float,
+                    'index': ':,2:',
                 },
-                ],
+            ],
         },
-        r'siesta: Stress tensor.*([\s\S]*?)\n\n' : {
+        r'siesta: Stress tensor.*([\s\S]*?)\n\n': {
             'important': False,
-            'selection' : -1,
-            'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-            'key' : [
+            'selection': -1,
+            'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
+            'key': [
                 {
-                    'key' : 'stress',
-                    'type' : float,
-                    'index' : ':,1:',
+                    'key': 'stress',
+                    'type': float,
+                    'index': ':,1:',
                 },
-                ],
+            ],
         },
-        r'%block LatticeVectors([\s\S]*?)\n%endblock LatticeVectors':{
+        r'%block LatticeVectors([\s\S]*?)\n%endblock LatticeVectors': {
             'important': True,
-            'selection' : -1,
-            'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-            'key' : 'cell',
+            'selection': -1,
+            'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
+            'key': 'cell',
         },
     },
-    'synthesized_data' : OrderedDict({
-        'potential_energy' : {
+    'synthesized_data': OrderedDict({
+        'potential_energy': {
             # 'debug' : True,
-            'prerequisite' : ['energy_block', ],
-            'equation' : lambda arrays: arrays['energy_block']['Total'],
+            'prerequisite': ['energy_block', ],
+            'equation': lambda arrays: arrays['energy_block']['Total'],
         },
     }),
 })
 
 
-
-
 FORMAT_STRING = {
-    'siesta' : SIESTA_FORMAT_STRING,
-    'siesta-out' : SIESTA_OUT_FORMAT_STRING,
+    'siesta': SIESTA_FORMAT_STRING,
+    'siesta-out': SIESTA_OUT_FORMAT_STRING,
 }

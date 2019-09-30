@@ -14,96 +14,96 @@ FORMAT_STRING = {
     'orca': {
         'calculator': 'ORCA',
         # 'ignorance' : r'\s*#.*\n',
-        'ignorance' : ('#',),
-        'primitive_data' : {
-            r'%max_core\s+(\d+)\s*\n' : {
+        'ignorance': ('#',),
+        'primitive_data': {
+            r'%max_core\s+(\d+)\s*\n': {
                 'important': False,
-                'selection' : -1,
+                'selection': -1,
                 'type': int,
-                'key' : 'calc_arrays/max_core',
-                },
-            r'%max_memory(\d+.*)\s*\n' : {
+                'key': 'calc_arrays/max_core',
+            },
+            r'%max_memory(\d+.*)\s*\n': {
                 'important': False,
-                'selection' : -1,
+                'selection': -1,
                 'type': str,
-                'key' : 'max_memory',
-                },
+                'key': 'max_memory',
+            },
             # r'!\s*([\s\S]*?)\n' : {
             #     'important': True,
             #     'selection' : -1,
             #     'type': str,
             #     'key' : 'calc_arrays/command',
             #     },
-            r'#\s*comments\s*([\s\S]*?)\n' : {
+            r'#\s*comments\s*([\s\S]*?)\n': {
                 # 'debug' : True,
-                'important' : False,
-                'selection' : -1,
-                'type' : str,
-                'join' : '\n',
-                'key' : 'comments',
-                },
-            r'(?:\n|^)!\s*(.*)' : {
-                # 'debug' : True,
-                'important' : True,
-                'selection' : -1,
-                'type' : str,
-                # 'join' : ' ',
-                'key' : 'calc_arrays/command',
+                'important': False,
+                'selection': -1,
+                'type': str,
+                'join': '\n',
+                'key': 'comments',
             },
-            r'[\s\S]*?xyz.*\s+(\d+)\s+\d+[\s\S]*?' : {
-                'important' : True,
-                'selection' : -1,
-                'type' : int,
-                'key' : 'charge'
-                },
-            r'[\s\S]*?xyz.*\s+\d+\s+(\d+)[\s\S]*?' : {
-                'important' : True,
-                'selection' : -1,
-                'type' : int,
-                'key' : 'multiplicity'
-                },
-            r'\*\s*xyzfile\s+\d+\s+\d+\s+(.+)\s*\n' : {
-                'important' : False,
-                'selection' : -1,
-                'type' : str,
-                'key' : 'xyzfile',
-                'process' : lambda data, arrays: os.path.join(arrays['basedir'], data),
-                },
-            r'\*\s*xyz\s+\d+\s+\d+\s+([\s\S]*?)\*' : {
-                'important' : False,
-                'selection' : -1,
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-                'key' : [
+            r'(?:\n|^)!\s*(.*)': {
+                # 'debug' : True,
+                'important': True,
+                'selection': -1,
+                'type': str,
+                # 'join' : ' ',
+                'key': 'calc_arrays/command',
+            },
+            r'[\s\S]*?xyz.*\s+(\d+)\s+\d+[\s\S]*?': {
+                'important': True,
+                'selection': -1,
+                'type': int,
+                'key': 'charge'
+            },
+            r'[\s\S]*?xyz.*\s+\d+\s+(\d+)[\s\S]*?': {
+                'important': True,
+                'selection': -1,
+                'type': int,
+                'key': 'multiplicity'
+            },
+            r'\*\s*xyzfile\s+\d+\s+\d+\s+(.+)\s*\n': {
+                'important': False,
+                'selection': -1,
+                'type': str,
+                'key': 'xyzfile',
+                'process': lambda data, arrays: os.path.join(arrays['basedir'], data),
+            },
+            r'\*\s*xyz\s+\d+\s+\d+\s+([\s\S]*?)\*': {
+                'important': False,
+                'selection': -1,
+                'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key': [
                     {
-                        'key' : 'symbols',
-                        'type' : str,
-                        'index' : ':,0',
-                        'process' : lambda data, arrays: data.tolist(),
+                        'key': 'symbols',
+                        'type': str,
+                        'index': ':,0',
+                        'process': lambda data, arrays: data.tolist(),
                     },
                     {
-                        'key' : 'positions',
-                        'type' : float,
-                        'index' : ':,1:4',
+                        'key': 'positions',
+                        'type': float,
+                        'index': ':,1:4',
                     },
                 ]
-                },
-            r'%basis([\s\S]*?)\n\s*end' : {
-                'important' : False,
-                'selection' : -1,
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-                'key' : [
+            },
+            r'%basis([\s\S]*?)\n\s*end': {
+                'important': False,
+                'selection': -1,
+                'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key': [
                     {
-                        'key' : 'basis_symbols',
-                        'type' : str,
-                        'index' : ':,1',
+                        'key': 'basis_symbols',
+                        'type': str,
+                        'index': ':,1',
                     },
                     {
-                        'key' : 'basis_types',
-                        'type' : str,
-                        'index' : ':,2',
+                        'key': 'basis_types',
+                        'type': str,
+                        'index': ':,2',
                     },
                 ],
-                },
+            },
             # r'#\s*[\s\S]*?\n\n.*\n\n.*-?\d+\s*\d+\s*\n[\s\S]*?\n\n([\s\S])' : {
             #         'important' : True,
             #         'selection' : -1,
@@ -128,33 +128,33 @@ FORMAT_STRING = {
             #         'type' : str,
             #         'key' : 'calc_arrays/nbo',
             #     },
+        },
+        'synthesized_data': OrderedDict({
+            'positions': {
+                'prerequisite': ['xyzfile'],
+                'equation': lambda arrays: read(arrays['xyzfile'], format='xyz')['positions']
             },
-        'synthesized_data' : OrderedDict({
-            'positions' : {
-                'prerequisite' : ['xyzfile'],
-                'equation' : lambda arrays: read(arrays['xyzfile'], format='xyz')['positions']
-                },
-            'symbols' : {
-                'prerequisite' : ['xyzfile'],
-                'equation' : lambda arrays: read(arrays['xyzfile'], format='xyz')['symbols']
-                },
-            }),
+            'symbols': {
+                'prerequisite': ['xyzfile'],
+                'equation': lambda arrays: read(arrays['xyzfile'], format='xyz')['symbols']
+            },
+        }),
         # 'writer_formats': '%nproc={atoms.max_core}\n%mem={atoms.max_memory}B\n%chk={randString()}.chk\n#p force b3lyp/6-31g(d)\n\ngase\n\n{atoms.charge} {atoms.multiplicity}\n{atoms.get_symbols_positions()}{atoms.calc.connectivity}{atoms.calc.genecp}',
     },
     'orca-out': {
         'calculator': 'ORCA',
         'primitive_data': {
-            r'Total Charge\s+Charge\s+\.+\s+(\d+)' : {
-                'important' : True,
-                'selection' : -1,
-                'key' : 'charge',
-                'type' : int,
+            r'Total Charge\s+Charge\s+\.+\s+(\d+)': {
+                'important': True,
+                'selection': -1,
+                'key': 'charge',
+                'type': int,
             },
-            r'Multiplicity\s+Mult\s+\.+\s+(\d+)' : {
-                'important' : True,
-                'selection' : -1,
-                'key' : 'multiplicity',
-                'type' : int,
+            r'Multiplicity\s+Mult\s+\.+\s+(\d+)': {
+                'important': True,
+                'selection': -1,
+                'key': 'multiplicity',
+                'type': int,
             },
             # r'Center *Atomic *Atomic *Coordinates.*\((.*)\).*\n': {
             #     'important' : True,
@@ -162,43 +162,43 @@ FORMAT_STRING = {
             #     'key' : 'unit',
             #     'type' : str,
             #     },
-            r'CARTESIAN COORDINATES \(ANGSTROEM\)\n-*\n([\s\S]*?)\n\n-*' : {
-                'important' : True,
-                'selection' : -1,
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-                'key' : [
+            r'CARTESIAN COORDINATES \(ANGSTROEM\)\n-*\n([\s\S]*?)\n\n-*': {
+                'important': True,
+                'selection': -1,
+                'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key': [
                     {
-                        'key' : 'symbols',
-                        'type' : str,
-                        'index' : ':,0',
-                        'process' : lambda data, arrays: data.tolist(),
+                        'key': 'symbols',
+                        'type': str,
+                        'index': ':,0',
+                        'process': lambda data, arrays: data.tolist(),
                     },
                     {
-                        'key' : 'positions',
-                        'type' : float,
-                        'index' : ':,1:',
+                        'key': 'positions',
+                        'type': float,
+                        'index': ':,1:',
                     }
-                    ],
-                },
-            r'Total Energy\s+:\s+.*Eh\s+(.*) eV' : {
-                'important' :  True,
-                'selection' : -1,
-                'type' : float,
-                'key' : 'calc_arrays/potential_energy',
-                },
+                ],
+            },
+            r'Total Energy\s+:\s+.*Eh\s+(.*) eV': {
+                'important':  True,
+                'selection': -1,
+                'type': float,
+                'key': 'calc_arrays/potential_energy',
+            },
             r'Total Dipole Moment\s+:\s+(.*)\n': {
-                'important' : True,
-                'selection' : -1,
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy(data),
-                'key' : [
+                'important': True,
+                'selection': -1,
+                'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key': [
                     {
-                        'key' : 'calc_arrays/dipole_moment',
-                        'type' : float,
-                        'index' : '0,:',
+                        'key': 'calc_arrays/dipole_moment',
+                        'type': float,
+                        'index': '0,:',
                         'postprocess': lambda x: x.flatten()
                     },
-                    ],
-                },
+                ],
+            },
             # r'Quadrupole moment.*\n\s*(.*\n.*)\n': {
             #     'important' : True,
             #     'selection' : -1,
@@ -211,8 +211,8 @@ FORMAT_STRING = {
             #         }
             #         ],
             #     },
-            },
-        'synthesized_data' : OrderedDict({
-            }),
+        },
+        'synthesized_data': OrderedDict({
+        }),
     },
 }

@@ -16,11 +16,11 @@
 0. 0.  {{"%.6f" | format([atoms_size[2]*2, min_cell_size] | max)}}
 {% endif %}
 {% if vasp_POSCAR_deep_contract is not defined or not vasp_POSCAR_deep_contract %}
-{{symbols.deep_contract_items("string")}}
-{{symbols.deep_contract_numbers("string")}}
+{{ExtList(symbols).deep_contract_items("string")}}
+{{ExtList(symbols).deep_contract_numbers("string")}}
 {% else %}
-{{symbols.contract_items("string")}}
-{{symbols.contract_numbers("string")}}
+{{ExtList(symbols).contract_items("string")}}
+{{ExtList(symbols).contract_numbers("string")}}
 {% endif %}
 {% if constraints is defined %}
 Selective Dynamics
@@ -30,15 +30,15 @@ Cartesian
     {% if vasp_POSCAR_deep_contract is not defined or not vasp_POSCAR_deep_contract %}
         {# {% if constraints is defined %} #}
             {% if cell is defined %}
- {{"%.6f" | format(positions[symbols.deep_contract_index()[i]][0])}}   {{"%.6f" | format(positions[symbols.deep_contract_index()[i]][1])}}   {{"%.6f" | format(positions[symbols.deep_contract_index()[i]][2])}}  {{not constraints[symbols.deep_contract_index()[i]] if constraints is defined else ""}}  {{not constraints[symbols.deep_contract_index()[i]] if constraints is defined else ""}}  {{not constraints[symbols.deep_contract_index()[i]] if constraints is defined else ""}}
+ {{"%.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][0])}}   {{"%.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][1])}}   {{"%.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][2])}}  {{not constraints[ExtList(symbols).deep_contract_index()[i]] if constraints is defined else ""}}  {{not constraints[ExtList(symbols).deep_contract_index()[i]] if constraints is defined else ""}}  {{not constraints[ExtList(symbols).deep_contract_index()[i]] if constraints is defined else ""}}
             {% else %}
- {{"%.6f" | format(positions[symbols.deep_contract_index()[i]][0] + atoms_size[0])}}   {{"%.6f" | format(positions[symbols.deep_contract_index()[i]][1] + atoms_size[1])}}   {{"%.6f" | format(positions[symbols.deep_contract_index()[i]][2] + atoms_size[2])}}  {{not constraints[symbols.deep_contract_index()[i]] if constraints is defined else ""}}  {{not constraints[symbols.deep_contract_index()[i]] if constraints is defined else ""}}  {{not constraints[symbols.deep_contract_index()[i]] if constraints is defined else ""}}
+ {{"%.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][0] + atoms_size[0])}}   {{"%.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][1] + atoms_size[1])}}   {{"%.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][2] + atoms_size[2])}}  {{not constraints[ExtList(symbols).deep_contract_index()[i]] if constraints is defined else ""}}  {{not constraints[ExtList(symbols).deep_contract_index()[i]] if constraints is defined else ""}}  {{not constraints[ExtList(symbols).deep_contract_index()[i]] if constraints is defined else ""}}
             {% endif %}
 {#         {% else %}
             {% if cell is defined %}
- {{"%.6f" | format(positions[symbols.deep_contract_index()[i]][0])}}   {{"%.6f" | format(positions[symbols.deep_contract_index()[i]][1])}}   {{"%.6f" | format(positions[symbols.deep_contract_index()[i]][2])}}
+ {{"%.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][0])}}   {{"%.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][1])}}   {{"%.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][2])}}
             {% else %}
- {{"%.6f" | format(positions[symbols.deep_contract_index()[i]][0] + atoms_size[0])}}   {{"%.6f" | format(positions[symbols.deep_contract_index()[i]][1] + atoms_size[1])}}   {{"%.6f" | format(positions[symbols.deep_contract_index()[i]][2] + atoms_size[2])}}
+ {{"%.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][0] + atoms_size[0])}}   {{"%.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][1] + atoms_size[1])}}   {{"%.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][2] + atoms_size[2])}}
             {% endif %}
         {% endif %} #}
     {% else %}

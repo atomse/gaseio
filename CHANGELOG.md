@@ -1,5 +1,12 @@
 # CHANGELOG
 
+
+
+## 2.6.5
+
+* autopep8 all .py code
+* ExtList used only in jinja2 files for numbers and symbols contraction
+
 ## 2.6.4
 
 * compatible with ASE, including

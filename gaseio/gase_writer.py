@@ -16,6 +16,7 @@ from qcdata import basedir as qcdata_dir
 
 from . import ext_types
 from .regularize import regularize_arrays
+from .ext_types import ExtList, ExtDict
 
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -37,6 +38,7 @@ def include_qcdata(filename):
         result = fd.read()
     return result
 
+
 jinja_loader = jinja2.FileSystemLoader(INPUT_TEMPLATE_DIR)
 jinja_environment = jinja2.Environment(loader=jinja_loader, lstrip_blocks=True)
 jinja_environment.trim_blocks = True
@@ -46,7 +48,8 @@ jinja_environment.filters.update({
 })
 jinja_environment.globals.update(get_basis=bse.get_basis,
                                  get_all_basis_names=bse.get_all_basis_names,
-                                 include_qcdata=include_qcdata)
+                                 include_qcdata=include_qcdata,
+                                 ExtList=ExtList)
 
 # def include_vasppot(fname):
 #     print(fname)
@@ -66,12 +69,12 @@ def generate_input_content(arrays, filetype):
     template_name = filetype + '.j2'
     template = jinja_environment.get_template(template_name)
     if not isinstance(arrays, dict) and hasattr(arrays, 'get_positions'):
-        module_name = arrays.__class__.__module__
-        if module_name == 'ase.atoms':
+        module_name = f"{arrays.__class__.__module__}.{arrays.__class__.__name__}"
+        if module_name == 'ase.atoms.Atoms':
             atoms = arrays
             calc = atoms.calc
             arrays = atoms.arrays.copy()
-            arrays['symbols'] = ext_types.ExtList(atoms.get_chemical_symbols())
+            # arrays['symbols'] = ext_types.ExtList(atoms.get_chemical_symbols())
             if calc is not None:
                 arrays['calc_arrays'] = {}
                 arrays['calc_arrays'].update(calc.parameters)

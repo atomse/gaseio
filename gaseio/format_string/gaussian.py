@@ -238,8 +238,9 @@ def process_MO_coefficients(data, n_orbital):
     data = ext_methods.datablock_to_numpy(data)
     orbital_num = data[0]
     orbital_eigenvalues = data[1]
-    orbital_coefficients = data[2:,:].T
-    orbital_output = [{'type' : _type, 'eigenvalues' : _eigenvalues, 'coefficients' : _coefficients} for _type, _eigenvalues, _coefficients in zip(orbital_type,orbital_eigenvalues,orbital_coefficients)]
+    orbital_coefficients = data[2:, :].T
+    orbital_output = [{'type': _type, 'eigenvalues': _eigenvalues, 'coefficients': _coefficients}
+                      for _type, _eigenvalues, _coefficients in zip(orbital_type, orbital_eigenvalues, orbital_coefficients)]
     output = dict(zip(orbital_num, orbital_output))
     return output
 
@@ -700,7 +701,7 @@ FORMAT_STRING = {
                 # 'process': lambda data, arrays: process_population_analysis(\
                 #     re.sub(r'.*[OV].*\n.*Eigenvalues.*\n', '', data),
                 #     len(arrays['calc_arrays/orbital_basis']), 20, rm_header_regex=r' {20,}\d.*\n'),
-                'process' : lambda data, arrays: process_MO_coefficients(data, n_orbital = len(arrays['calc_arrays/orbital_basis'])),
+                'process': lambda data, arrays: process_MO_coefficients(data, n_orbital=len(arrays['calc_arrays/orbital_basis'])),
                 'key': 'calc_arrays/molecular_orbital',
             },
             r'Density Matrix:\n([\s\S]*?)\n.*Full Mulliken population analysis:': {

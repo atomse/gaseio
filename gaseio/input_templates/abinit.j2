@@ -16,11 +16,11 @@ rprim    1.000000000000000   0.000000000000000   0.000000000000000
          0.000000000000000   0.000000000000000   1.000000000000000 
         #}
 natom    {{numbers | length}}
-ntypat   {{numbers.deep_contract_items() | length}}
-typat    {% for i in range(positions|length) %} {{numbers.deep_contract_items().index(numbers[i]) + 1}} {% endfor %}
+ntypat   {{ExtList(numbers).deep_contract_items() | length}}
+typat    {% for i in range(positions|length) %} {{ExtList(numbers).deep_contract_items().index(numbers[i]) + 1}} {% endfor %}
 
-znucl    {{numbers.deep_contract_items("string")}}
+znucl    {{ExtList(numbers).deep_contract_items("string")}}
 xred     {% for i in range(positions | length) %}
-         {% for j in range(3) %} {{"%.6f" | format(positions[numbers.deep_contract_index()[i]][j])}}  {% endfor %}
+         {% for j in range(3) %} {{"%.6f" | format(positions[ExtList(numbers).deep_contract_index()[i]][j])}}  {% endfor %}
 
          {% endfor %}

@@ -17,16 +17,14 @@ INPUT_TEMPLATE_DIR = 'input_templates'
 INPUT_TEMPLATE_DIR = os.path.join(BASEDIR, INPUT_TEMPLATE_DIR)
 
 
-
 def list_supported_parse_formats():
     from .format_string import FORMAT_STRING
     return list(FORMAT_STRING.keys())
 
 
 def list_supported_gen_formats():
-    return [os.path.splitext(os.path.basename(_))[0] \
-        for _ in glob.glob(os.path.join(INPUT_TEMPLATE_DIR, '*.j2'))]
-
+    return [os.path.splitext(os.path.basename(_))[0]
+            for _ in glob.glob(os.path.join(INPUT_TEMPLATE_DIR, '*.j2'))]
 
 
 def main():

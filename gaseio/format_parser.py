@@ -13,10 +13,11 @@ import logging
 import json_tricks
 
 
-from .ext_types import ExtList, ExtDict
+# from .ext_types import ExtList
+from .ext_types import ExtDict
 from .ext_methods import astype, xml_parameters, datablock_to_numpy,\
-                         datablock_to_numpy, construct_depth_dict, \
-                         get_depth_dict, FileFinder
+    datablock_to_numpy, construct_depth_dict, \
+    get_depth_dict, FileFinder
 from .regularize import regularize_arrays
 
 
@@ -243,4 +244,3 @@ def process_calculator(arrays, formats_dict, debug=False):
 
 def setdebug():
     logger.setLevel(logging.DEBUG)
-

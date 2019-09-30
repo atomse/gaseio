@@ -5,17 +5,20 @@ Extended type:
     ExtDict, rewrite getitem so that '/a/b/c/d' -> ['a']['b']['c']['d']
 """
 from collections import Iterable, Counter, OrderedDict
-
-
+import numpy as np
 
 NO_DEFAULT = '__THIS_MEANS_NO_DEFAULT__'
+
+
 class ExtList(list):
     """
     Extended list
     """
+
     def __mul__(self, a):
         assert isinstance(a, Iterable),\
-            'multiplier should be Iterable, instead of {0} of {1}'.format(a, type(a))
+            'multiplier should be Iterable, instead of {0} of {1}'.format(
+                a, type(a))
         assert len(self) == len(a),\
             'multiple length should be same'
         return self.__class__([x for i, x in enumerate(self) for time in range(a[i])])
@@ -30,7 +33,7 @@ class ExtList(list):
     def contract_items(self, outtype=None):
         _contract_items = []
         for i, item in enumerate(self):
-            if i==0 or item != self[i-1]:
+            if i == 0 or item != self[i-1]:
                 _contract_items.append(item)
         if outtype == 'string':
             _contract_items = ' '.join(str(_) for _ in _contract_items)
@@ -40,7 +43,7 @@ class ExtList(list):
         _contract_numbers = []
         num = 0
         for i, item in enumerate(self):
-            if i==0 or item == self[i-1]:
+            if i == 0 or item == self[i-1]:
                 num += 1
             else:
                 _contract_numbers.append(num)
@@ -109,8 +112,8 @@ class ExtDict(dict):
         if name.startswith('get_'):
             _name = name[len('get_'):]
             return lambda: self['calc_arrays'].get(_name, None) \
-                    if self.get(_name, None) is None and dict.get(self, 'calc_arrays', None)\
-                    else self.get(_name, None)
+                if self.get(_name, None) is None and dict.get(self, 'calc_arrays', None)\
+                else self.get(_name, None)
         return dict.__getitem__(self, name)
 
     def has_key(self, name):
@@ -133,12 +136,10 @@ class ExtDict(dict):
         return result
 
     # def get(self, key, default=NO_DEFAULT):
-    #     if key == 'defines' : 
+    #     if key == 'defines' :
     #         import pdb; pdb.set_trace()
     #     if self[key] is not None:
     #         return self[key]
     #     elif default != NO_DEFAULT:
     #         return default
     #     raise KeyError(key, 'not found')
-        
-

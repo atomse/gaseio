@@ -72,7 +72,7 @@
 #          BASIS_SET DZVP-MOLOPT-SR-GTH
 #          POTENTIAL GTH-PBE-q6
 #       &END KIND
-{% for element in symbols.deep_contract_items() %}
+{% for element in ExtList(symbols).deep_contract_items() %}
       &KIND {{element}}
          BASIS_SET DZVP-MOLOPT-SR-GTH
          POTENTIAL GTH-PBE

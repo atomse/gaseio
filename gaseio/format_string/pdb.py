@@ -187,144 +187,145 @@ print(data)
 
 
 PDB_ATOM_FORMAT_STRING = "ATOM  {:5d} {:4} {:3} {:1}{:4d}    {:8.3f}{:8.3f}{:8.3f}{:6.2f}{:6.2f}          {:2S}{:2}"
-PDB_COL_SPECIFICATION = [[1 ,  6], [7 , 11],[12 , 12],[13 , 16],[17 , 17],[18 , 20],[21 , 21],[22 , 22],[23 , 26],[27 , 27],[28 , 30],[31 , 38],[39 , 46],[47 , 54],[55 , 60],[61 , 66],[67 , 76],[77 , 78],[79 , 80]]
-PDB_COL_SPECIFICATION = [(i-1, j) for (i, j )in PDB_COL_SPECIFICATION]
+PDB_COL_SPECIFICATION = [[1,  6], [7, 11], [12, 12], [13, 16], [17, 17], [18, 20], [21, 21], [22, 22], [
+    23, 26], [27, 27], [28, 30], [31, 38], [39, 46], [47, 54], [55, 60], [61, 66], [67, 76], [77, 78], [79, 80]]
+PDB_COL_SPECIFICATION = [(i-1, j) for (i, j)in PDB_COL_SPECIFICATION]
 
 FORMAT_STRING = {
     'pdb': {
-        'primitive_data'  : OrderedDict({
+        'primitive_data': OrderedDict({
             # r'':{
             #     'important': True,
             #     'selection' : -1,
             #     'key' : 'comments',
             #     'type' : str,
             # },
-            r'\n(ATOM[\s\S]*?)\n(?!ATOM)':{
+            r'\n(ATOM[\s\S]*?)\n(?!ATOM)': {
                 # 'debug' : True,
                 'important': True,
-                'selection' : -1,
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy_fixed_width(data, colspecs=PDB_COL_SPECIFICATION, nan_fill=''),
-                'key' : [
+                'selection': -1,
+                'process': lambda data, arrays: ext_methods.datablock_to_numpy_fixed_width(data, colspecs=PDB_COL_SPECIFICATION, nan_fill=''),
+                'key': [
                     {
-                        "key" :    "customized_symbols",
-                        "index" : ":,3",
-                        'type' : str,
-                        'process' : lambda data, arrays: [_.strip() for _ in data],
+                        "key":    "customized_symbols",
+                        "index": ":,3",
+                        'type': str,
+                        'process': lambda data, arrays: [_.strip() for _ in data],
                     },
                     {
-                        "key" :    "altLoc",
-                        "index" : ":,4",
+                        "key":    "altLoc",
+                        "index": ":,4",
                         # 'type' : str,
                     },
                     {
-                        "key" :    "residue_name",
-                        "index" : ":,5",
-                        'type' : str,
+                        "key":    "residue_name",
+                        "index": ":,5",
+                        'type': str,
                     },
                     {
-                        "key" :    "chainID",
-                        "index" : ":,7",
-                        'type' : str,
+                        "key":    "chainID",
+                        "index": ":,7",
+                        'type': str,
                     },
                     {
-                        "key" :    "resSeq",
-                        "index" : ":,8",
-                        'type' : int,
+                        "key":    "resSeq",
+                        "index": ":,8",
+                        'type': int,
                     },
                     {
-                        "key" :    "iCode",
-                        "index" : ":,9",
-                        'type' : str,
+                        "key":    "iCode",
+                        "index": ":,9",
+                        'type': str,
                     },
                     {
-                        "key" :   "positions",
-                        "index" : ":,11:14",
-                        'type' : float,
+                        "key":   "positions",
+                        "index": ":,11:14",
+                        'type': float,
                     },
                     {
-                        "key" :   "occupancy",
-                        "index" : ":,14",
-                        'type' : float,
+                        "key":   "occupancy",
+                        "index": ":,14",
+                        'type': float,
                     },
                     {
-                        "key" :   "temperature_factor",
-                        "index" : ":,15",
-                        'type' : float,
+                        "key":   "temperature_factor",
+                        "index": ":,15",
+                        'type': float,
                     },
                     {
-                        "key" :   "symbols",
-                        "index" : ":,17",
-                        'type' : str,
-                        'process' : lambda data, arrays: data.tolist(),
+                        "key":   "symbols",
+                        "index": ":,17",
+                        'type': str,
+                        'process': lambda data, arrays: data.tolist(),
                     },
                     {
-                        "key" :   "pdb_charge",
-                        "index" : ":,18",
-                        'type' : str,
+                        "key":   "pdb_charge",
+                        "index": ":,18",
+                        'type': str,
                     },
                 ],
             },
-            r'\n(HETATM[\s\S]*?)\n(?!HETATM)':{
+            r'\n(HETATM[\s\S]*?)\n(?!HETATM)': {
                 'important': True,
-                'selection' : -1,
-                'process' : lambda data, arrays: ext_methods.datablock_to_numpy_fixed_width(data, \
-                                                 colspecs=PDB_COL_SPECIFICATION),
-                'key' : [
+                'selection': -1,
+                'process': lambda data, arrays: ext_methods.datablock_to_numpy_fixed_width(data, \
+                                                                                           colspecs=PDB_COL_SPECIFICATION),
+                'key': [
                     {
-                        "key" :    "hetatoms/customized_symbols",
-                        "index" : ":,3",
-                        'type' : str,
-                        'process' : lambda data, arrays: [_.strip() for _ in data],
+                        "key":    "hetatoms/customized_symbols",
+                        "index": ":,3",
+                        'type': str,
+                        'process': lambda data, arrays: [_.strip() for _ in data],
                     },
                     {
-                        "key" :    "hetatoms/altLoc",
-                        "index" : ":,4",
+                        "key":    "hetatoms/altLoc",
+                        "index": ":,4",
                         # 'type' : str,
                     },
                     {
-                        "key" :    "hetatoms/residue_name",
-                        "index" : ":,5",
-                        'type' : str,
+                        "key":    "hetatoms/residue_name",
+                        "index": ":,5",
+                        'type': str,
                     },
                     {
-                        "key" :    "hetatoms/chainID",
-                        "index" : ":,7",
-                        'type' : str,
+                        "key":    "hetatoms/chainID",
+                        "index": ":,7",
+                        'type': str,
                     },
                     {
-                        "key" :    "hetatoms/resSeq",
-                        "index" : ":,8",
-                        'type' : int,
+                        "key":    "hetatoms/resSeq",
+                        "index": ":,8",
+                        'type': int,
                     },
                     {
-                        "key" :    "hetatoms/iCode",
-                        "index" : ":,9",
+                        "key":    "hetatoms/iCode",
+                        "index": ":,9",
                         # 'type' : int,
                     },
                     {
-                        "key" :   "hetatoms/positions",
-                        "index" : ":,11:14",
-                        'type' : float,
+                        "key":   "hetatoms/positions",
+                        "index": ":,11:14",
+                        'type': float,
                     },
                     {
-                        "key" :   "hetatoms/occupancy",
-                        "index" : ":,14",
-                        'type' : float,
+                        "key":   "hetatoms/occupancy",
+                        "index": ":,14",
+                        'type': float,
                     },
                     {
-                        "key" :   "hetatoms/temperature_factor",
-                        "index" : ":,15",
-                        'type' : float,
+                        "key":   "hetatoms/temperature_factor",
+                        "index": ":,15",
+                        'type': float,
                     },
                     {
-                        "key" :   "hetatoms/symbols",
-                        "index" : ":,17",
-                        'type' : str,
-                        'process' : lambda data, arrays: data.tolist(),
+                        "key":   "hetatoms/symbols",
+                        "index": ":,17",
+                        'type': str,
+                        'process': lambda data, arrays: data.tolist(),
                     },
                     {
-                        "key" :   "hetatoms/pdb_charge",
-                        "index" : ":,18",
+                        "key":   "hetatoms/pdb_charge",
+                        "index": ":,18",
                         #     'process' : lambda
                     },
                 ],
@@ -343,7 +344,7 @@ FORMAT_STRING = {
             #     ],
             # },
         }),
-        'synthesized_data' : OrderedDict({
+        'synthesized_data': OrderedDict({
         }),
     },
 }

@@ -19,20 +19,19 @@ logger = logging.getLogger(__name__)
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 
 
-
-def read(fileobj, index=-1, format=None, parallel=True, force_ase=False, 
+def read(fileobj, index=-1, format=None, parallel=True, force_ase=False,
          force_gase=False, **kwargs):
     logger.debug(f"fileobj: {fileobj}")
     fileobj = atomtools.fileutil.get_uncompressed_fileobj(fileobj)
     _filetype = format or atomtools.filetype.filetype(fileobj)
     assert isinstance(index, int) or \
-           re.match(r'^[+-:0-9]+$', str(index)) 
+        re.match(r'^[+-:0-9]+$', str(index))
     if isinstance(index, str):
         if not ':' in index:
             index = int(index)
         else:
-            start, stop, step = ([None if not _ else int(_) \
-                                 for _ in index.split(':')] + [None, None, None])[:3]
+            start, stop, step = ([None if not _ else int(_)
+                                  for _ in index.split(':')] + [None, None, None])[:3]
             index = slice(start, stop, step)
     if force_gase:
         return gase_reader(fileobj, index, _filetype, parallel, **kwargs)
@@ -67,7 +66,7 @@ def read_preview(fileobj, lines=200):
         print(string)
 
 
-def write(fileobj, images, format=None, parallel=True, append=False, force_ase=False, 
+def write(fileobj, images, format=None, parallel=True, append=False, force_ase=False,
           force_gase=False, preview=False, **kwargs):
     print('write', format)
     string = get_write_content(fileobj, images, format, parallel, append,
@@ -95,9 +94,9 @@ def get_write_content(fileobj, images, format=None, parallel=True, append=False,
 
 
 def ase_writer_content(images, format=None, parallel=True, append=False,
-               force_ase=False, force_gase=False, preview=False, **kwargs):
+                       force_ase=False, force_gase=False, preview=False, **kwargs):
     from ase.io import write
-    _tmp_filename = '/tmp/%s' %(atomtools.name.randString())
+    _tmp_filename = '/tmp/%s' % (atomtools.name.randString())
     write(_tmp_filename, images, format, parallel, append, **kwargs)
     with open(_tmp_filename) as fd:
         string = fd.read()
@@ -109,14 +108,16 @@ def gase_writer_content(images, _filetype):
     from .gase_writer import generate_input_content
     return generate_input_content(images, _filetype)
 
+
 def write_preview(fileobj, images, format=None, parallel=True, append=False,
                   force_ase=False, force_gase=False, preview=False, **kwargs):
     preview(fileobj, images, format, parallel, append, force_ase=force_ase, force_gase=force_gase,
-          preview=True, **kwargs)
+            preview=True, **kwargs)
 
 
 def preview(images, format=None, force_ase=False, force_gase=False):
-    write('-', images, format, force_ase=force_ase, force_gase=force_gase, preview=True)
+    write('-', images, format, force_ase=force_ase,
+          force_gase=force_gase, preview=True)
 
 
 def list_supported_write_formats(dtype=None):
@@ -126,6 +127,6 @@ def list_supported_write_formats(dtype=None):
         return ' '.join(types_list)
     return types_list
 
+
 def setdebug():
     logger.setLevel(logging.DEBUG)
-

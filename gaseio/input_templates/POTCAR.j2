@@ -4,7 +4,7 @@
 {{ include_qcdata('vasp/potpaw_PBE/' + poscar|string + '/POTCAR')}}
 {% endfor %}
 {% else %}
-{% for poscar in symbols.deep_contract_items() %}
+{% for poscar in ExtList(symbols).deep_contract_items() %}
 {{ include_qcdata('vasp/potpaw_PBE/' + default_POTCAR[poscar]|string + '/POTCAR')}}
 {% endfor %}
 {% endif %}

@@ -21,11 +21,10 @@ import atomtools.string
 import atomtools.filetype
 
 
-from .ext_types import ExtList, ExtDict
+# from .ext_types import ExtList, ExtDict
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 
 
 def astype(typestring):
@@ -48,7 +47,8 @@ def update_items_with_node(root, item_xpath=None, default_type='float', sdict=di
     item_xpath = item_xpath or ['./i', './v']
     if isinstance(item_xpath, str):
         item_xpath = [item_xpath]
-    assert isinstance(item_xpath, (list, tuple)), 'xpath {0} should be a list'.format(item_xpath)
+    assert isinstance(item_xpath, (list, tuple)
+                      ), 'xpath {0} should be a list'.format(item_xpath)
     item_xpath = '|'.join(item_xpath)
     for item_node in root.xpath(item_xpath):
         item_name = item_node.get('name')
@@ -62,9 +62,11 @@ def update_items_with_node(root, item_xpath=None, default_type='float', sdict=di
             if item_node.tag == 'i':
                 value = astype(item_type)(item_node.text)
             elif item_node.tag == 'v':
-                value = datablock_to_numpy(item_node.text).flatten().astype(astype(item_type))
+                value = datablock_to_numpy(
+                    item_node.text).flatten().astype(astype(item_type))
             else:
-                raise NotImplementedError('{0} not implemeneted in xml update items'.format(item_node.tag))
+                raise NotImplementedError(
+                    '{0} not implemeneted in xml update items'.format(item_node.tag))
         sdict.update({item_name: value})
     return sdict
 
@@ -74,7 +76,7 @@ def update(orig_dict, new_dict):
         return copy.copy(orig_dict)
     for key, val in new_dict.items():
         if isinstance(val, collections.Mapping):
-            tmp = update(orig_dict.get(key, { }), val)
+            tmp = update(orig_dict.get(key, {}), val)
             orig_dict[key] = tmp
         elif isinstance(val, list):
             orig_dict[key] = (orig_dict.get(key, []) + val)
@@ -99,7 +101,7 @@ def xml_parameters(xml_node):
     return parameters
 
 
-def datablock_to_dataframe(datablock, sep=r'\s+',header=None):
+def datablock_to_dataframe(datablock, sep=r'\s+', header=None):
     """
     datablock is a string that contains a block of data
     """
@@ -188,7 +190,8 @@ def string_to_dict(string, sep='|', keysep='='):
 
 def substitute_with_define(string, def_val=None, block_by_block=True):
     # import pdb; pdb.set_trace()
-    pattern = re.compile(r'\b(cos|sin|tan|cot|sqr|sqrt|pi)\b',  flags=re.IGNORECASE)
+    pattern = re.compile(
+        r'\b(cos|sin|tan|cot|sqr|sqrt|pi)\b',  flags=re.IGNORECASE)
     string = re.sub(pattern, lambda m: 'math.'+m.group(0).lower(), string)
     if def_val is not None:
         assert isinstance(def_val, dict)
@@ -218,8 +221,8 @@ def process_defines(defines, def_val=None):
     for line in defines.split('\n'):
         name, val = re.split(r'\s*=\s*', line)
         name = name.strip()
-        val  = val.strip()
-        val  = substitute_with_define(val, def_val, block_by_block=False)
+        val = val.strip()
+        val = substitute_with_define(val, def_val, block_by_block=False)
         def_val[name] = eval(val)
     return def_val
 
@@ -228,7 +231,7 @@ def regularize_cell(cell):
     cell = np.array(cell).flatten()
     if cell.shape == (3,):
         cell = np.diag(cell)
-    cell = cell.reshape((-1,3))
+    cell = cell.reshape((-1, 3))
     assert cell.shape == (3, 3)
     return cell
 
@@ -271,6 +274,7 @@ def process_blockdata_with_several_lines(data, ndim_length_regex, rm_header_rege
 class FileFinder(object):
     """docstring for FileFinder"""
     SUPPOTED_FILETYPE = ['plain_text', 'lxml']
+
     def __init__(self, fileobj, file_format='plain_text'):
         super(FileFinder, self).__init__()
         self.fileobj = fileobj
@@ -279,7 +283,8 @@ class FileFinder(object):
         # print(fileobj)
         file_format = file_format or atomtools.filetype.filetype(fileobj)
         if not file_format in self.SUPPOTED_FILETYPE:
-            raise NotImplementedError('only {0} are supported'.format(self.SUPPOTED_FILETYPE))
+            raise NotImplementedError(
+                'only {0} are supported'.format(self.SUPPOTED_FILETYPE))
         # assert isinstance(filename, str) and os.path.exists(filename), '{0} not exists'.format(filename)
         if file_format == 'plain_text':
             self.fileobj = file_string
@@ -298,10 +303,9 @@ class FileFinder(object):
 
 
 def regularize_symbols(symbols):
-    return [symbol[0].upper() + symbol[1].lower() if len(symbol) >= 2 and symbol[:2].lower() in \
-            [_.lower() for _ in chemdata.chemical_symbols] \
+    return [symbol[0].upper() + symbol[1].lower() if len(symbol) >= 2 and symbol[:2].lower() in
+            [_.lower() for _ in chemdata.chemical_symbols]
             else symbol[0].upper() for symbol in symbols]
-
 
 
 def reshape_to_square(array):
@@ -312,10 +316,7 @@ def reshape_to_square(array):
     return array
 
 
-
-
-
-def lower_diagnal_order_2_square(tri, dim = None):
+def lower_diagnal_order_2_square(tri, dim=None):
     assert tri.ndim == 1
     if not dim:
         dim = int((tri.shape[0]*2) ** 0.5)

@@ -9,12 +9,15 @@ test
 
 
 import os
-import gaseio
-from gaseio import gase_writer
-
 import argparse
 import tempfile
 import json_tricks
+
+
+
+import gaseio
+from gaseio import gase_writer
+
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 TEST_DIR = os.path.join(BASEDIR, 'chem_file_samples/files')

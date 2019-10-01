@@ -1,5 +1,10 @@
 """
 format_string
+
+
+Gaussian:
+    * forces are compatiable with Input orientation, Standard orientation is just auxiliary.
+    * Same for Force Constant
 """
 
 import re
@@ -35,11 +40,11 @@ ENERGY_ORDER = [
 ],
 
 
-def std_force_to_inp_force(std_positions, inp_positions, std_forces):
-    from .. import coordinations
-    inp_forces = coordinations.input_standard_pos_transform(
-        inp_positions, std_positions, std_forces)
-    return inp_forces
+# def std_force_to_inp_force(std_positions, inp_positions, std_forces):
+#     from .. import coordinations
+#     inp_forces = coordinations.input_standard_pos_transform(
+#         inp_positions, std_positions, std_forces)
+#     return inp_forces
 
 
 def get_value_by_order(properties, order):
@@ -701,7 +706,7 @@ FORMAT_STRING = {
                     {
                         'key': 'calc_arrays/forces',
                         'index': ':,2:5',
-                        'process': lambda data, arrays: atomtools.unit.trans_force('au', 'eV/Ang') * (data if not '_standard_position' in arrays else std_force_to_inp_force(arrays['_standard_positions'], arrays['positions'], data)),
+                        'process': lambda data, arrays: atomtools.unit.trans_force('au', 'eV/Ang') * data,
                     },
                 ],
             },

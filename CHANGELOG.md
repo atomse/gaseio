@@ -1,10 +1,17 @@
 # CHANGELOG
 
+
+
+
+
+## 2.6.7
+
+* adjust Gaussian forces
+
+
 ## 2.6.6
 
 * add kinetic_energy
-
-
 
 
 ## 2.6.5

@@ -44,11 +44,11 @@ test:
 
 
 app:
-	bash -c "export GASEIO_PORT=5001; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python -m gaseio.app"
+	bash -c "export GASEIO_PORT=5002; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python gaseio/app.py"
 
 
 server:
-	bash -c "export GASEIO_PORT=5001; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python -m gaseio.server"
+	bash -c "export GASEIO_PORT=5002; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python -m gaseio.server"
 
 
 test_chemio:

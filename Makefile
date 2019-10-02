@@ -44,11 +44,15 @@ test:
 
 
 app:
-	bash -c "export GASEIO_PORT=5002; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python gaseio/app.py"
+	bash -c "export GASEIO_PORT=5001; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python gaseio/app.py"
+
+
+test_app:
+	bash -c "export GASEIO_PORT=5001; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python gaseio/app.py --debug"
 
 
 server:
-	bash -c "export GASEIO_PORT=5002; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python -m gaseio.server"
+	bash -c "export GASEIO_PORT=5001; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python -m gaseio.server"
 
 
 test_chemio:
@@ -63,7 +67,7 @@ test_chemio:
 
 test_chemio_info:
 	rm -rf /tmp/gaseio_testresult
-	export CHEMIO_SERVER_URLS=http://localhost:5001/; \
+	[ ! $$CHEMIO_SERVER_URLS ] && export CHEMIO_SERVER_URLS=http://localhost:5001/; \
 	for filename in tests/Testcases/*.*; \
 	do \
 		[ -f $$filename ] && chemio info $$filename || echo $$filename >> /tmp/gaseio_testresult; \
@@ -74,7 +78,7 @@ test_chemio_info:
 
 test_chemio_convert:
 	rm -rf /tmp/gaseio_testfiletype
-	export CHEMIO_SERVER_URLS=http://localhost:5000/; \
+	[ ! $$CHEMIO_SERVER_URLS ] && export CHEMIO_SERVER_URLS=http://localhost:5001/; \
 	for filetype in `python -c 'import gaseio; print(gaseio.list_supported_write_formats("string"))'`; \
 	do \
 		chemio convert  tests/Testcases/test.xyz - -o $$filetype || echo $$filetype >> /tmp/gaseio_testfiletype; \

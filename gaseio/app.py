@@ -16,7 +16,7 @@ import json_tricks
 import atomtools.name
 import gaseio
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,8 @@ logger = logging.getLogger(__name__)
 UPLOAD_DIR = os.environ.get(
     "GASEIO_UPLOAD_DIR", os.path.expanduser('~/chemio'))
 if not os.path.exists(UPLOAD_DIR):
-    raise IOError(UPLOAD_DIR, 'not exist')
+    os.mkdirs(UPLOAD_DIR)
+    # raise IOError(UPLOAD_DIR, 'not exist')
 
 
 app = Flask(__name__, static_url_path='/static')
@@ -157,14 +158,33 @@ def index():
     return send_from_directory(HTMLDIR, "index.html")
 
 
+def valid_port(hostname='127.0.0.1', starting_port=5000):
+    import socket
+    from contextlib import closing
+
+    port = starting_port
+    try:
+        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+            s.bind((hostname, port))
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    except socket.error:
+        port += 1
+    return port
+
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true')
     args = parser.parse_args()
-
-    DEFAULT_GASEIO_PORT = 5000 + 1
-    port = os.environ.get("GASEIO_PORT", DEFAULT_GASEIO_PORT)
+    logger.setLevel(logging.INFO)
     if args.debug:
         logger.setLevel(logging.DEBUG)
-    app.run(host='::', port=port, debug=True)
+
+    DEFAULT_GASEIO_PORT = 5000
+    starting_port = int(os.environ.get("GASEIO_PORT", DEFAULT_GASEIO_PORT))
+    localhost = '127.0.0.1'
+    port = valid_port(starting_port=starting_port)
+    logger.info(f"port: {port}")
+    logger.info(f"\n\nexport CHEMIO_SERVER_URLS=http://{localhost}:{port}\n\n")
+    app.run(host=localhost, port=port, debug=args.debug)

@@ -3,8 +3,8 @@
  SYSTEM = VASP_SYSTEM
 
 #numbers of cores per compute node
-TPAR = 1
-KPAR = 2
+# TPAR = 1
+# KPAR = 2
 NPAR = 2
 
 
@@ -56,18 +56,18 @@ VDW_A1 = 0.4289
 VDW_A2 = 4.4407
 
 ######## Plus U  ########
-LDAU = .F.   
-LDAUTYPE    = 2
-LDAUU = 8.0 0.0 0.0 0.0 0.0 
-LDAUJ = 0.0 0.0 0.0 0.0 0.0
-LDAUL = 2 -1 -1 -1 -1
+# LDAU = .F.   
+# LDAUTYPE    = 2
+# LDAUU = 8.0 0.0 0.0 0.0 0.0 
+# LDAUJ = 0.0 0.0 0.0 0.0 0.0
+# LDAUL = 2 -1 -1 -1 -1
 
 
 ######## Other Properties  ############
 NWRITE =2  #This flag determines how much will be written to the file OUTCAR.0/1=MD;2=short run; 3=sth. wrong; 4=debugging 
 ##NFREE=2  #determines how many displacements are used for each direction and ion.2=central difference
 LWAVE  = .FALSE.   #whether output WAVECAR
-LCHARG = .FALSE.    #whether output CHGCAR and CHG
+LCHARG = .TRUE.    #whether output CHGCAR and CHG
 LVTOT  = .FALSE.   #whether output LOCPOT
 LELF   = .FALSE.   #whether output ELFCAR
 

@@ -1,7 +1,9 @@
 # CHANGELOG
 
 
+## 2.6.8
 
+* fix POTCAR bug
 
 
 ## 2.6.7

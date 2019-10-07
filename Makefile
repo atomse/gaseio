@@ -47,7 +47,7 @@ app:
 	bash -c "export GASEIO_PORT=5001; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python gaseio/app.py"
 
 
-test_app:
+debug_app:
 	bash -c "export GASEIO_PORT=5001; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python gaseio/app.py --debug"
 
 

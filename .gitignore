@@ -141,3 +141,4 @@ line.select
 .DS_Store
 
 tests/cessp/*
+trash/

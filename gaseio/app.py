@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 UPLOAD_DIR = os.environ.get(
     "GASEIO_UPLOAD_DIR", os.path.expanduser('~/chemio'))
 if not os.path.exists(UPLOAD_DIR):
-    os.mkdirs(UPLOAD_DIR)
+    os.makedirs(UPLOAD_DIR)
     # raise IOError(UPLOAD_DIR, 'not exist')
 
 

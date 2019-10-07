@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2.6.9 
+
+* fix INCAR TPAR/KPAR/NPAR, set default LCHARG=.True. 
+* add cessp test
+* fix app bugs
 
 ## 2.6.8
 

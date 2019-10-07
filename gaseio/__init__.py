@@ -8,7 +8,7 @@ from .main import read_preview, write_preview, preview, get_write_content
 from .main import list_supported_write_formats
 
 
-__version__ = '2.6.8'
+__version__ = '2.6.9'
 
 
 def version():

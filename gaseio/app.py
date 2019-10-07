@@ -161,7 +161,6 @@ def index():
 def valid_port(hostname='127.0.0.1', starting_port=5000):
     import socket
     from contextlib import closing
-
     port = starting_port
     try:
         with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
@@ -181,7 +180,7 @@ if __name__ == '__main__':
     if args.debug:
         logger.setLevel(logging.DEBUG)
 
-    DEFAULT_GASEIO_PORT = 5000
+    DEFAULT_GASEIO_PORT = 5001
     starting_port = int(os.environ.get("GASEIO_PORT", DEFAULT_GASEIO_PORT))
     localhost = '127.0.0.1'
     port = valid_port(starting_port=starting_port)

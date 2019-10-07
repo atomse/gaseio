@@ -2,9 +2,9 @@
 {% if calc_arrays is defined and 'pseudopotentials' in calc_arrays %}
 {% for poscar in calc_arrays['pseudopotentials'] %}
 {{ include_qcdata('vasp/potpaw_PBE/' + poscar|string + '/POTCAR')}}
-{% endfor %}
+{%- endfor %}
 {% else %}
 {% for poscar in ExtList(symbols).deep_contract_items() %}
 {{ include_qcdata('vasp/potpaw_PBE/' + default_POTCAR[poscar]|string + '/POTCAR')}}
-{% endfor %}
+{%- endfor %}
 {% endif %}

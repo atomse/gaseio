@@ -574,23 +574,32 @@ FORMAT_STRING = {
                 'type': str,
                 'process': lambda data, arrays: data.replace('\n ', '').replace('\\', '|').strip()
             },
-            r'Input orientation:[\s\S]*?Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n': {
+            r'\n *Charge\s+=\s*[+-]?\d+\s+Multiplicity\s+=\s*\d+\s*\n([\s\S]*?)\n\s*\n': {
+                # 'debug' : True,
                 'important': True,
-                'selection': -1,
-                'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
-                'key': [
-                    {
-                        'key': 'numbers',
-                        'type': int,
-                        'index': ':,1',
-                    },
-                    {
-                        'key': 'positions',
-                        'type': float,
-                        'index': ':,3:',
-                    }
-                ],
+                'selection': 0,
+                'process': lambda data, arrays: ext_methods.datablock_to_numpy_extend(data),
+                'key': 'gaussian_coord_datablock',
             },
+            # r'Input orientation:[\s\S]*?Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n': {
+            # # It's possible that this part doesn't show in g09 without nosymm
+            # # If nosymm is added, this block will show.
+            #     'important': False,
+            #     'selection': -1,
+            #     'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
+            #     'key': [
+            #         {
+            #             'key': 'numbers',
+            #             'type': int,
+            #             'index': ':,1',
+            #         },
+            #         {
+            #             'key': 'positions',
+            #             'type': float,
+            #             'index': ':,3:',
+            #         }
+            #     ],
+            # },
             r'Standard orientation:[\s\S]*?Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n': {
                 'important': False,
                 'selection': -1,
@@ -773,9 +782,9 @@ FORMAT_STRING = {
             r'Condensed to atoms.*all electrons.*:\n([\s\S]*?)\n.*Mulliken charges:': {
                 'important': False,
                 'selection': -1,
-                'process': lambda data, arrays: process_population_analysis(data,\
-                                                                            len(arrays['positions']), 12, rm_header_regex=r' {12,}\d.*\n'),
-                'key': 'calc_arrays/condense_to_atoms'
+                # 'process': lambda data, arrays: process_population_analysis(data,\
+                #                                                             len(arrays['positions']), 12, rm_header_regex=r' {12,}\d.*\n'),
+                'key': 'raw_condense_to_atoms'
             },
             r'Mulliken charges:([\s\S]*?)\n.*Sum of Mulliken charges': {
                 'important': False,
@@ -786,17 +795,42 @@ FORMAT_STRING = {
             },
         }),
         'synthesized_data': OrderedDict({
+            'symbols': {
+                # 'debug' : True,
+                'prerequisite': ['gaussian_coord_datablock'],
+                'equation': lambda arrays: ext_types.ExtList(arrays['gaussian_coord_datablock'][:, 0].flatten().tolist()),
+            },
+            'constraint': {
+                'prerequisite': ['gaussian_coord_datablock'],
+                'condition': lambda arrays: arrays['gaussian_coord_datablock'].shape[1] >= 5 and \
+                np.logical_or(arrays['gaussian_coord_datablock'][:, 1] == 0, \
+                              arrays['gaussian_coord_datablock'][:, 1] == -1).all(),
+                'equation': lambda arrays: arrays['gaussian_coord_datablock'][:, 1] == -1,
+            },
+            'positions': {
+                # 'debug' : True,
+                'prerequisite': ['gaussian_coord_datablock'],
+                'equation': process_gaussian_coord_datablock_to_positions,
+            },
+            'tags': {
+                'prerequisite': ['gaussian_coord_datablock'],
+                'condition': lambda arrays: arrays['gaussian_coord_datablock'].shape[1] >= 6 if 'constraint' in arrays else \
+                arrays['gaussian_coord_datablock'].shape[1] >= 5,
+                'equation': lambda arrays: arrays['gaussian_coord_datablock'][:, 5] if 'constraint' in arrays else \
+                arrays['gaussian_coord_datablock'][:, 4],
+                'delete': ['gaussian_coord_datablock'],
+            },
             'calc_arrays/status': {
                 'equation': lambda arrays: Status.error if 'error_termination' in arrays else \
                 Status.complete if 'normal_termination' in arrays else \
                 Status.unfinished,
                 'delete': ['error_termination', 'normal_termination'],
             },
-            'symbols': {
-                'prerequisite': ['numbers'],
-                'equation': lambda arrays: np.array([chemdata.get_element(_) for _ in arrays['numbers']]),
-                'process': lambda data, arrays: ext_types.ExtList(data.tolist()),
-            },
+            # 'symbols': {
+            #     'prerequisite': ['numbers'],
+            #     'equation': lambda arrays: np.array([chemdata.get_element(_) for _ in arrays['numbers']]),
+            #     'process': lambda data, arrays: ext_types.ExtList(data.tolist()),
+            # },
             'gaussian_datablock': {
                 'prerequisite': ['gaussian_datastring'],
                 'equation': lambda arrays: arrays['gaussian_datastring'].split('||'),
@@ -816,6 +850,11 @@ FORMAT_STRING = {
             'gaussian_datablock_geometry': {
                 'prerequisite': ['gaussian_datablock'],
                 'equation': lambda arrays: arrays['gaussian_datablock'][3],
+            },
+            'calc_arrays/condense_to_atoms': {
+                'prerequisite': ['raw_condense_to_atoms'],
+                'equation': lambda arrays: process_population_analysis(arrays['raw_condense_to_atoms'],\
+                                                                       len(arrays['positions']), 12, rm_header_regex=r' {12,}\d.*\n'),
             },
             'calc_arrays/results': {
                 'prerequisite': ['gaussian_datastring'],

@@ -47,8 +47,9 @@ update_format_string()
 
 
 def test():
+    global FORMAT_STRING
     update_format_string(warning=True)
-    print(FORMAT_STRING)
+    print('FORMAT string:\n', FORMAT_STRING)
 
 
 if __name__ == '__main__':

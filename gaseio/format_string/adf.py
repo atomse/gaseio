@@ -4,7 +4,7 @@ format_string
 
 import re
 import math
-import copy
+# import copy
 
 from collections import OrderedDict
 from .. import ext_types
@@ -120,16 +120,18 @@ ADF_FORMAT_STRING = {
 
 
 ADF_OUT_FORMAT_STRING = ADF_FORMAT_STRING.copy()
+
 ext_methods.update(ADF_OUT_FORMAT_STRING, {
     'primitive_data': OrderedDict({
         r'======  Eigenvectors \(columns\) in BAS representation\n([\s\S]*?)\n\n(?: {10,}=|\n)': {
             # 'debug' : True,
             'important': False,
             'selection': 'all',
-            'process': lambda data, arrays: ext_methods.process_blockdata_with_several_lines(data,
-                                                                                             ndim_length_regex=r'row\s*\n([\s\S]*?)(?:\n\n|$)',
-                                                                                             rm_header_regex=r'\n\s*column\s+\d+.*\n\s*row\s*\n',
-                                                                                             index_length=5),
+            'process': lambda data, arrays: \
+            ext_methods.process_blockdata_with_several_lines(data,
+                                                             ndim_length_regex=r'row\s*\n([\s\S]*?)(?:\n\n|$)',
+                                                             rm_header_regex=r'\n\s*column\s+\d+.*\n\s*row\s*\n',
+                                                             index_length=5),
             'key': 'calc_arrays/SPIN_Eigenvectors',
         },
         r' {30,}=== (.*) ===\n+ ======  Eigenvectors \(columns\) in BAS representation': {
@@ -159,7 +161,9 @@ ext_methods.update(ADF_OUT_FORMAT_STRING, {
     'synthesized_data': OrderedDict({}),
 })
 
+
 FORMAT_STRING = {
     'adf': ADF_FORMAT_STRING,
     'adf-out': ADF_OUT_FORMAT_STRING,
+    'adf-log': ADF_OUT_FORMAT_STRING,
 }

@@ -303,9 +303,17 @@ class FileFinder(object):
 
 
 def regularize_symbols(symbols):
-    return [symbol[0].upper() + symbol[1].lower() if len(symbol) >= 2 and symbol[:2].lower() in
-            [_.lower() for _ in chemdata.chemical_symbols]
-            else symbol[0].upper() for symbol in symbols]
+    print(symbols)
+    assert isinstance(symbols, (list, np.ndarray))
+    sample = symbols[0]
+    if isinstance(sample, (int, float)) or isinstance(sample, str) and sample.isdigit():
+        symbols = [int(x) for x in symbols]
+        symbols = [chemdata.chemical_symbols[x] for x in symbols]
+    else:
+        symbols = [symbol[0].upper() + symbol[1].lower() if len(symbol) >= 2 and symbol[:2].lower() in
+                   [_.lower() for _ in chemdata.chemical_symbols]
+                   else symbol[0].upper() for symbol in symbols]
+    return symbols
 
 
 def reshape_to_square(array):
@@ -326,3 +334,16 @@ def lower_diagnal_order_2_square(tri, dim=None):
     square[id] = tri
     square[id[::-1]] = tri
     return square
+
+
+def parse_config_content(data, add_header=False, ignorance=('#',)):
+    import configparser
+    if add_header:
+        header = 'tmpheader'
+        data = "["+header+"]\n\n" + data
+    conf = configparser.ConfigParser(inline_comment_prefixes=ignorance)
+    conf.read_string(data)
+    arrays = conf._sections
+    if add_header:
+        arrays = arrays[header]
+    return arrays

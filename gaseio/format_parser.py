@@ -38,64 +38,81 @@ def read(fileobj, index=-1, format=None, warning=False, debug=False):
     all_file_string = atomtools.fileutil.get_file_content(fileobj)
     # fileobj.seek(0)
     file_format = format or atomtools.filetype.filetype(fileobj)
-    if file_format == 'json':
-        string = fileobj.read()
-        logger.debug(f"string: {all_file_string}")
-        arrays = json_tricks.loads(all_file_string)
-        logger.debug(f"orig_index: {orig_index}")
-        logger.debug(f"index: {index}")
-        if isinstance(arrays, dict):
-            regularize_arrays(arrays)
-        elif isinstance(arrays, list):
-            [regularize_arrays(_arr) for _arr in arrays]
-            if isinstance(orig_index, int):
-                arrays = arrays[orig_index]
-            else:
-                arrays = arrays[index]
-        logger.debug(f"{arrays}")
-        logger.debug(f"type: {type(arrays)}")
-        return arrays
+    # if file_format == 'json':
+    #     string = fileobj.read()
+    #     logger.debug(f"string: {all_file_string}")
+    #     arrays = json_tricks.loads(all_file_string)
+    #     logger.debug(f"orig_index: {orig_index}")
+    #     logger.debug(f"index: {index}")
+    #     if isinstance(arrays, dict):
+    #         regularize_arrays(arrays)
+    #     elif isinstance(arrays, list):
+    #         [regularize_arrays(_arr) for _arr in arrays]
+    #         if isinstance(orig_index, int):
+    #             arrays = arrays[orig_index]
+    #         else:
+    #             arrays = arrays[index]
+    #     logger.debug(f"{arrays}")
+    #     logger.debug(f"type: {type(arrays)}")
+    #     return arrays
 
     assert file_format is not None, \
         'format: {0}, fileobj {1}, file_format {2}'.format(
             format, fileobj, file_format)
+
     format_dict = FORMAT_STRING.get(file_format, None)
     if format_dict is None:
-        raise NotImplementedError(file_format, 'not available now')
+        raise NotImplementedError(f"{file_format} not available now")
+
     filename = atomtools.fileutil.get_absfilename(fileobj)
 
-    if format_dict.get('file_format', None) == 'dict':
-        ignorance = format_dict.get('ignorance', None)
-        conf = configparser.ConfigParser(inline_comment_prefixes=ignorance)
-        header = format_dict.get('file_format', 'default')
-        conf.read_string('[vasp]\n' + all_file_string)
-        return conf._sections
+    if format_dict.get('parser_type', 'standard') == 'customized':
+        parser = format_dict.get('parser')
+        arrays = parser(all_file_string, index)
+        if isinstance(arrays, list):
+            arrays = arrays[index]
 
-    file_string_sections = [all_file_string]
-    if format_dict.get('multiframe', False):
-        file_string_sections = re.findall(
-            format_dict.get('frame_spliter'), all_file_string)
-    frame_indices = range(len(file_string_sections))[index]
-    file_string_sections = file_string_sections[index]
-    all_arrays = []
-    for frame_i, file_string in zip(frame_indices, file_string_sections):
-        arrays = ExtDict()
-        arrays['filename'] = os.path.basename(filename) if filename else None
-        arrays['frame_i'] = frame_i
-        process_primitive_data(arrays, file_string,
-                               format_dict, warning, debug)
-        if format_dict.get('primitive_data_function', None):
-            format_dict.get('primitive_data_function')(file_string, arrays)
-        process_synthesized_data(arrays, format_dict, debug)
-        process_calculator(arrays, format_dict, debug)
-        # if not show_file_content:
-        #     del arrays['absfilename'], arrays['basedir']
-        if not format_dict.get('non_regularize', False):
+    # elif format_dict.get('file_format', None) == 'dict':
+    #     ignorance = format_dict.get('ignorance', None)
+    #     conf = configparser.ConfigParser(inline_comment_prefixes=ignorance)
+    #     header = format_dict.get('file_format', 'default')
+    #     conf.read_string('[vasp]\n' + all_file_string)
+    #     return conf._sections
+
+    else:
+        file_string_sections = [all_file_string]
+        if format_dict.get('multiframe', False):
+            file_string_sections = re.findall(
+                format_dict.get('frame_spliter'), all_file_string)
+        frame_indices = range(len(file_string_sections))[index]
+        file_string_sections = file_string_sections[index]
+        all_arrays = []
+        for frame_i, file_string in zip(frame_indices, file_string_sections):
+            arrays = ExtDict()
+            arrays['filename'] = os.path.basename(
+                filename) if filename else None
+            arrays['frame_i'] = frame_i
+            process_primitive_data(arrays, file_string,
+                                   format_dict, warning, debug)
+            if format_dict.get('primitive_data_function', None):
+                format_dict.get('primitive_data_function')(file_string, arrays)
+            process_synthesized_data(arrays, format_dict, debug)
+            process_calculator(arrays, format_dict, debug)
+            # if not show_file_content:
+            #     del arrays['absfilename'], arrays['basedir']
+            all_arrays.append(arrays)
+        arrays = all_arrays
+        if isinstance(orig_index, int):
+            arrays = all_arrays[0]
+
+    # regularize
+    if not format_dict.get('non_regularize', False):
+        if isinstance(arrays, dict):
             regularize_arrays(arrays)
-        all_arrays.append(arrays)
-    if isinstance(orig_index, int):
-        return all_arrays[0]
-    return all_arrays[index]
+        elif isinstance(arrays, list):
+            for arr in arrays:
+                regularize_arrays(arr)
+    return arrays
 
 
 def process_pattern(pattern, pattern_property, arrays, finder, warning=False, debug=False):
@@ -202,7 +219,6 @@ def process_synthesized_data(arrays, formats, debug=False):
     # print(synthesized_data)
     for key, key_property in synthesized_data.items():
         cannot_synthesize = False
-        # print(key)
         if key_property.get('debug', False):
             import pdb
             pdb.set_trace()

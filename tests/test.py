@@ -95,7 +95,9 @@ def test_no_catch(test_extensions=None):
             gaseio.write(tmpfname, arrays, write_temp_type, force_gase=True, preview=True)
         arrays = gaseio.read(filename, index=':', force_gase=True)
         print(arrays)
-        print(arrays[0]['calc_arrays'].get('basis', 'basis: None'))
+        if isinstance(arrays, list):
+            arrays = arrays[0]
+        print(arrays['calc_arrays'].get('basis', 'basis: None'))
         print('\n' * 4)
     os.remove(CONTINUE_FILE)
 

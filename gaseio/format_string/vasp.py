@@ -3,12 +3,17 @@ format_string contain vasp-out
 
 """
 
+
+from collections import OrderedDict
 import numpy as np
 
 
-from collections import OrderedDict
 from .. import ext_methods
 from .. import ext_types
+
+
+def parse_INCAR(data, index):
+    return ext_methods.parse_config_content(data, add_header=True)
 
 
 FORMAT_STRING = {
@@ -39,7 +44,7 @@ FORMAT_STRING = {
                 'selection': -1,
                 'type': list,
                 'process': lambda data, arrays:
-                ext_methods.datablock_to_numpy(data).astype(int).flatten(),
+                           ext_methods.datablock_to_numpy(data).astype(int).flatten(),
                 'key': 'ions_per_type',
             },
             r'VRHFIN\s*=\s*(.*?):': {
@@ -94,11 +99,11 @@ FORMAT_STRING = {
                 ],
             },
             r'POTCAR: *(.*?) *\n *VRHFIN': {
-                    'important': True,
-                    'selection': 'all',
-                    # 'process' : lambda data, arrays: data.strip();
-                    'key': 'vasp_pot',
-                    'type': ext_types.ExtList,
+                'important': True,
+                'selection': 'all',
+                # 'process' : lambda data, arrays: data.strip();
+                'key': 'vasp_pot',
+                'type': ext_types.ExtList,
             },
         }),
         'synthesized_data': OrderedDict({
@@ -131,7 +136,8 @@ FORMAT_STRING = {
             r'^(?:.*\n.*\n)(.*\n.*\n.*\n)': {
                 'important': True,
                 'selection': -1,
-                'process': lambda data, arrays: ext_methods.datablock_to_numpy(data) * arrays['scaling_factor'],
+                'process': lambda data, arrays:
+                           ext_methods.datablock_to_numpy(data) * arrays['scaling_factor'],
                 'key': 'cell',
             },
             r'^(?:.*\n.*\n.*\n.*\n.*\n)(.*)\n': {
@@ -144,7 +150,8 @@ FORMAT_STRING = {
             r'^(?:.*\n.*\n.*\n.*\n.*\n.*\n)(.*)\n': {
                 'important': True,
                 'selection': -1,
-                'process': lambda data, arrays: ext_types.ExtList(ext_methods.datablock_to_numpy(data)[0].flatten().tolist()),
+                'process': lambda data, arrays:
+                           ext_types.ExtList(ext_methods.datablock_to_numpy(data)[0].flatten().tolist()),
                 'key': 'element_number',
                 # 'type' : ext_types.ExtList,
             },
@@ -460,8 +467,11 @@ FORMAT_STRING = {
         }),
     },
     'INCAR': {
-        'ignorance': ('#', ),
-        'file_format': 'dict',
-        'destination': 'calc_arrays/vasp_input',
+        'parser_type': 'customized',
+        'parser': parse_INCAR,
+        # 'ignorance': ('#', ),
+        # 'file_format': 'dict',
+        # 'destination': 'calc_arrays/vasp_input',
+        'non_regularize': True,
     }
 }

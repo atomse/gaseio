@@ -142,6 +142,11 @@ def reg_energy(arrays):
             arrays['calc_arrays']['energy'] = arrays['calc_arrays']['potential_energy']
 
 
+def reg_velocities(arrays):
+    if not 'velocities' in arrays:
+        natoms = len(arrays['numbers'])
+        arrays['velocities'] = np.zeros((natoms, 3))
+
 reg_functions = [
     reg_customized_symbols,
     reg_numbers_symbols,

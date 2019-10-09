@@ -1,5 +1,16 @@
 # CHANGELOG
 
+
+
+## 2.7.0
+
+
+* refactor structure to standard and customized
+* using ASE cif parser
+* fix gaussian-log bugs
+* add json support
+
+
 ## 2.6.9 
 
 * fix INCAR TPAR/KPAR/NPAR, set default LCHARG=.True. 

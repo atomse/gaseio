@@ -173,17 +173,22 @@ def valid_port(hostname='127.0.0.1', starting_port=5000):
 
 if __name__ == '__main__':
     import argparse
+    import werkzeug.serving
+    localhost = '127.0.0.1'
+    DEFAULT_GASEIO_PORT = 5001
+    port = int(os.environ.get("GASEIO_PORT", DEFAULT_GASEIO_PORT))
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true')
     args = parser.parse_args()
-    logger.setLevel(logging.INFO)
     if args.debug:
         logger.setLevel(logging.DEBUG)
+    if not werkzeug.serving.is_running_from_reloader():
+        logger.setLevel(logging.INFO)
 
-    DEFAULT_GASEIO_PORT = 5001
-    starting_port = int(os.environ.get("GASEIO_PORT", DEFAULT_GASEIO_PORT))
-    localhost = '127.0.0.1'
-    port = valid_port(starting_port=starting_port)
-    logger.info(f"port: {port}")
-    logger.info(f"\n\nexport CHEMIO_SERVER_URLS=http://{localhost}:{port}\n\n")
+        localhost = '127.0.0.1'
+        port = valid_port(starting_port=port)
+        logger.info(f"port: {port}")
+        os.environ['GASEIO_PORT'] = str(port)
+    else:
+        logger.info(f"\n\nexport CHEMIO_SERVER_URLS=http://{localhost}:{port}\n\n")
     app.run(host=localhost, port=port, debug=args.debug)

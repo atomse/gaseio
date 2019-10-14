@@ -4,9 +4,51 @@
 </head>
 <body>
   <h1>结构解析</h1>
-  <form action="/read" method="POST" enctype="multipart/form-data">
+  <p>Linux 联网条件下可使用chemio
+  <br>
+  pip install chemio --user --upgrade
+  <br>
+  chemio info $FILENAME / chemio info $FILENAME -i $FILE_FORMAT
+  <br>
+  或
+  <br>
+  chemio convert $INPUT $OUTPUT / chemio convert $INPUT $OUTPUT -o $OUTPUT_FORMAT
+  </p>
+
+  <form action="/html_convert" method="POST" enctype="multipart/form-data">
     结构文件: <input name="read_file" type="file" >
-    <p><input type="checkbox" name="read_index" value="on" /> 全部结构</p>
+    <br>
+    <input type="checkbox" name="read_index" value="on" /> 全部结构
+    <br>
+    From: 
+    <select name="read_format" value="null">
+            <option value="null">Default</option>
+            <option value="gaussian">Gaussian</option>
+            <option value="gaussian-log">Gaussian-Log</option>
+            <option value="POSCAR">POSCAR</option>
+            <option value="OUTCAR">OUTCAR</option>
+            <option value="adf">ADF</option>
+            <option value="adf-log">ADF-Log</option>
+            <option value="cp2k">cp2k</option>
+            <option value="cp2k-out">cp2k-out</option>
+            <option value="xyz">XYZ</option>
+            <option value="mol">mol</option>
+            <option value="mol2">mol2</option>
+    </select>
+    To:
+    <select name="write_format" value="json">
+            <option value="json">JSON</option>
+            <option value="gaussian">Gaussian</option>
+            <option value="adf">ADF</option>
+            <option value="cp2k">CP2K</option>
+            <option value="INCAR">INCAR</option>
+            <option value="POSCAR">POSCAR</option>
+            <option value="POTCAR">POTCAR</option>
+            <option value="orca">ORCA</option>
+            <option value="xyz">XYZ</option>
+            <option value="mol">mol</option>
+    </select>
+    </br>
     <input name="submit" type="submit" value="提交">
 </form>
 </body>

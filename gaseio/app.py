@@ -105,6 +105,7 @@ def read_from_request(inp_request):
 
 
 @app.route('/read', methods=['POST'])
+@app.route('/parse', methods=['POST'])
 def app_read():
     "app_read"
     arrays = read_from_request(request)
@@ -153,6 +154,16 @@ def app_convert():
     return output
 
 
+@app.route('/html_convert', methods=['POST'])
+def app_html_convert():
+    "app_html_convert"
+    output = app_convert()
+    if isinstance(output, Response):
+        return output
+    else:
+        return Response(output, mimetype="text/plain")
+
+
 @app.route('/')
 def index():
     return send_from_directory(HTMLDIR, "index.html")
@@ -190,5 +201,6 @@ if __name__ == '__main__':
         logger.info(f"port: {port}")
         os.environ['GASEIO_PORT'] = str(port)
     else:
-        logger.info(f"\n\nexport CHEMIO_SERVER_URLS=http://{localhost}:{port}\n\n")
+        logger.info(
+            f"\n\nexport CHEMIO_SERVER_URLS=http://{localhost}:{port}\n\n")
     app.run(host=localhost, port=port, debug=args.debug)

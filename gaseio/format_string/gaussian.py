@@ -467,7 +467,7 @@ FORMAT_STRING = {
                 'key': 'multiplicity'
             },
             r'#\s*[\s\S]*?\n *\n[\s\S]*?\n *\n *[+-]?\d+[, ]*\d+.* *\n([\s\S]*?)\n *\n': {
-                'debug': True,
+                # 'debug': True,
                 'important': True,
                 'selection': 0,
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy_extend(data),

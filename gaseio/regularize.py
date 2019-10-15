@@ -113,7 +113,7 @@ def reg_cell(arrays):
 
 def reg_constraints(arrays):
     if not 'constraints' in arrays:
-        arrays['constraints'] = []
+        arrays['constraints'] = np.array([])
 
 
 def reg_tags(arrays):

@@ -467,7 +467,7 @@ FORMAT_STRING = {
                 'key': 'multiplicity'
             },
             r'#\s*[\s\S]*?\n *\n[\s\S]*?\n *\n *[+-]?\d+[, ]*\d+.* *\n([\s\S]*?)\n *\n': {
-                # 'debug' : True,
+                'debug': True,
                 'important': True,
                 'selection': 0,
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy_extend(data),
@@ -508,9 +508,14 @@ FORMAT_STRING = {
             'constraints': {
                 'prerequisite': ['gaussian_coord_datablock'],
                 'condition': lambda arrays: arrays['gaussian_coord_datablock'].shape[1] >= 5 and \
-                np.logical_or(arrays['gaussian_coord_datablock'][:, 1] == 0, \
-                              arrays['gaussian_coord_datablock'][:, 1] == -1).all(),
-                'equation': lambda arrays: arrays['gaussian_coord_datablock'][:, 1] == -1,
+                np.logical_or(
+                    np.logical_or(
+                        np.logical_or(arrays['gaussian_coord_datablock'][:, 1] == 0, \
+                                      arrays['gaussian_coord_datablock'][:, 1] == -1), \
+                        arrays['gaussian_coord_datablock'][:, 1] == -2), \
+                    arrays['gaussian_coord_datablock'][:, 1] == -3
+                ).all(),
+                'equation': lambda arrays: arrays['gaussian_coord_datablock'][:, 1] != 0,
             },
             'positions': {
                 'prerequisite': ['gaussian_coord_datablock'],

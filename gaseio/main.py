@@ -63,12 +63,12 @@ def read_preview(fileobj, lines=200):
     """
     with open(fileobj) as fd:
         string = ''.join(fd.read().split('\n')[-200:])
-        print(string)
+        logger.debug(string)
 
 
 def write(fileobj, images, format=None, parallel=True, append=False, force_ase=False,
           force_gase=False, preview=False, **kwargs):
-    print('write', format)
+    logger.debug(f'write: {format}')
     string = get_write_content(fileobj, images, format, parallel, append,
                                force_ase=force_ase, force_gase=force_gase, **kwargs)
     if preview:

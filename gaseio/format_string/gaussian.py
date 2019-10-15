@@ -391,7 +391,7 @@ def process_genecp_ecp(data, arrays):
 def process_gaussian_coord_datablock_to_positions(arrays):
     coord_datablock = arrays['gaussian_coord_datablock']
     return arrays['gaussian_coord_datablock'][:, 2:5].astype(float) \
-        if 'constraint' in arrays else arrays['gaussian_coord_datablock'][:, 1:4].astype(float)
+        if 'constraints' in arrays else arrays['gaussian_coord_datablock'][:, 1:4].astype(float)
 
 
 def process_fchk(data, arrays):
@@ -505,7 +505,7 @@ FORMAT_STRING = {
                 'prerequisite': ['gaussian_coord_datablock'],
                 'equation': lambda arrays: ext_types.ExtList(arrays['gaussian_coord_datablock'][:, 0].flatten().tolist()),
             },
-            'constraint': {
+            'constraints': {
                 'prerequisite': ['gaussian_coord_datablock'],
                 'condition': lambda arrays: arrays['gaussian_coord_datablock'].shape[1] >= 5 and \
                 np.logical_or(arrays['gaussian_coord_datablock'][:, 1] == 0, \
@@ -518,9 +518,9 @@ FORMAT_STRING = {
             },
             'tags': {
                 'prerequisite': ['gaussian_coord_datablock'],
-                'condition': lambda arrays: arrays['gaussian_coord_datablock'].shape[1] >= 6 if 'constraint' in arrays else \
+                'condition': lambda arrays: arrays['gaussian_coord_datablock'].shape[1] >= 6 if 'constraints' in arrays else \
                 arrays['gaussian_coord_datablock'].shape[1] >= 5,
-                'equation': lambda arrays: arrays['gaussian_coord_datablock'][:, 5] if 'constraint' in arrays else \
+                'equation': lambda arrays: arrays['gaussian_coord_datablock'][:, 5] if 'constraints' in arrays else \
                 arrays['gaussian_coord_datablock'][:, 4],
                 'delete': ['gaussian_coord_datablock'],
             },
@@ -800,7 +800,7 @@ FORMAT_STRING = {
                 'prerequisite': ['gaussian_coord_datablock'],
                 'equation': lambda arrays: ext_types.ExtList(arrays['gaussian_coord_datablock'][:, 0].flatten().tolist()),
             },
-            'constraint': {
+            'constraints': {
                 'prerequisite': ['gaussian_coord_datablock'],
                 'condition': lambda arrays: arrays['gaussian_coord_datablock'].shape[1] >= 5 and \
                 np.logical_or(arrays['gaussian_coord_datablock'][:, 1] == 0, \
@@ -814,9 +814,9 @@ FORMAT_STRING = {
             },
             'tags': {
                 'prerequisite': ['gaussian_coord_datablock'],
-                'condition': lambda arrays: arrays['gaussian_coord_datablock'].shape[1] >= 6 if 'constraint' in arrays else \
+                'condition': lambda arrays: arrays['gaussian_coord_datablock'].shape[1] >= 6 if 'constraints' in arrays else \
                 arrays['gaussian_coord_datablock'].shape[1] >= 5,
-                'equation': lambda arrays: arrays['gaussian_coord_datablock'][:, 5] if 'constraint' in arrays else \
+                'equation': lambda arrays: arrays['gaussian_coord_datablock'][:, 5] if 'constraints' in arrays else \
                 arrays['gaussian_coord_datablock'][:, 4],
                 'delete': ['gaussian_coord_datablock'],
             },

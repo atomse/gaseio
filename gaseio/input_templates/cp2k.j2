@@ -1,5 +1,27 @@
-{# https://manual.cp2k.org/ #}
 {% set min_cell_size=10.0 %}
+###  https://manual.cp2k.org/ 
+###  If you have cp2k/data, then please
+###     ` export CP2K_DATA_DIR=${{CP2K_DATA_DIR}} `
+###  If not, you will have to point the 
+###     * BASIS_SET_FILE_NAME
+###     * POTENTIAL_FILE_NAME
+###    yourself by modifying the related value
+###  
+###  Or you can download the data by
+###     `
+###       git init cp2k_data_dir;
+###       cd cp2k_data_dir
+###       git remote add origin https://github.com/cp2k/cp2k
+###       git config core.sparseCheckout true
+###       echo "data/" >> .git/info/sparse-checkout
+###       git pull origin master
+###     `
+###     to download the data from the cp2k github, and export the ENV
+###     ` export CP2K_DATA_DIR=$(realpath cp2k_data_dir) `
+###
+### You can also add cp2k:vim tools
+### mkdir -p ~/.vim/syntax
+### wget -O ~/.vim/syntax/cp2k.vim http://manual.cp2k.org/trunk/cp2k.vim
 &GLOBAL
    PROJECT {{ calc_arrays['project'] if calc_arrays is defined and 'project' in calc_arrays else 'CP2K' }}
    PRINT_LEVEL {{ calc_arrays['print_level'] | upper  if calc_arrays is defined and 'print_level' in calc_arrays else 'MEDIUM' }}

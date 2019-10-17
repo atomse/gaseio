@@ -1,4 +1,4 @@
-{% set min_cell_size=10.0 %}
+{% set min_cell_size=10.0|int if min_cell_size is not defined else min_cell_size|int %}
 ###  https://manual.cp2k.org/ 
 ###  If you have cp2k/data, then please
 ###     ` export CP2K_DATA_DIR=${{CP2K_DATA_DIR}} `

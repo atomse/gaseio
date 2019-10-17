@@ -101,14 +101,16 @@ def reg_calc_arrays(arrays):
 
 
 def reg_cell(arrays):
-    if not 'cell' in arrays:
-        arrays['cell'] = np.array([max(x, 21) for x in arrays['atoms_size']])
+    if 'cell' in arrays:
+        # min_cell_size = arrays.get('min_cell_size', 10)
+        # arrays['cell'] = np.array([max(x, min_cell_size)
+        #                            for x in arrays['atoms_size']])
+        # if not 'celldisp' in arrays:
+        #     arrays['celldisp'] = -1 * arrays['cell']/2
+        if arrays['cell'].shape == (3, ):
+            arrays['cell'] = np.diag(arrays['cell'])
         if not 'celldisp' in arrays:
-            arrays['celldisp'] = -1 * arrays['cell']/2
-    if arrays['cell'].shape == (3, ):
-        arrays['cell'] = np.diag(arrays['cell'])
-    if not 'celldisp' in arrays:
-        arrays['celldisp'] = np.zeros((3,))
+            arrays['celldisp'] = np.zeros((3,))
 
 
 def reg_constraints(arrays):
@@ -147,6 +149,35 @@ def reg_velocities(arrays):
         natoms = len(arrays['numbers'])
         arrays['velocities'] = np.zeros((natoms, 3))
 
+
+def num_unit(target, dest):
+    num_map = {
+        'B': 1,
+        'KB': 2**10,
+        'MB': 2**20,
+        'GB': 2**30,
+        'TB': 2**40,
+    }
+    return num_map[target.upper()] / num_map[dest.upper()]
+
+
+def reg_memory(arrays):
+    if 'calc_arrays' in arrays and 'max_memory' in arrays['calc_arrays']:
+        max_memory = arrays['calc_arrays']['max_memory']
+        if isinstance(max_memory, str):
+            if max_memory.isdigit():
+                max_memory = int(max_memory)
+            elif max_memory.lower().endswith('b'):
+                max_memory = int(
+                    int(max_memory[:-2]) * num_unit(max_memory[-2:], 'GB'))
+                if max_memory < 1:
+                    max_memory = 1
+            else:
+                raise ValueError(
+                    'max_memory must be an integer or integer+KB/MB/GB')
+            arrays['calc_arrays']['max_memory'] = max_memory
+
+
 reg_functions = [
     reg_customized_symbols,
     reg_numbers_symbols,
@@ -163,6 +194,7 @@ reg_functions = [
     reg_initial_things,
     reg_info,
     reg_energy,
+    reg_memory,
 ]
 
 # all_functions = inspect.getmembers(current_module)

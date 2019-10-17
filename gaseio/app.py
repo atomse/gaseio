@@ -12,7 +12,6 @@ from flask import Response
 from flask_compress import Compress
 
 import json_tricks
-
 import atomtools.name
 import gaseio
 
@@ -31,6 +30,8 @@ if not os.path.exists(UPLOAD_DIR):
 app = Flask(__name__, static_url_path='/static')
 BASEDIR = os.path.dirname(os.path.realpath(__file__))
 HTMLDIR = os.path.join(BASEDIR, 'html')
+HEADERS = {'Access-Control-Allow-Origin': '*'}
+
 
 Compress(app)
 
@@ -56,6 +57,11 @@ def parse_data(data):
     return data_array
 
 
+def load_array(str_array):
+    logger.debug(f"load array: {str_array}")
+    return json_tricks.loads(str_array)
+
+
 def read_from_request(inp_request):
     "read_from_request"
     upload_file = inp_request.files['read_file']
@@ -73,8 +79,8 @@ def read_from_request(inp_request):
     format = form.get('read_formats', None)
     filename = form.get('read_filename', filename)
     index = form.get('read_index', None)
-    data_array = parse_data(form.get('data', ''))
-    data_calc_array = parse_data(form.get('calc_data', ''))
+    data_array = load_array(form.get('data', '{}'))
+    data_calc_array = load_array(form.get('calc_data', '{}'))
     logger.debug(f"filename: {filename}")
     logger.debug(f"data_array: {data_array}")
     logger.debug(f"data_calc_array: {data_calc_array}")
@@ -161,7 +167,7 @@ def app_html_convert():
     if isinstance(output, Response):
         return output
     else:
-        return Response(output, mimetype="text/plain")
+        return Response(output, mimetype="text/plain", headers=HEADERS)
 
 
 @app.route('/')

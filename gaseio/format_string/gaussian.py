@@ -587,8 +587,9 @@ FORMAT_STRING = {
                 'key': 'gaussian_coord_datablock',
             },
             # r'Input orientation:[\s\S]*?Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n': {
-            # # It's possible that this part doesn't show in g09 without nosymm
-            # # If nosymm is added, this block will show.
+            #     # It's possible that this part doesn't show in g09 without nosymm
+            #     # If nosymm is added, this block will show.
+            #     # 'debug': True,
             #     'important': False,
             #     'selection': -1,
             #     'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
@@ -693,8 +694,7 @@ FORMAT_STRING = {
             r' The second derivative matrix:\n([\s\S]*?)\n ITU': {
                 'important': False,
                 'selection': -1,
-                'process': lambda data, arrays: gaussian_extract_second_derivative_matrix(data, arrays),
-                'key': 'Hessian',
+                'key': 'raw_Hessian',
             },
             r'Normal termination': {
                 'important': False,
@@ -816,6 +816,11 @@ FORMAT_STRING = {
                 # 'debug' : True,
                 'prerequisite': ['gaussian_coord_datablock'],
                 'equation': process_gaussian_coord_datablock_to_positions,
+            },
+            'Hessian': {
+                'prerequisite': ['raw_Hessian', 'positions'],
+                'equation': lambda arrays: gaussian_extract_second_derivative_matrix(arrays['raw_Hessian'], arrays),
+                'delete': ['raw_Hessian'],
             },
             'tags': {
                 'prerequisite': ['gaussian_coord_datablock'],

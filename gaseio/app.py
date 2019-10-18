@@ -58,12 +58,13 @@ def parse_data(data):
 
 
 def load_array(str_array):
-    logger.debug(f"load array: {str_array}")
+    logger.debug(f"load array: \"{str_array}\"")
     return json_tricks.loads(str_array)
 
 
 def read_from_request(inp_request):
     "read_from_request"
+    print('files:', inp_request.files)
     upload_file = inp_request.files['read_file']
     if upload_file and allowed_file(upload_file.filename):
         filename = secure_filename(upload_file.filename)
@@ -76,7 +77,7 @@ def read_from_request(inp_request):
     else:
         return return_msg(200, 'file not allow to upload')
     form = inp_request.form
-    format = form.get('read_formats', None)
+    format = form.get('read_format', None)
     filename = form.get('read_filename', filename)
     index = form.get('read_index', None)
     data_array = load_array(form.get('data', '{}'))

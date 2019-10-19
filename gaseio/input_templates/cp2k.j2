@@ -1,4 +1,6 @@
 {% set min_cell_size=10.0|int if min_cell_size is not defined else min_cell_size|int %}
+{% set Ry_to_eV = 13.6056980659 | float %}
+{% set local_cutoff=calc_arrays['cutoff']|float / Ry_to_eV if calc_arrays is defined and 'cutoff' in calc_arrays else 280.000000 %}
 ###  https://manual.cp2k.org/ 
 ###  If you have cp2k/data, then please
 ###     ` export CP2K_DATA_DIR=${{CP2K_DATA_DIR}} `
@@ -63,7 +65,9 @@
       CHARGE {{charge}}
       MULTIPLICITY {{multiplicity}}
       &MGRID
-         CUTOFF {{calc_arrays['cutoff'] if calc_arrays is defined and 'cutoff' in calc_arrays else 280.000000}}
+         CUTOFF {{ local_cutoff }}
+         NGRIDS {{ calc_arrays['ngrids'] if calc_arrays is defined and 'ngrids' in calc_arrays else 4 if local_cutoff < 500 else 6 }}
+         REL_CUTOFF 50 # 60 if you want it more accurate
       &END MGRID
       &QS
          METHOD {{calc_arrays['method'] | upper if calc_arrays is defined and 'method' in calc_arrays else 'GPW'}}
@@ -86,6 +90,7 @@
          SCF_GUESS {{calc_arrays['scf_guess'] | upper if calc_arrays is defined and 'scf_guess' in calc_arrays else 'RESTART'}}
          MAX_SCF {{calc_arrays['max_scf_step'] | int if calc_arrays is defined and 'max_scf_step' in calc_arrays else 100}}
          EPS_SCF {{calc_arrays['eps_scf'] | float if calc_arrays is defined and 'eps_scf' in calc_arrays else "1.0E-5"}}
+         # CHOLESKY INVERSE
          &OT T
             PRECONDITIONER FULL_ALL
             MINIMIZER {{ calc_arrays['minimizer'] if calc_arrays is defined and 'minimizer' in calc_arrays else 'CG' }}
@@ -94,6 +99,10 @@
          &OUTER_SCF ON
             MAX_SCF {{calc_arrays['outer_max_scf_step'] | float if calc_arrays is defined and 'outer_max_scf_step' in calc_arrays else 50}}
          &END OUTER_SCF
+         &SMEAR {{'ON' if calc_arrays is defined and 'smear' in calc_arrays and calc_arrays['smear'] else 'OFF' }}
+            METHOD FERMI_DIRAC
+            ELECTRONIC_TEMPERATURE [K] {{calc_arrays['temperature'] if calc_arrays is defined and 'temperature' in calc_arrays else 300}}
+         &END SMEAR
       &END SCF
    &END DFT
    &SUBSYS

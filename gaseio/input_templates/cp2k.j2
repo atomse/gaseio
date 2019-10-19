@@ -57,9 +57,9 @@
 &FORCE_EVAL
    METHOD QuickStep
    &DFT
-      BASIS_SET_FILE_NAME {{calc_arrays['cp2k_basis_set_filename'] if calc_arrays is defined and 'cp2k_basis_set_filename' in calc_arrays else 'BASIS_SET'}}
+      BASIS_SET_FILE_NAME {{calc_arrays['cp2k_basis_set_filename'] if calc_arrays is defined and 'cp2k_basis_set_filename' in calc_arrays else 'BASIS_MOLOPT'}}
       POTENTIAL_FILE_NAME {{calc_arrays['cp2k_potential_filename'] if calc_arrays is defined and 'cp2k_potential_filename' in calc_arrays else 'POTENTIAL'}}
-      WFN_RESTART_FILE_NAME ./cp2k-RESTART.wfn
+      WFN_RESTART_FILE_NAME ./CP2K-RESTART.wfn
       CHARGE {{charge}}
       MULTIPLICITY {{multiplicity}}
       &MGRID
@@ -71,6 +71,16 @@
       &XC
          &XC_FUNCTIONAL {{calc_arrays['xc'] | upper if calc_arrays is defined and 'xc' in calc_arrays else 'PBE'}}
          &END XC_FUNCTIONAL
+         # default D3 turned on
+         &VDW_POTENTIAL
+            POTENTIAL_TYPE PAIR_POTENTIAL
+            &PAIR_POTENTIAL
+               PARAMETER_FILE_NAME dftd3.dat
+               TYPE DFTD3
+               REFERENCE_FUNCTIONAL PBE
+               # R_CUTOFF [angstrom] 16
+            &END
+        &END VDW_POTENTIAL
       &END XC
       &SCF
          SCF_GUESS {{calc_arrays['scf_guess'] | upper if calc_arrays is defined and 'scf_guess' in calc_arrays else 'RESTART'}}
@@ -78,7 +88,7 @@
          EPS_SCF {{calc_arrays['eps_scf'] | float if calc_arrays is defined and 'eps_scf' in calc_arrays else "1.0E-5"}}
          &OT T
             PRECONDITIONER FULL_ALL
-            MINIMIZER DIIS
+            MINIMIZER {{ calc_arrays['minimizer'] if calc_arrays is defined and 'minimizer' in calc_arrays else 'CG' }}
             LINESEARCH 3PNT
          &END OT
          &OUTER_SCF ON

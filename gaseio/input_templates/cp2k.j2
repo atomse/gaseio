@@ -99,10 +99,22 @@
          &OUTER_SCF ON
             MAX_SCF {{calc_arrays['outer_max_scf_step'] | float if calc_arrays is defined and 'outer_max_scf_step' in calc_arrays else 50}}
          &END OUTER_SCF
-         &SMEAR {{'ON' if calc_arrays is defined and 'smear' in calc_arrays and calc_arrays['smear'] else 'OFF' }}
+         {% if calc_arrays is defined and 'smear' in calc_arrays and calc_arrays['smear'] %}
+         &SMEAR ON
             METHOD FERMI_DIRAC
             ELECTRONIC_TEMPERATURE [K] {{calc_arrays['temperature'] if calc_arrays is defined and 'temperature' in calc_arrays else 300}}
          &END SMEAR
+         ADDED_MOS 500
+         &DIAGONALIZATION
+            ALGORITHM STANDARD
+         &END DIAGONALIZATION
+         &MIXING
+            METHOD BROYDEN_MIXING
+            ALPHA 0.1
+            BETA 1.5
+            NBROYDEN 8
+         &END MIXING
+         {% endif %}
       &END SCF
    &END DFT
    &SUBSYS

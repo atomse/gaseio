@@ -485,7 +485,7 @@ FORMAT_STRING = {
                 'type': str,
                 'key': '_connectivity',
             },
-            r'#[\s\S]*?[ /]gen(?:ecp| )[\s\S]*?\n *\n[\s\S]*?\n *\n\s*[+-]?[0-9 ]+[\s\S]*?\n\s*\n *((?:[A-Z][ a-z]|[0-9 ]+ 0\n)[\s\S]*?(?:\n *\n(?:[A-Z][ a-z]|[0-9 ]+ 0\n)[\s\S]*?|))\n *\n': {
+            r'#[\s\S]*?[ /]gen(?:ecp| )[\s\S]*?\n *\n[\s\S]*?\n *\n\s*[+-]?[0-9 ]+[\s\S]*?\n\s*\n *((?:[A-Z][ a-z]|[0-9 ]+ 0\n)[\s\S]*?(?:\n *\n(?:[A-Z][ a-z]|[0-9 ]+ 0\n)[\s\S]*?|))(?:\n *\n|\n$|$)': {
                 # 'debug' : True,
                 'important': False,
                 'selection': -1,

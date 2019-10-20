@@ -101,16 +101,16 @@ def reg_calc_arrays(arrays):
 
 
 def reg_cell(arrays):
-    if 'cell' in arrays:
-        # min_cell_size = arrays.get('min_cell_size', 10)
-        # arrays['cell'] = np.array([max(x, min_cell_size)
-        #                            for x in arrays['atoms_size']])
-        # if not 'celldisp' in arrays:
-        #     arrays['celldisp'] = -1 * arrays['cell']/2
-        if arrays['cell'].shape == (3, ):
-            arrays['cell'] = np.diag(arrays['cell'])
+    if not 'cell' in arrays:
+        min_cell_size = arrays.get('min_cell_size', 10)
+        arrays['cell'] = np.array([max(x, min_cell_size)
+                                   for x in arrays['atoms_size']])
         if not 'celldisp' in arrays:
-            arrays['celldisp'] = np.zeros((3,))
+            arrays['celldisp'] = -1 * arrays['cell']/2
+    if arrays['cell'].shape == (3, ):
+        arrays['cell'] = np.diag(arrays['cell'])
+    if not 'celldisp' in arrays:
+        arrays['celldisp'] = np.zeros((3,))
 
 
 def reg_constraints(arrays):

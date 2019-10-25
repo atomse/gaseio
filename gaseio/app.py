@@ -69,9 +69,7 @@ def read_from_request(inp_request):
     index = form.get('read_index', None)
     data_array = load_array(form.get('data', '{}'))
     data_calc_array = load_array(form.get('calc_data', '{}'))
-    logger.debug(f"filename: {filename}")
-    logger.debug(f"data_array: {data_array}")
-    logger.debug(f"data_calc_array: {data_calc_array}")
+    logger.debug(f"filename: {filename}\ndata_array: {data_array}\ndata_calc_array: {data_calc_array}")
     if index == 'on':
         index = ':'
     elif index == 'off' or index is None:
@@ -115,8 +113,6 @@ def write_with_request(inp_request, arrays):
     if not filename and not fileformat:
         msg = 'filename and format cannot be None at the same time'
         raise NotImplementedError(msg)
-    if fileformat == 'json':
-        return json_tricks.dumps(arrays, allow_nan=True)
     if filename:
         if isinstance(arrays, dict):
             arrays['filename'] = filename
@@ -124,8 +120,12 @@ def write_with_request(inp_request, arrays):
             for arr in arrays:
                 arr['filename'] = filename
     logger.debug(f"filename: {filename}")
-    output = gaseio.get_write_content(
-        filename, arrays, fileformat, force_gase=True)
+    if fileformat == 'json':
+        output = json_tricks.dumps(arrays, allow_nan=True)
+    else:
+        output = gaseio.get_write_content(
+            filename, arrays, fileformat, force_gase=True)
+    logger.debug(f"write_with_request: output: {output}")
     return output
 
 
@@ -141,6 +141,7 @@ def app_convert():
             'data': output,
         }
     except Exception as e:
+        logger.debug(f"{e}")
         res = {
             'success': False,
             'message': f"{e}",
@@ -188,8 +189,7 @@ if __name__ == '__main__':
     if args.debug:
         logger.setLevel(logging.DEBUG)
     if not werkzeug.serving.is_running_from_reloader():
-        logger.setLevel(logging.INFO)
-
+        logger.setLevel(logging.DEBUG)
         localhost = '127.0.0.1'
         port = valid_port(starting_port=port)
         logger.info(f"port: {port}")

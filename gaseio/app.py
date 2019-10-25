@@ -20,11 +20,10 @@ logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
-UPLOAD_DIR = os.environ.get(
-    "GASEIO_UPLOAD_DIR", os.path.expanduser('~/chemio'))
+UPLOAD_DIR = os.environ.get("GASEIO_UPLOAD_DIR",
+                            os.path.expanduser('~/chemio'))
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
-    # raise IOError(UPLOAD_DIR, 'not exist')
 
 
 app = Flask(__name__, static_url_path='/static')
@@ -46,12 +45,25 @@ def allowed_file(filename):
 
 def load_array(str_array):
     logger.debug(f"load array: \"{str_array}\"")
+    if str_array is None:
+        return {}
     return json_tricks.loads(str_array)
 
 
 def read_from_request(inp_request):
     "read_from_request"
-    print('files:', inp_request.files)
+    # set form
+    form = inp_request.form
+    filetoken = form.get('file_token', None)
+    format = form.get('read_format', None)
+    filename = form.get('read_filename', None)
+    index = form.get('read_index', None)
+    compressed = not (form.get('compressed', False) in ['False', False, 'false'])
+    print(form.get('compressed', False), compressed, type(compressed))
+    data_array = load_array(form.get('data', '{}'))
+    data_calc_array = load_array(form.get('calc_data', '{}'))
+    # set files
+    logger.debug(f'files: {inp_request.files}')
     upload_file = inp_request.files['read_file']
     if upload_file and allowed_file(upload_file.filename):
         filename = secure_filename(upload_file.filename)
@@ -60,16 +72,13 @@ def read_from_request(inp_request):
         dest_filename = os.path.join(
             UPLOAD_DIR,
             atomtools.name.randString() + '_' + filename)
+        if compressed:
+            dest_filename += '.gz'
         upload_file.save(dest_filename)
     else:
         raise FileNotAllowUpload()
-    form = inp_request.form
-    format = form.get('read_format', None)
-    filename = form.get('read_filename', filename)
-    index = form.get('read_index', None)
-    data_array = load_array(form.get('data', '{}'))
-    data_calc_array = load_array(form.get('calc_data', '{}'))
-    logger.debug(f"filename: {filename}\ndata_array: {data_array}\ndata_calc_array: {data_calc_array}")
+    logger.debug(
+        f"filename: {filename}\ndata_array: {data_array}\ndata_calc_array: {data_calc_array}")
     if index == 'on':
         index = ':'
     elif index == 'off' or index is None:
@@ -77,18 +86,22 @@ def read_from_request(inp_request):
     arrays = gaseio.read(dest_filename, index, format, force_gase=True)
     if isinstance(arrays, dict):
         arrays['filename'] = filename
-        arrays.update(data_array)
+        if data_array:
+            arrays.update(data_array)
         if not 'calc_arrays' in arrays:
             arrays['calc_arrays'] = dict()
-        arrays['calc_arrays'].update(data_calc_array)
+        if data_calc_array:
+            arrays['calc_arrays'].update(data_calc_array)
         # gaseio.regularize.regularize_arrays(arrays)
     elif isinstance(arrays, list):
         for arr in arrays:
             arr['filename'] = filename
-            arr.update(data_array)
+            if data_array:
+                arr.update(data_array)
             if not 'calc_arrays' in arr:
                 arr['calc_arrays'] = dict()
-            arr['calc_arrays'].update(data_calc_array)
+            if data_calc_array:
+                arr['calc_arrays'].update(data_calc_array)
             # gaseio.regularize.regularize_arrays(arr)
     logger.debug(f"filename: {filename}")
     logger.debug(f"arrays: {arrays}")
@@ -196,5 +209,5 @@ if __name__ == '__main__':
         os.environ['GASEIO_PORT'] = str(port)
     else:
         logger.info(
-            f"\n\nexport CHEMIO_SERVER_URLS=http://{localhost}:{port}\n\n")
+            f"\n\nexport CHEMIO_SERVER_URL=http://{localhost}:{port}/convert\n\n")
     app.run(host=localhost, port=port, debug=args.debug)

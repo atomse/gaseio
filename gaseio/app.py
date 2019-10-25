@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import os
-import re
-import hashlib
+# import re
+# import hashlib
 import logging
 from werkzeug.utils import secure_filename
 from flask import Flask
 from flask import request
-from flask import send_from_directory
+# from flask import send_from_directory
 from flask import Response
 from flask_compress import Compress
 
@@ -36,25 +36,12 @@ HEADERS = {'Access-Control-Allow-Origin': '*'}
 Compress(app)
 
 
-def return_msg(code, msg):
-    return {
-        'code': code,
-        'msg': msg,
-    }
+class FileNotAllowUpload(Exception):
+    pass
 
 
 def allowed_file(filename):
     return True
-
-
-def parse_data(data):
-    data_array = dict()
-    for d in data.split(';'):
-        match = re.match('^(.*?)=(.*)$', d)
-        if match:
-            key, val = match[1], match[2]
-            data_array[key] = val
-    return data_array
 
 
 def load_array(str_array):
@@ -75,7 +62,7 @@ def read_from_request(inp_request):
             atomtools.name.randString() + '_' + filename)
         upload_file.save(dest_filename)
     else:
-        return return_msg(200, 'file not allow to upload')
+        raise FileNotAllowUpload()
     form = inp_request.form
     format = form.get('read_format', None)
     filename = form.get('read_filename', filename)
@@ -111,12 +98,12 @@ def read_from_request(inp_request):
     return arrays
 
 
-@app.route('/read', methods=['POST'])
-@app.route('/parse', methods=['POST'])
-def app_read():
-    "app_read"
-    arrays = read_from_request(request)
-    return Response(json_tricks.dumps(arrays, allow_nan=True), mimetype="application/json")
+# @app.route('/read', methods=['POST'])
+# @app.route('/parse', methods=['POST'])
+# def app_read():
+#     "app_read"
+#     arrays = read_from_request(request)
+#     return Response(json_tricks.dumps(arrays, allow_nan=True), mimetype="application/json")
 
 
 def write_with_request(inp_request, arrays):
@@ -127,11 +114,9 @@ def write_with_request(inp_request, arrays):
     logger.debug(f"{form}\n{filename}\n{fileformat}")
     if not filename and not fileformat:
         msg = 'filename and format cannot be None at the same time'
-        if app.debug:
-            raise ValueError(msg)
-        return {'success': False, 'msg': msg}
+        raise NotImplementedError(msg)
     if fileformat == 'json':
-        return Response(json_tricks.dumps(arrays, allow_nan=True), mimetype="application/json")
+        return json_tricks.dumps(arrays, allow_nan=True)
     if filename:
         if isinstance(arrays, dict):
             arrays['filename'] = filename
@@ -144,21 +129,24 @@ def write_with_request(inp_request, arrays):
     return output
 
 
-@app.route('/write', methods=['POST'])
-def app_write():
-    "app_write"
-    form = request.form
-    arrays_string = form.get('arrays', None)
-    arrays = json_tricks.loads(arrays_string)
-    return write_with_request(request, arrays)
-
-
 @app.route('/convert', methods=['POST'])
 def app_convert():
     "app_convert"
-    arrays = read_from_request(request)
-    output = write_with_request(request, arrays)
-    return output
+    try:
+        arrays = read_from_request(request)
+        output = write_with_request(request, arrays)
+        res = {
+            'success': True,
+            'message': '',
+            'data': output,
+        }
+    except Exception as e:
+        res = {
+            'success': False,
+            'message': f"{e}",
+            'data': '',
+        }
+    return res
 
 
 @app.route('/html_convert', methods=['POST'])
@@ -167,26 +155,25 @@ def app_html_convert():
     output = app_convert()
     if isinstance(output, Response):
         return output
-    else:
-        return Response(output, mimetype="text/plain", headers=HEADERS)
+    return Response(output, mimetype="text/plain", headers=HEADERS)
 
 
-@app.route('/')
-def index():
-    return send_from_directory(HTMLDIR, "index.html")
+# @app.route('/')
+# def index():
+#     return send_from_directory(HTMLDIR, "index.html")
 
 
 def valid_port(hostname='127.0.0.1', starting_port=5000):
     import socket
     from contextlib import closing
-    port = starting_port
+    _port = starting_port
     try:
         with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-            s.bind((hostname, port))
+            s.bind((hostname, _port))
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     except socket.error:
-        port += 1
-    return port
+        _port += 1
+    return _port
 
 
 if __name__ == '__main__':

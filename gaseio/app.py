@@ -59,7 +59,6 @@ def read_from_request(inp_request):
     filename = form.get('read_filename', None)
     index = form.get('read_index', None)
     compressed = not (form.get('compressed', False) in ['False', False, 'false'])
-    print(form.get('compressed', False), compressed, type(compressed))
     data_array = load_array(form.get('data', '{}'))
     data_calc_array = load_array(form.get('calc_data', '{}'))
     # set files

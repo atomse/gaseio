@@ -934,6 +934,10 @@ FORMAT_STRING = {
                 'equation': lambda arrays: arrays['calc_arrays/Current_cartesian_coordinates'].reshape((-1, 3))\
                 * atomtools.unit.trans_length('au'),
             },
+            'calc_arrays/command': {
+                'prerequisite': ['calc_arrays/Route'],
+                'equation': lambda arrays: arrays['calc_arrays/Route'][1:].lower(),
+            },
             # 'calc_arrays/coordinates_of_each_shell' : {
             #     'prerequisite' : ['calc_arrays/Coordinates_of_each_shell'],
             #     'equation' : lambda arrays: arrays['calc_arrays/Coordinates_of_each_shell'].reshape((-1, 3))\

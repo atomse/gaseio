@@ -303,7 +303,7 @@ class FileFinder(object):
 
 
 def regularize_symbols(symbols):
-    print(symbols)
+    # print(symbols)
     assert isinstance(symbols, (list, np.ndarray))
     sample = symbols[0]
     if isinstance(sample, (int, float)) or isinstance(sample, str) and sample.isdigit():

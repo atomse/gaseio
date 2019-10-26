@@ -1,5 +1,5 @@
 ase>=3.18.1
-atomtools>=1.8.4
+atomtools>=1.8.6
 basis_set_exchange>=0.8.10
 chemdata>=1.5.2
 Flask>=1.1.1

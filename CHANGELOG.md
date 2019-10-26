@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.7.3
+
+
+* add multi-processing support
 
 
 ## 2.7.0

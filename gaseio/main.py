@@ -81,7 +81,7 @@ def write(fileobj, images, format=None, parallel=True, append=False, force_ase=F
 def get_write_content(fileobj, images, format=None, parallel=True, append=False,
                       force_ase=False, force_gase=False, preview=False, **kwargs):
     _filetype = format or atomtools.filetype.filetype(fileobj)
-    print(_filetype)
+    logger.debug(_filetype)
     if force_gase:
         return gase_writer_content(images, _filetype)
     elif force_ase:

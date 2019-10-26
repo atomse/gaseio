@@ -30,7 +30,7 @@ if not os.path.exists(UPLOAD_DIR):
 app = Flask(__name__, static_url_path='/static')
 BASEDIR = os.path.dirname(os.path.realpath(__file__))
 HTMLDIR = os.path.join(BASEDIR, 'html')
-HEADERS = {'Access-Control-Allow-Origin': '*'}
+HEADERS = {}
 
 
 Compress(app)
@@ -200,6 +200,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.debug:
         logger.setLevel(logging.DEBUG)
+        HEADERS = {'Access-Control-Allow-Origin': '*'}
     if not werkzeug.serving.is_running_from_reloader():
         logger.setLevel(logging.INFO)
 

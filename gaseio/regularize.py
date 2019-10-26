@@ -115,7 +115,9 @@ def reg_cell(arrays):
 
 def reg_constraints(arrays):
     if not 'constraints' in arrays:
-        arrays['constraints'] = np.array([])
+        arrays['constraints'] = []
+    if isinstance(arrays['constraints'], np.ndarray):
+        arrays['constraints'] = arrays['constraints'].tolist()
 
 
 def reg_tags(arrays):

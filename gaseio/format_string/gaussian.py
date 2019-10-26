@@ -95,7 +95,7 @@ def gaussian_extract_frequency(logline, arrays):
         #    3     2     6          0.16741  -0.01933  -0.14943   0.00000   0.23508
 
         """
-        assert mode in [3, 5]
+        assert mode in [3, 5], f"{__name__} mode must be [3,5]"
         item_dict = {
             'Frequencies': 'frequency',
             'Red. masses': 'reduced_mass',
@@ -235,7 +235,7 @@ def process_MO_coefficients(data, n_orbital):
     col_extra = 19
     n_block = n_orbital + 3
     lines = data.split('\n')
-    assert len(lines) % n_block == 0
+    assert len(lines) % n_block == 0, f"process_MO_coefficients error"
     for i in range(len(lines)):
         lines[i] = lines[i][col_extra:]
     # merge lines

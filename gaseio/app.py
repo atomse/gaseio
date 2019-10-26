@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import os
-import re
-import hashlib
+# import re
+# import hashlib
 import logging
 from werkzeug.utils import secure_filename
 from flask import Flask
 from flask import request
-from flask import send_from_directory
+# from flask import send_from_directory
 from flask import Response
 from flask_compress import Compress
 
@@ -20,11 +20,10 @@ logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
-UPLOAD_DIR = os.environ.get(
-    "GASEIO_UPLOAD_DIR", os.path.expanduser('~/chemio'))
+UPLOAD_DIR = os.environ.get("GASEIO_UPLOAD_DIR",
+                            os.path.expanduser('~/chemio'))
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
-    # raise IOError(UPLOAD_DIR, 'not exist')
 
 
 app = Flask(__name__, static_url_path='/static')
@@ -36,35 +35,35 @@ HEADERS = {}
 Compress(app)
 
 
-def return_msg(code, msg):
-    return {
-        'code': code,
-        'msg': msg,
-    }
+class FileNotAllowUpload(Exception):
+    pass
 
 
 def allowed_file(filename):
     return True
 
 
-def parse_data(data):
-    data_array = dict()
-    for d in data.split(';'):
-        match = re.match('^(.*?)=(.*)$', d)
-        if match:
-            key, val = match[1], match[2]
-            data_array[key] = val
-    return data_array
-
-
 def load_array(str_array):
     logger.debug(f"load array: \"{str_array}\"")
+    if str_array is None:
+        return {}
     return json_tricks.loads(str_array)
 
 
 def read_from_request(inp_request):
     "read_from_request"
-    print('files:', inp_request.files)
+    # set form
+    form = inp_request.form
+    filetoken = form.get('file_token', None)
+    format = form.get('read_format', None)
+    filename = form.get('read_filename', None)
+    index = form.get('read_index', None)
+    compressed = not (form.get('compressed', False) in ['False', False, 'false'])
+    print(form.get('compressed', False), compressed, type(compressed))
+    data_array = load_array(form.get('data', '{}'))
+    data_calc_array = load_array(form.get('calc_data', '{}'))
+    # set files
+    logger.debug(f'files: {inp_request.files}')
     upload_file = inp_request.files['read_file']
     if upload_file and allowed_file(upload_file.filename):
         filename = secure_filename(upload_file.filename)
@@ -73,18 +72,13 @@ def read_from_request(inp_request):
         dest_filename = os.path.join(
             UPLOAD_DIR,
             atomtools.name.randString() + '_' + filename)
+        if compressed:
+            dest_filename += '.gz'
         upload_file.save(dest_filename)
     else:
-        return return_msg(200, 'file not allow to upload')
-    form = inp_request.form
-    format = form.get('read_format', None)
-    filename = form.get('read_filename', filename)
-    index = form.get('read_index', None)
-    data_array = load_array(form.get('data', '{}'))
-    data_calc_array = load_array(form.get('calc_data', '{}'))
-    logger.debug(f"filename: {filename}")
-    logger.debug(f"data_array: {data_array}")
-    logger.debug(f"data_calc_array: {data_calc_array}")
+        raise FileNotAllowUpload()
+    logger.debug(
+        f"filename: {filename}\ndata_array: {data_array}\ndata_calc_array: {data_calc_array}")
     if index == 'on':
         index = ':'
     elif index == 'off' or index is None:
@@ -92,18 +86,22 @@ def read_from_request(inp_request):
     arrays = gaseio.read(dest_filename, index, format, force_gase=True)
     if isinstance(arrays, dict):
         arrays['filename'] = filename
-        arrays.update(data_array)
+        if data_array:
+            arrays.update(data_array)
         if not 'calc_arrays' in arrays:
             arrays['calc_arrays'] = dict()
-        arrays['calc_arrays'].update(data_calc_array)
+        if data_calc_array:
+            arrays['calc_arrays'].update(data_calc_array)
         # gaseio.regularize.regularize_arrays(arrays)
     elif isinstance(arrays, list):
         for arr in arrays:
             arr['filename'] = filename
-            arr.update(data_array)
+            if data_array:
+                arr.update(data_array)
             if not 'calc_arrays' in arr:
                 arr['calc_arrays'] = dict()
-            arr['calc_arrays'].update(data_calc_array)
+            if data_calc_array:
+                arr['calc_arrays'].update(data_calc_array)
             # gaseio.regularize.regularize_arrays(arr)
     logger.debug(f"filename: {filename}")
     logger.debug(f"arrays: {arrays}")
@@ -111,12 +109,12 @@ def read_from_request(inp_request):
     return arrays
 
 
-@app.route('/read', methods=['POST'])
-@app.route('/parse', methods=['POST'])
-def app_read():
-    "app_read"
-    arrays = read_from_request(request)
-    return Response(json_tricks.dumps(arrays, allow_nan=True), mimetype="application/json")
+# @app.route('/read', methods=['POST'])
+# @app.route('/parse', methods=['POST'])
+# def app_read():
+#     "app_read"
+#     arrays = read_from_request(request)
+#     return Response(json_tricks.dumps(arrays, allow_nan=True), mimetype="application/json")
 
 
 def write_with_request(inp_request, arrays):
@@ -127,11 +125,7 @@ def write_with_request(inp_request, arrays):
     logger.debug(f"{form}\n{filename}\n{fileformat}")
     if not filename and not fileformat:
         msg = 'filename and format cannot be None at the same time'
-        if app.debug:
-            raise ValueError(msg)
-        return {'success': False, 'msg': msg}
-    if fileformat == 'json':
-        return Response(json_tricks.dumps(arrays, allow_nan=True), mimetype="application/json")
+        raise NotImplementedError(msg)
     if filename:
         if isinstance(arrays, dict):
             arrays['filename'] = filename
@@ -139,26 +133,34 @@ def write_with_request(inp_request, arrays):
             for arr in arrays:
                 arr['filename'] = filename
     logger.debug(f"filename: {filename}")
-    output = gaseio.get_write_content(
-        filename, arrays, fileformat, force_gase=True)
+    if fileformat == 'json':
+        output = json_tricks.dumps(arrays, allow_nan=True)
+    else:
+        output = gaseio.get_write_content(
+            filename, arrays, fileformat, force_gase=True)
+    logger.debug(f"write_with_request: output: {output}")
     return output
-
-
-@app.route('/write', methods=['POST'])
-def app_write():
-    "app_write"
-    form = request.form
-    arrays_string = form.get('arrays', None)
-    arrays = json_tricks.loads(arrays_string)
-    return write_with_request(request, arrays)
 
 
 @app.route('/convert', methods=['POST'])
 def app_convert():
     "app_convert"
-    arrays = read_from_request(request)
-    output = write_with_request(request, arrays)
-    return output
+    try:
+        arrays = read_from_request(request)
+        output = write_with_request(request, arrays)
+        res = {
+            'success': True,
+            'message': '',
+            'data': output,
+        }
+    except Exception as e:
+        logger.debug(f"{e}")
+        res = {
+            'success': False,
+            'message': f"{e}",
+            'data': '',
+        }
+    return res
 
 
 @app.route('/html_convert', methods=['POST'])
@@ -167,26 +169,25 @@ def app_html_convert():
     output = app_convert()
     if isinstance(output, Response):
         return output
-    else:
-        return Response(output, mimetype="text/plain", headers=HEADERS)
+    return Response(output, mimetype="text/plain", headers=HEADERS)
 
 
-@app.route('/')
-def index():
-    return send_from_directory(HTMLDIR, "index.html")
+# @app.route('/')
+# def index():
+#     return send_from_directory(HTMLDIR, "index.html")
 
 
 def valid_port(hostname='127.0.0.1', starting_port=5000):
     import socket
     from contextlib import closing
-    port = starting_port
+    _port = starting_port
     try:
         with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-            s.bind((hostname, port))
+            s.bind((hostname, _port))
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     except socket.error:
-        port += 1
-    return port
+        _port += 1
+    return _port
 
 
 if __name__ == '__main__':
@@ -202,13 +203,12 @@ if __name__ == '__main__':
         logger.setLevel(logging.DEBUG)
         HEADERS = {'Access-Control-Allow-Origin': '*'}
     if not werkzeug.serving.is_running_from_reloader():
-        logger.setLevel(logging.INFO)
-
+        logger.setLevel(logging.DEBUG)
         localhost = '127.0.0.1'
         port = valid_port(starting_port=port)
         logger.info(f"port: {port}")
         os.environ['GASEIO_PORT'] = str(port)
     else:
         logger.info(
-            f"\n\nexport CHEMIO_SERVER_URLS=http://{localhost}:{port}\n\n")
+            f"\n\nexport CHEMIO_SERVER_URL=http://{localhost}:{port}/convert\n\n")
     app.run(host=localhost, port=port, debug=args.debug)

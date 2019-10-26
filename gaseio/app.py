@@ -58,7 +58,8 @@ def read_from_request(inp_request):
     format = form.get('read_format', None)
     filename = form.get('read_filename', None)
     index = form.get('read_index', None)
-    compressed = not (form.get('compressed', False) in ['False', False, 'false'])
+    compressed = not (form.get('compressed', False)
+                      in ['False', False, 'false'])
     data_array = load_array(form.get('data', '{}'))
     data_calc_array = load_array(form.get('calc_data', '{}'))
     # set files
@@ -159,7 +160,8 @@ def app_convert():
             'message': f"{e}",
             'data': '',
         }
-    return res
+    return Response(json_tricks.dumps(res, allow_nan=True),
+                    content_type='application/json', headers=HEADERS)
 
 
 @app.route('/html_convert', methods=['POST'])
@@ -198,9 +200,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true')
     args = parser.parse_args()
+    HEADERS = {'Access-Control-Allow-Origin': '*'}
     if args.debug:
         logger.setLevel(logging.DEBUG)
-        HEADERS = {'Access-Control-Allow-Origin': '*'}
     if not werkzeug.serving.is_running_from_reloader():
         logger.setLevel(logging.DEBUG)
         localhost = '127.0.0.1'

@@ -33,6 +33,10 @@ def reg_symbols(arrays):
     arrays['symbols'] = ext_methods.regularize_symbols(arrays['symbols'])
 
 
+def reg_positions(arrays):
+    arrays['positions'] = np.array(arrays['positions']).reshape((-1, 3))
+
+
 def reg_numbers_symbols(arrays):
     if 'numbers' in arrays:
         arrays['symbols'] = [chemdata.get_element(
@@ -183,6 +187,7 @@ def reg_memory(arrays):
 reg_functions = [
     reg_customized_symbols,
     reg_numbers_symbols,
+    reg_positions,
     reg_masses,
     reg_charge,
     reg_spin,

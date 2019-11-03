@@ -3,7 +3,7 @@
 import os
 # import re
 # import hashlib
-import logging
+import modlog
 from werkzeug.utils import secure_filename
 from flask import Flask
 from flask import request
@@ -15,13 +15,12 @@ import json_tricks
 import atomtools.name
 import gaseio
 
-logging.basicConfig(level=logging.WARNING)
-
-logger = logging.getLogger(__name__)
+logger = modlog.getLogger(__name__)
 
 
 UPLOAD_DIR = os.environ.get("GASEIO_UPLOAD_DIR",
                             os.path.expanduser('~/chemio'))
+STORE_FILE = os.environ.get("GASEIO_STORE_FILE", 'True').upper() == 'TRUE'
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
@@ -103,6 +102,8 @@ def read_from_request(inp_request):
             if data_calc_array:
                 arr['calc_arrays'].update(data_calc_array)
             # gaseio.regularize.regularize_arrays(arr)
+    if not STORE_FILE:
+        os.remove(dest_filename)
     logger.debug(f"filename: {filename}")
     logger.debug(f"arrays: {arrays}")
     logger.debug(json_tricks.dumps(arrays, indent=4, allow_nan=True))

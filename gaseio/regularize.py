@@ -209,14 +209,6 @@ reg_functions = [
 #                       if inspect.isfunction(o) and o[0].startswith('reg_')])
 
 
-def _setdebug():
-    logger.setLevel(logging.DEBUG)
-    # logger.debug(__name__)
-    # all_functions = inspect.getmembers(mod)
-    logger.debug(all_functions)
-    logger.debug(reg_functions)
-
-
 def regularize_arrays(arrays):
     if isinstance(arrays, list):
         for arr in arrays:

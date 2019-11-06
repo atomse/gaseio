@@ -1,0 +1,71 @@
+.PHONY: all reqs build install test
+
+pes_parent_dir:=$(shell pwd)/$(lastword $(MAKEFILE_LIST))
+pes_parent_dir:=$(shell dirname $(pes_parent_dir))
+
+Project=$(shell basename $(pes_parent_dir))
+
+all:
+	make reqs
+	make build
+	make install
+	make test
+
+reqs:
+	pipreqs --help >/dev/null 2>&1 || pip3 install pipreqs || pip3 install pipreqs --user
+	pipreqs --force $(Project)
+	mv $(Project)/requirements.txt .
+	sed -i 's/==/>=/g' requirements.txt
+	sed -i 's/numpy.*/numpy/g' requirements.txt
+	sed -i 's/psutil.*/psutil/g' requirements.txt
+	sort requirements.txt -o requirements.txt
+	cat requirements.txt 
+
+build:
+	pip install cython twine
+	rm -rf Ebuild/ build/ sdist/ dist/ $(Project)-*/ $(Project).egg-info/
+	python encrypt.py
+	cd Ebuild && make build_base && make test_Ebuild && cp -r dist ../ 
+
+create_link:
+	[ -d Ebuild/dist ] && ln -fs Ebuild/dist || echo dist not exists
+	[ -d Ebuild/sdist ] && ln -fs Ebuild/sdist || echo sdist not exists
+
+build_base:
+	rm -rf build/ sdist/ dist/ $(Project)-*/ $(Project).egg-info/
+	python setup.py sdist build
+	python setup.py bdist_wheel --universal
+	twine check dist/*
+
+install:
+	cd /tmp; pip uninstall -yy $(Project); cd -; python -m pip install dist/*.whl || python -m pip install dist/*.whl --user
+
+test:
+	bash -c "export GMX_MAXBACKUP=-1; export AUTOMD_LOGLEVEL=debug; export PYTHONPATH="$(PYTHONPATH):$(PWD)"; coverage run --source $(Project) ./tests/test.py" 
+	echo `which $(Project)`
+	# coverage run --source $(Project) `which $(Project)` -h
+	# coverage run --source $(Project) `which $(Project)` LISTSUBCOMMAND
+	# coverage run --source $(Project) `which $(Project)` LISTSUBCOMMAND | xargs -n 1 -I [] bash -c '(coverage run --source $(Project) `which $(Project)` [] -h >/dev/null 2>&1 || echo ERROR: [])'
+	coverage report -m
+
+test_Ebuild:
+	bash -c "export GMX_MAXBACKUP=-1; export AUTOMD_LOGLEVEL=debug; export PYTHONPATH="$(PYTHONPATH):$(PWD)"; python ./tests/test.py"
+
+
+test_env:
+	bash -c ' \
+	rm -rf venv; \
+	virtualenv venv; \
+	source venv/bin/activate; \
+	which python; \
+	python --version; \
+	pip install -r requirements.txt; \
+	make build; \
+	make travisinstall; \
+	make test'
+	
+upload:
+	twine upload --repository-url https://pypi.senrea.net dist/*
+
+clean:
+	rm -rf venv build *.egg-info dist

@@ -24,6 +24,12 @@ reqs:
 	cat requirements.txt 
 
 build:
+	pip install cython twine
+	rm -rf build/ sdist/ dist/ $(Project)-*/ $(Project).egg-info/
+	python encrypt.py
+	cd build && make build_base && make test_build && cp -r dist ../
+
+build_base:
 	rm -rf build/ sdist/ dist/ $(Project)-*/ $(Project).egg-info/
 	python setup.py sdist build
 	python setup.py bdist_wheel --universal
@@ -42,6 +48,8 @@ test:
 	coverage report -m > coverage.log
 	cat coverage.log
 
+test_build:
+	bash -c "export PYTHONPATH="$(PYTHONPATH):$(pes_parent_dir)"; export GASEIO_CONTINUE_FILE="$(GASEIO_CONTINUE_FILE)"; python ./tests/test.py"
 
 app:
 	bash -c "export GASEIO_PORT=5001; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python gaseio/app.py"
@@ -100,7 +108,7 @@ test_env:
 	make test'
 	
 upload:
-	echo "\033[41;37m This Project is not allowed to upload to pypi! \033[0m"
+	twine upload --repository-url https://pypi.senrea.net dist/*
 
 clean:
 	rm -rf venv build *.egg-info dist

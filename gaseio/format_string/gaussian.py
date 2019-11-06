@@ -543,6 +543,10 @@ FORMAT_STRING = {
                 'prerequisite': ['calc_arrays/genecp'],
                 'equation': lambda arrays: process_genecp_ecp(arrays['calc_arrays']['genecp'], arrays),
             },
+            'calc_arrays/max_memory': {
+                'prerequisite': ['calc_arrays/max_memory'],
+                'equation': lambda arrays: ext_methods.convert_memory(arrays['calc_arrays']['max_memory'], 'GB'),
+            },
         }),
     },
     'gaussian-out': {
@@ -860,6 +864,10 @@ FORMAT_STRING = {
             'gaussian_datablock_geometry': {
                 'prerequisite': ['gaussian_datablock'],
                 'equation': lambda arrays: arrays['gaussian_datablock'][3],
+            },
+            'calc_arrays/max_memory': {
+                'prerequisite': ['calc_arrays/max_memory'],
+                'equation': lambda arrays: ext_methods.convert_memory(arrays['calc_arrays']['max_memory'], 'GB'),
             },
             'calc_arrays/condense_to_atoms': {
                 'prerequisite': ['raw_condense_to_atoms'],

@@ -5,31 +5,22 @@ format parser from gase
 
 import os
 import re
-import configparser
 import numpy as np
+import modlog
 import atomtools.fileutil
 import atomtools.filetype
-import logging
-import json_tricks
 
 
-# from .ext_types import ExtList
-from .ext_types import ExtDict
-from .ext_methods import astype, xml_parameters, datablock_to_numpy,\
-    datablock_to_numpy, construct_depth_dict, \
-    get_depth_dict, FileFinder
+from .ext_methods import construct_depth_dict, FileFinder
+from .ext_types import ExtList, ExtDict
 from .regularize import regularize_arrays
 
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
+logger = modlog.getLogger(__name__)
 
 
-logging.basicConfig()
-logger = logging.getLogger(__name__)
-# logger.setLevel(logging.DEBUG)
-
-
-def read(fileobj, index=-1, format=None, warning=False, debug=False):
+def read(fileobj, index=-1, format=None):
     from .format_string import FORMAT_STRING
     assert isinstance(index, int) or isinstance(index, slice)
     orig_index = index
@@ -61,6 +52,9 @@ def read(fileobj, index=-1, format=None, warning=False, debug=False):
             format, fileobj, file_format)
 
     format_dict = FORMAT_STRING.get(file_format, None)
+    logger.debug(f"format_string: {FORMAT_STRING}")
+    logger.debug(f"file_format: {file_format}")
+    logger.debug(f"format_dict: {format_dict}")
     if format_dict is None:
         raise NotImplementedError(f"{file_format} not available now")
 
@@ -93,11 +87,11 @@ def read(fileobj, index=-1, format=None, warning=False, debug=False):
                 filename) if filename else None
             arrays['frame_i'] = frame_i
             process_primitive_data(arrays, file_string,
-                                   format_dict, warning, debug)
+                                   format_dict)
             if format_dict.get('primitive_data_function', None):
                 format_dict.get('primitive_data_function')(file_string, arrays)
-            process_synthesized_data(arrays, format_dict, debug)
-            process_calculator(arrays, format_dict, debug)
+            process_synthesized_data(arrays, format_dict)
+            process_calculator(arrays, format_dict)
             # if not show_file_content:
             #     del arrays['absfilename'], arrays['basedir']
             all_arrays.append(arrays)
@@ -115,7 +109,7 @@ def read(fileobj, index=-1, format=None, warning=False, debug=False):
     return arrays
 
 
-def process_pattern(pattern, pattern_property, arrays, finder, warning=False, debug=False):
+def process_pattern(pattern, pattern_property, arrays, finder):
     key = pattern_property['key']
     important = pattern_property.get('important', False)
     selection = pattern_property.get(
@@ -132,8 +126,7 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
     if not match:
         if important:
             raise ValueError(key, 'not match, however important')
-        elif warning:
-            print(' WARNING: ', key, 'not matched', '\n')
+        logger.debug(f'{key} not matched')
         return
 
     if pattern_property.get('join', None):
@@ -187,8 +180,7 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
             arrays.update(construct_depth_dict(key, value, arrays))
 
 
-def process_primitive_data(arrays, file_string, formats, warning=False, debug=False):
-    warning = warning or debug
+def process_primitive_data(arrays, file_string, formats):
     primitive_data, ignorance = formats['primitive_data'], formats.get(
         'ignorance', None)
     if isinstance(ignorance, tuple):
@@ -201,15 +193,15 @@ def process_primitive_data(arrays, file_string, formats, warning=False, debug=Fa
         if pattern_property.get("passerror", False):
             try:
                 process_pattern(pattern, pattern_property,
-                                arrays, finder, warning, debug)
-            except:
+                                arrays, finder)
+            except Exception:
                 pass
         else:
             process_pattern(pattern, pattern_property,
-                            arrays, finder, warning, debug)
+                            arrays, finder)
 
 
-def process_synthesized_data(arrays, formats, debug=False):
+def process_synthesized_data(arrays, formats):
     """
     Process synthesized data
     """
@@ -251,12 +243,8 @@ def process_synthesized_data(arrays, formats, debug=False):
                     del arrays[item]
 
 
-def process_calculator(arrays, formats_dict, debug=False):
+def process_calculator(arrays, formats_dict):
     if 'calculator' in formats_dict:
         if not 'calc_arrays' in arrays:
             arrays['calc_arrays'] = dict()
         arrays['calc_arrays']['name'] = formats_dict.get('calculator')
-
-
-def setdebug():
-    logger.setLevel(logging.DEBUG)

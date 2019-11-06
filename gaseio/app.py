@@ -15,7 +15,7 @@ import json_tricks
 import atomtools.name
 import gaseio
 
-logger = modlog.getLogger(__name__)
+logger = modlog.getLogger(__name__, 'GASEIO_APP_LOGLEVEL')
 
 
 UPLOAD_DIR = os.environ.get("GASEIO_UPLOAD_DIR",
@@ -202,10 +202,7 @@ if __name__ == '__main__':
     parser.add_argument('--debug', action='store_true')
     args = parser.parse_args()
     HEADERS = {'Access-Control-Allow-Origin': '*'}
-    if args.debug:
-        logger.setLevel(logging.DEBUG)
     if not werkzeug.serving.is_running_from_reloader():
-        logger.setLevel(logging.DEBUG)
         localhost = '127.0.0.1'
         port = valid_port(starting_port=port)
         logger.info(f"port: {port}")

@@ -1,6 +1,7 @@
 """
 format_string
 """
+import os
 import re
 from collections import OrderedDict
 import numpy as np
@@ -42,6 +43,7 @@ def parse_cif(data):
         fd.write(data)
     arrays = None
     try:
+        import ase.io
         atoms = ase.io.read(tmpfname, format='cif')
         arrays = atoms.arrays
     finally:

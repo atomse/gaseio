@@ -14,7 +14,7 @@ build_dir = "build"  # 项目加密后位置
 build_tmp_dir = build_dir + "/temp"
 
 
-NOT_COMPILED_FILES = ['setup.py', 'test.py', 'main.py', 'format_parser.py']
+NOT_COMPILED_FILES = ['setup.py', 'test.py']
 
 
 def copy_complete(source, target):

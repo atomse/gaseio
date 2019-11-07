@@ -47,11 +47,12 @@
 &MOTION
    &GEO_OPT
       MAX_ITER  {{calc_arrays['max_geo_number'] | float if calc_arrays is defined and 'max_geo_number' in calc_arrays else 100}}
-      OPTIMIZER LBFGS
+      OPTIMIZER {{calc_arrays['geo_optimizer'] | str if calc_arrays is defined and 'geo_optimizer' in calc_arrays else 'CG'}}
+      # OPTIMIZER CG/BFGS/LBFGS
       MAX_FORCE {{calc_arrays['max_force'] | float if calc_arrays is defined and 'max_force' in calc_arrays else "6.0E-4"}}
       &CG
          &LINE_SEARCH
-            TYPE 2PNT
+            TYPE 2PNT # WARNING: 3PNT NOT AVAILABLE
          &END LINE_SEARCH
       &END CG
    &END GEO_OPT

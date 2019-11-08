@@ -1,5 +1,12 @@
 # CHANGELOG
 
+
+## 2.7.4
+
+* add code encryption
+
+
+
 ## 2.7.3
 
 

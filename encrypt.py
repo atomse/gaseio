@@ -4,17 +4,19 @@ import stat
 import shutil
 import time
 from distutils.core import setup
+import multiprocessing
+import argparse
 from Cython.Build import cythonize
 
 starttime = time.time()
 CURDIR = os.path.abspath('.')
-PARENTPATH = sys.argv[1] if len(sys.argv) > 1 else ""
+PARENTPATH = "" #sys.argv[1] if len(sys.argv) > 1 else ""
 setupfile = os.path.join(os.path.abspath('.'), __file__)
 build_dir = "build"  # 项目加密后位置
 build_tmp_dir = build_dir + "/temp"
 
 
-NOT_COMPILED_FILES = ['setup.py', 'test.py']
+NOT_COMPILED_FILES = ['setup.py', 'test.py', 'app.py', 'server.py']
 
 
 def copy_complete(source, target):
@@ -78,29 +80,52 @@ def create_build_dir():
                 f"build directory {build_dir} occupied by a file")
 
 
-def encryption():
+def encryption(max_workers=1):
     # 获取py列表
     module_list = list(
         get_pythons(basepath=CURDIR, parentpath=PARENTPATH, excepts=(setupfile)))
     try:
-        setup(ext_modules=cythonize(module_list), script_args=[
-            "build_ext", "-b", build_dir, "-t", build_tmp_dir])
+        kwds = {
+            'ext_modules': cythonize(module_list),
+            'script_args': ["build_ext", "-b", build_dir, "-t", build_tmp_dir]
+        }
+        # here start the gcc compiling
+        # sequential mode
+        if max_workers == 1:
+            setup(**kwds)
+        else:
+            task_handles = []
+            with multiprocessing.Pool(max_workers) as pool:
+                for mod in module_list:
+                    kwds = {
+                        'ext_modules': cythonize([mod]),
+                        'script_args': ["build_ext", "-b", build_dir, "-t", build_tmp_dir],
+                    }
+                    task_handles.append(pool.apply_async(setup, kwds=kwds))
+                for handle in task_handles:
+                    print(handle.get())
     except Exception as e:
         print(e)
+        return
     else:
-        module_list = list(get_pythons(
-            basepath=CURDIR, parentpath=PARENTPATH, excepts=(setupfile), copyOther=True))
+        module_list = list(
+            get_pythons(basepath=CURDIR, parentpath=PARENTPATH,
+                        excepts=(setupfile), copyOther=True))
     module_list = list(
-        get_pythons(basepath=CURDIR, parentpath=PARENTPATH, excepts=(setupfile), delC=True))
+        get_pythons(basepath=CURDIR, parentpath=PARENTPATH,
+                    excepts=(setupfile), delC=True))
     if os.path.exists(build_tmp_dir):
         shutil.rmtree(build_tmp_dir)
     print("complate! time:", time.time() - starttime, 's')
 
 
-def main():
+def main(args):
     create_build_dir()
-    encryption()
+    encryption(args.max_workers)
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-j', '--max-workers', nargs='?', type=int)
+    args = parser.parse_args()
+    main(args)

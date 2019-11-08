@@ -49,7 +49,7 @@ test:
 	cat coverage.log
 
 test_build:
-	bash -c "export PYTHONPATH="$(PYTHONPATH):$(pes_parent_dir)"; export GASEIO_CONTINUE_FILE="$(GASEIO_CONTINUE_FILE)"; python ./tests/test.py"
+	bash -c "export GASEIO_LOGLEVEL=debug; export PYTHONPATH="$(PYTHONPATH):$(pes_parent_dir)"; export GASEIO_CONTINUE_FILE="$(GASEIO_CONTINUE_FILE)"; python ./tests/test.py"
 
 app:
 	bash -c "export GASEIO_PORT=5001; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python gaseio/app.py"
@@ -108,7 +108,7 @@ test_env:
 	make test'
 	
 upload:
-	twine upload --repository-url https://pypi.senrea.net dist/*
+	twine upload --repository-url https://pypi.senrea.net dist/*.whl
 
 clean:
 	rm -rf venv build *.egg-info dist

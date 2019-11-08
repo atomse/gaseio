@@ -15,7 +15,7 @@ import json_tricks
 import atomtools.name
 import gaseio
 
-logger = modlog.getLogger(__name__, 'GASEIO_APP_LOGLEVEL')
+logger = modlog.getLogger(__name__, 'normal', 'GASEIO_APP_LOGLEVEL')
 
 
 UPLOAD_DIR = os.environ.get("GASEIO_UPLOAD_DIR",

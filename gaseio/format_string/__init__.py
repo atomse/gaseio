@@ -1,56 +1,13 @@
 """
-Load all available format_string
+
+
+
+init of format_string
+
+
+
 """
 
-import os
-import importlib
-from collections import OrderedDict
-from .. import format_parser
-from .. import ext_methods
-from .__basic__ import BASIC_PRIMITIVE_DATA_FORMAT_STRING
 
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-global FORMAT_STRING
-FORMAT_STRING = OrderedDict()
-
-
-def update_format_string(warning=False, DEBUG=False):
-    global FORMAT_STRING
-    mods = []
-    for file in os.listdir(BASE_DIR):
-        if file.endswith('.py') and not file.startswith('__'):
-            basename, _ = os.path.splitext(file)
-            mods.append(importlib.import_module('.'+basename,
-                                                '{0}.format_string'.format('.'.join(format_parser.__name__.split('.')[:-1]))))
-
-    for mod in mods:
-        if DEBUG:
-            import pdb
-            pdb.set_trace()
-        if not hasattr(mod, 'FORMAT_STRING'):
-            if warning:
-                print('WARNING: {0} has not format_string'.format(
-                    mod.__name__))
-            continue
-        sub_format_string = getattr(mod, 'FORMAT_STRING')
-        for key, pattern in sub_format_string.items():
-            if 'primitive_data' in pattern:
-                pattern['primitive_data'].update(
-                    BASIC_PRIMITIVE_DATA_FORMAT_STRING)
-        FORMAT_STRING.update(sub_format_string)
-    return FORMAT_STRING
-
-
-update_format_string()
-
-
-def test():
-    global FORMAT_STRING
-    update_format_string(warning=True)
-    print('FORMAT string:\n', FORMAT_STRING)
-
-
-if __name__ == '__main__':
-    test()
+from .XBASIC import FORMAT_STRING

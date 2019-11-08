@@ -3,11 +3,31 @@
 import os
 from setuptools import setup, find_packages
 
+
 def get_version():
     import sys
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     import gaseio
     return gaseio.__version__
+
+
+def get_all_shared_libs(root_path):
+    res = []
+    for fname in os.listdir(root_path):
+        fname = os.path.join(root_path, fname)
+        if os.path.isdir(fname):
+            res.extend(get_all_shared_libs(fname))
+        elif fname.endswith('.so'):
+            res.append(fname)
+    return res
+
+
+def get_package_shared_libs(root_path):
+    curdir = os.getcwd()
+    os.chdir(root_path)
+    res = get_all_shared_libs('.')
+    os.chdir(curdir)
+    return res
 
 
 if __name__ == '__main__':
@@ -62,7 +82,7 @@ if __name__ == '__main__':
                 'graphviz'
             ],
         },
-        include_package_data = True,
-        # package_data = {'gaseio_test': test_files},
+        include_package_data=True,
+        package_data={'': get_package_shared_libs('gaseio')},
         zip_safe=False,
     )

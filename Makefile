@@ -26,7 +26,7 @@ reqs:
 build:
 	pip install cython twine
 	rm -rf build/ sdist/ dist/ $(Project)-*/ $(Project).egg-info/
-	python encrypt.py
+	python encrypt.py -j4
 	cd build && make build_base && make test_build && cp -r dist ../
 
 build_base:

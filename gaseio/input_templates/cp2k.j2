@@ -47,7 +47,7 @@
 &MOTION
    &GEO_OPT
       MAX_ITER  {{calc_arrays['max_geo_number'] | float if calc_arrays is defined and 'max_geo_number' in calc_arrays else 100}}
-      OPTIMIZER {{calc_arrays['geo_optimizer'] | str if calc_arrays is defined and 'geo_optimizer' in calc_arrays else 'CG'}}
+      OPTIMIZER {{calc_arrays['geo_optimizer'] if calc_arrays is defined and 'geo_optimizer' in calc_arrays else 'CG'}}
       # OPTIMIZER CG/BFGS/LBFGS
       MAX_FORCE {{calc_arrays['max_force'] | float if calc_arrays is defined and 'max_force' in calc_arrays else "6.0E-4"}}
       &CG

@@ -69,7 +69,7 @@ if __name__ == '__main__':
         install_requires=open('requirements.txt').read().split(),
         # entry_points={
         #     "console_scripts": [
-        #         "gaseio=gaseio.cli:run_gaseio_cli",
+        #         "gaseio=gaseio.cli.main:main",
         #     ],
         # },
         extras_require={

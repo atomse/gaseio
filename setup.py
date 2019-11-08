@@ -54,8 +54,8 @@ if __name__ == '__main__':
         packages=find_packages(),
         platforms=["Linux", "Darwin"],
         url='https://github.com/atomse/gaseio',
-        # python_requires='=='+get_python_version()+'.*',
-        python_requires='>=3.6',
+        python_requires='=='+get_python_version()+'.*',
+        # python_requires='>=3.6',
         classifiers=[
             'Development Status :: 4 - Beta',
             'Operating System :: POSIX',

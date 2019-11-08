@@ -67,7 +67,6 @@ def get_pythons(basepath=os.path.abspath('.'), parentpath='', name='',
                         not fname in NOT_COMPILED_FILES:
                     yield os.path.join(parentpath, name, fname)
                 elif copyOther:
-                    import pdb; pdb.set_trace()
                     dstdir = os.path.join(
                         basepath, build_dir, parentpath, name)
                     if not os.path.isdir(dstdir):

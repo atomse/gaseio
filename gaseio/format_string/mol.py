@@ -82,7 +82,7 @@ FORMAT_STRING = {
             },
             'positions': {
                 'prerequisite': ['mol_content'],
-                'equation': lambda arrays: arrays['atoms_data'][:, :3],
+                'equation': lambda arrays: arrays['atoms_data'][:, :3].astype(float),
                 'delete': ['atoms_data', 'mol_content'],
             },
         }),

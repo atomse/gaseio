@@ -16,7 +16,7 @@ DEFAULT_BUILD_DIR = "build"  # 项目加密后位置
 BUILD_TMP_DIR = tempfile.mkdtemp()
 
 
-NOT_COMPILED_FILES = ['setup.py', 'test.py', 'app.py', 'server.py']
+NOT_COMPILED_FILES = ['setup.py', 'test.py', 'server.py']
 
 
 def copy_complete(source, target):

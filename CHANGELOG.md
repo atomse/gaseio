@@ -1,6 +1,11 @@
 # CHANGELOG
 
 
+## 2.7.5
+
+* add pubchem sdf, pubchem-json
+* support pubchem name fetch with `/get_molecule` and id, type in form
+
 ## 2.7.4
 
 * add code encryption

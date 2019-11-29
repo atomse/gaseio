@@ -14,6 +14,7 @@ from flask_compress import Compress
 import json_tricks
 import atomtools.name
 import gaseio
+import pubchempy
 
 logger = modlog.getLogger(__name__, 'normal', 'GASEIO_APP_LOGLEVEL')
 
@@ -165,18 +166,49 @@ def app_convert():
                     content_type='application/json', headers=HEADERS)
 
 
-@app.route('/html_convert', methods=['POST'])
-def app_html_convert():
-    "app_html_convert"
-    output = app_convert()
-    if isinstance(output, Response):
-        return output
-    return Response(output, mimetype="text/plain", headers=HEADERS)
+@app.route('/get_molecule', methods=['POST'])
+def get_molecule():
+    """get molecule"""
+    from gaseio.format_string.pubchem import parse_pubchem_json
+    try:
+        identifier = request.form['id']
+        namespace = request.form.get('type', 'formula')
+        record_type = request.form.get('record_type', '3d')
+        assert namespace in ['formula', 'name'], "namespace must be 'formula' or 'name'"
+        results = pubchempy.get_compounds(identifier, namespace, record_type=record_type)
+        data = []
+        for r in results:
+            data.append(parse_pubchem_json(r.__dict__, index=0))
+        res = {
+            'code': 200,
+            'success': True,
+            'message': '',
+            'data': data,
+        }
+    except AssertionError as e:
+        res = {
+            'code': 500,
+            'success': False,
+            'message': f"{e}",
+            'data': '',
+        }
+    except pubchempy.BadRequestError as e:
+        res = {
+            'code': 510,
+            'success': False,
+            'message': f"{e}",
+            'data': '',
+        }
+    return Response(json_tricks.dumps(res, allow_nan=True),
+                    content_type='application/json', headers=HEADERS)
 
-
-# @app.route('/')
-# def index():
-#     return send_from_directory(HTMLDIR, "index.html")
+# @app.route('/html_convert', methods=['POST'])
+# def app_html_convert():
+#     "app_html_convert"
+#     output = app_convert()
+#     if isinstance(output, Response):
+#         return output
+#     return Response(output, mimetype="text/plain", headers=HEADERS)
 
 
 def valid_port(hostname='127.0.0.1', starting_port=5000):

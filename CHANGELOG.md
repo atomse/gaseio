@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.8.0
+
+* add ADF-logfile support
+* add 4 core multiprocessing
 
 
 ## 2.7.0

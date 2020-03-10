@@ -101,14 +101,15 @@ def reg_calc_arrays(arrays):
 
 
 def reg_cell(arrays):
-    if not 'cell' in arrays:
-        arrays['cell'] = np.array([max(x, 21) for x in arrays['atoms_size']])
+    # if not 'cell' in arrays:
+    #     arrays['cell'] = np.array([max(x, 21) for x in arrays['atoms_size']])
+    #     if not 'celldisp' in arrays:
+    #         arrays['celldisp'] = -1 * arrays['cell']/2
+    if 'cell' in arrays:
+        if arrays['cell'].shape == (3, ):
+            arrays['cell'] = np.diag(arrays['cell'])
         if not 'celldisp' in arrays:
-            arrays['celldisp'] = -1 * arrays['cell']/2
-    if arrays['cell'].shape == (3, ):
-        arrays['cell'] = np.diag(arrays['cell'])
-    if not 'celldisp' in arrays:
-        arrays['celldisp'] = np.zeros((3,))
+            arrays['celldisp'] = np.zeros((3,))
 
 
 def reg_constraints(arrays):
@@ -174,7 +175,7 @@ def _setdebug():
     logger.setLevel(logging.DEBUG)
     # logger.debug(__name__)
     # all_functions = inspect.getmembers(mod)
-    logger.debug(all_functions)
+    # logger.debug(all_functions)
     logger.debug(reg_functions)
 
 

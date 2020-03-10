@@ -11,13 +11,14 @@ import atomtools.fileutil
 import atomtools.filetype
 import logging
 import json_tricks
-
+import dill as dill_pickle
 
 # from .ext_types import ExtList
 from .ext_types import ExtDict
 from .ext_methods import astype, xml_parameters, datablock_to_numpy,\
     datablock_to_numpy, construct_depth_dict, \
-    get_depth_dict, FileFinder
+    get_depth_dict, FileFinder, update_key, update_dict, has_key
+from . import ext_methods
 from .regularize import regularize_arrays
 
 
@@ -88,7 +89,7 @@ def read(fileobj, index=-1, format=None, warning=False, debug=False):
         file_string_sections = file_string_sections[index]
         all_arrays = []
         for frame_i, file_string in zip(frame_indices, file_string_sections):
-            arrays = ExtDict()
+            arrays = dict()
             arrays['filename'] = os.path.basename(
                 filename) if filename else None
             arrays['frame_i'] = frame_i
@@ -116,10 +117,18 @@ def read(fileobj, index=-1, format=None, warning=False, debug=False):
 
 
 def process_pattern(pattern, pattern_property, arrays, finder, warning=False, debug=False):
+    """
+
+    """
+    # decode pattern_property
+    if isinstance(pattern_property, bytes):
+        pattern_property = dill_pickle.loads(pattern_property)
+
     key = pattern_property['key']
     important = pattern_property.get('important', False)
-    selection = pattern_property.get(
-        'selection', -1)  # default select the last one
+    selection = pattern_property.get('selection', -1)  # default select the last one
+    results = {}
+
     if pattern_property.get('debug', False):
         import pdb
         pdb.set_trace()
@@ -134,7 +143,7 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
             raise ValueError(key, 'not match, however important')
         elif warning:
             print(' WARNING: ', key, 'not matched', '\n')
-        return
+        return None
 
     if pattern_property.get('join', None):
         match = [pattern_property['join'].join(match)]
@@ -153,7 +162,8 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
             else:
                 value = pattern_property['type'](value)
         if value is not None:
-            arrays.update(construct_depth_dict(key, value, arrays))
+            # results.update(construct_depth_dict(key, value, arrays))
+            update_key(results, key, value)
     else:  # array
         key_groups = key
 
@@ -184,10 +194,14 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
                 value = key_group.get('process')(value, arrays)
             if value is None or isinstance(value, np.ndarray) and (value == None).all():
                 continue
-            arrays.update(construct_depth_dict(key, value, arrays))
+            # results.update(construct_depth_dict(key, value, arrays))
+            update_key(results, key, value)
+    return results
 
 
 def process_primitive_data(arrays, file_string, formats, warning=False, debug=False):
+    from multiprocessing import Pool
+
     warning = warning or debug
     primitive_data, ignorance = formats['primitive_data'], formats.get(
         'ignorance', None)
@@ -197,16 +211,45 @@ def process_primitive_data(arrays, file_string, formats, warning=False, debug=Fa
     # elif isinstance(ignorance, )
     file_format = formats.get('file_format', 'plain_text')
     finder = FileFinder(file_string, file_format=file_format)
-    for pattern, pattern_property in primitive_data.items():
-        if pattern_property.get("passerror", False):
-            try:
-                process_pattern(pattern, pattern_property,
-                                arrays, finder, warning, debug)
-            except:
-                pass
-        else:
-            process_pattern(pattern, pattern_property,
-                            arrays, finder, warning, debug)
+    completed_keys = []
+    completed_pattern = []
+
+
+    def pattern_disallow(pattern_property, completed_keys):
+        prerequisite = pattern_property.get('prerequisite', None)
+        if not prerequisite:
+            return False
+        for _ in prerequisite:
+            if not _ in completed_keys:
+                return True
+        return False
+
+
+    processes = 4
+    with Pool(processes=processes) as executor:
+        handles = []
+        while len(completed_pattern) < len(primitive_data.keys()):
+            for pattern, pattern_property in primitive_data.items():
+                if pattern in completed_pattern:
+                    continue
+                if pattern_disallow(pattern_property, completed_keys):
+                    continue
+                completed_pattern.append(pattern)
+                args = (pattern, dill_pickle.dumps(pattern_property),
+                        arrays, finder, warning, debug)
+                if pattern_property.get("passerror", False):
+                    try:
+                        handles.append(executor.apply_async(process_pattern, args))
+                    except:
+                        pass
+                else:
+                    handles.append(executor.apply_async(process_pattern, args))
+            for hdl in handles:
+                results = hdl.get()
+                # import pdb; pdb.set_trace()
+                # arrays.update(results)
+                if results:
+                    update_dict(arrays, results)
 
 
 def process_synthesized_data(arrays, formats, debug=False):
@@ -227,12 +270,12 @@ def process_synthesized_data(arrays, formats, debug=False):
                 if isinstance(item, tuple):
                     has_key = False
                     for _item in item:
-                        if arrays.has_key(_item):
+                        if ext_methods.has_key(arrays, _item):
                             has_key = True
                             break
                 else:
                     has_key = True
-                    if not arrays.has_key(item):
+                    if not ext_methods.has_key(arrays, item):
                         has_key = False
                 if not has_key:
                     cannot_synthesize = True

@@ -890,7 +890,7 @@ FORMAT_STRING = {
                 # 'prerequisite' : ['possible_potential_energy'],
                 'condition': lambda arrays: arrays['calc_arrays'].get('results', None) is not None or\
                 arrays.get('possible_potential_energy', None) is not None,
-                'equation': lambda arrays: float(get_value_by_order(arrays['calc_arrays']['results'], \
+                'equation': lambda arrays: float(get_value_by_order(arrays['calc_arrays'].get('results', None), \
                                                                     ENERGY_ORDER) or arrays.get('possible_potential_energy', None))\
                 * atomtools.unit.trans_energy('au', 'eV'),
                 # 'delete': ['possible_potential_energy'],

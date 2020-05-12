@@ -14,6 +14,7 @@ from io import StringIO
 import math
 import numpy as np
 import pandas as pd
+import pdb
 
 import chemdata
 
@@ -37,7 +38,7 @@ ENERGY_ORDER = [
     r"MP3",
     r"MP2",
     r"HF",
-],
+]
 
 
 # def std_force_to_inp_force(std_positions, inp_positions, std_forces):
@@ -48,6 +49,7 @@ ENERGY_ORDER = [
 
 
 def get_value_by_order(properties, order):
+    # pdb.set_trace()
     if properties is None:
         return None
     for _ord in order:
@@ -711,6 +713,7 @@ FORMAT_STRING = {
                 'key': 'error_termination',
             },
             r'SCF Done:  E\(.*?\)\s=\s*([+-]?\d+\.\d+E?[+-]?[0-9]*)\s+': {
+                # 'debug': True,
                 'important': False,
                 'selection': -1,
                 'key': 'possible_potential_energy',
@@ -883,14 +886,14 @@ FORMAT_STRING = {
                 'delete': ['gaussian_datastring'],
             },
             'calc_arrays/potential_energy': {
-                # 'debug' : True,
+                # 'debug': True,
                 # 'prerequisite' : ['possible_potential_energy'],
-                'condition': lambda arrays: arrays.get('calc_arrays/results', None) is not None or\
+                'condition': lambda arrays: arrays['calc_arrays'].get('results', None) is not None or\
                 arrays.get('possible_potential_energy', None) is not None,
-                'equation': lambda arrays: float(get_value_by_order(arrays.get('calc_arrays/results', None), \
+                'equation': lambda arrays: float(get_value_by_order(arrays['calc_arrays']['results'], \
                                                                     ENERGY_ORDER) or arrays.get('possible_potential_energy', None))\
                 * atomtools.unit.trans_energy('au', 'eV'),
-                'delete': ['possible_potential_energy'],
+                # 'delete': ['possible_potential_energy'],
             },
             'calc_arrays/zero_point_energy': {
                 'prerequisite': ['calc_arrays/results/ZeroPoint'],
@@ -941,7 +944,7 @@ FORMAT_STRING = {
             },
             'positions': {
                 'prerequisite': ['calc_arrays/Current_cartesian_coordinates'],
-                'equation': lambda arrays: arrays['calc_arrays']['Current_cartesian_coordinates'].reshape((-1, 3))\
+                'equation': lambda arrays: arrays['calc_arrays']['Current_cartesian_coordinates'].reshape((-1, 3))
                 * atomtools.unit.trans_length('au'),
             },
             'calc_arrays/command': {
@@ -981,7 +984,7 @@ FORMAT_STRING = {
                 'selection': -1,
                 'key': 'nao_in_ao_basis',
                 'type': float,
-                'process': lambda data, arrays: ext_methods.datablock_to_numpy(\
+                'process': lambda data, arrays: ext_methods.datablock_to_numpy(
                     re.sub(r'\s+', '\n', data.strip())).flatten(),
             },
             r'NAOs in the AO basis:\n -{10,}\n[\s\S]*?\n([ 0-9]+\n[\s\S]*?)\n.*\n PNAO overlap matrix': {
@@ -989,14 +992,14 @@ FORMAT_STRING = {
                 'selection': -1,
                 'key': 'nao_in_ao_basis_appendix',
                 'type': int,
-                'process': lambda data, arrays: ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n', \
+                'process': lambda data, arrays: ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n',
                                                                                       data.strip())).flatten(),
             },
             r' PNAO overlap matrix:\n -{10,}\n([\s\S]*?)\n.*\n NAO density matrix': {
                 'important': True,
                 'selection': -1,
                 'key': 'pnao_overlap_matrix',
-                'process': lambda data, arrays: ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n', \
+                'process': lambda data, arrays: ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n',
                                                                                       data.strip())).flatten(),
             },
             r' NAO density matrix:\n -{10,}(?:\n ALPHA SPIN\n|\n)([\s\S]*?)\n.*\n NAO Fock matrix:': {

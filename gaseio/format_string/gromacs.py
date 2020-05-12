@@ -69,6 +69,32 @@ GROMACS_COL_SPECIFICATION = [[sum(GROMACS_COL_SPECIFICATION[:i]), sum(
     GROMACS_COL_SPECIFICATION[:i+1])] for i in range(len(GROMACS_COL_SPECIFICATION))]
 # print(GROMACS_COL_SPECIFICATION)
 
+
+bonds_items = ['ai', 'aj', 'funct', 'c0', 'c1']
+pairs_items = ['ai', 'aj', 'funct', 'c0', 'c1']
+angles_items = ['ai', 'aj', 'ak', 'funct', 'c0', 'c1']
+dihedrals_items = ['ai', 'aj', 'ak', 'al', 'funct', 'c0', 'c1', 'c2']
+inversion_dihedrals_items = ['ai', 'aj', 'ak', 'al', 'funct', 'c0', 'c1']
+
+
+def itp_postprocess(arrays):
+    if not 'bonds' in arrays:
+        arrays['bonds'] = dict(zip(bonds_items,
+                                   [list() for _ in range(len(bonds_items))]))
+    if not 'pairs' in arrays:
+        arrays['pairs'] = dict(zip(pairs_items,
+                                   [list() for _ in range(len(pairs_items))]))
+    if not 'angles' in arrays:
+        arrays['angles'] = dict(zip(angles_items,
+                                    [list() for _ in range(len(angles_items))]))
+    if not 'dihedrals' in arrays:
+        arrays['dihedrals'] = dict(
+            zip(dihedrals_items, [list() for _ in range(len(dihedrals_items))]))
+    if not 'inversion_dihedrals' in arrays:
+        arrays['inversion_dihedrals'] = dict(zip(inversion_dihedrals_items, [
+                                             list() for _ in range(len(inversion_dihedrals_items))]))
+
+
 FORMAT_STRING = {
     'gromacs': {
         'primitive_data': OrderedDict({
@@ -95,7 +121,7 @@ FORMAT_STRING = {
                                                                                            nan_fill=None),
                 'key': [
                     {
-                        'key': 'residue_number',
+                        'key': 'funct',
                         'type': int,
                         'index': ':,0',
                     },
@@ -247,64 +273,65 @@ FORMAT_STRING = {
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
                 'key': [
                     {
-                        'key': 'bonds/number1',
+                        'key': 'bonds/ai',
                         'type': int,
                         'index': ':,0',
                     },
                     {
-                        'key': 'bonds/number2',
+                        'key': 'bonds/aj',
                         'type': int,
                         'index': ':,1',
                     },
                     {
-                        'key': 'bonds/residue_number',
+                        'key': 'bonds/funct',
                         'type': int,
                         'index': ':,2',
                     },
                     {
-                        'key': 'bonds/bond_length',
+                        'key': 'bonds/c0',
                         'type': float,
                         'index': ':,3',
                     },
                     {
-                        'key': 'bonds/bond_force',
+                        'key': 'bonds/c1',
                         'type': float,
                         'index': ':,4',
                     },
                 ],
             },
             r'\[\s*angles\s*\]\n(.+[\s\S]*?)\n[\n<]': {
+                # 'debug': True,
                 'important': False,
                 'selection': 0,
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
                 'key': [
                     {
-                        'key': 'angles/number1',
+                        'key': 'angles/ai',
                         'type': int,
                         'index': ':,0',
                     },
                     {
-                        'key': 'angles/number2',
+                        'key': 'angles/aj',
                         'type': int,
                         'index': ':,1',
                     },
                     {
-                        'key': 'angles/number3',
+                        'key': 'angles/ak',
                         'type': int,
                         'index': ':,2',
                     },
                     {
-                        'key': 'angles/residue_number',
+                        'key': 'angles/funct',
                         'type': int,
                         'index': ':,3',
                     },
                     {
-                        'key': 'angles/eq_angle',
+                        'key': 'angles/c0',
                         'type': float,
                         'index': ':,4',
                     },
                     {
-                        'key': 'angles/angle_force',
+                        'key': 'angles/c1',
                         'type': float,
                         'index': ':,5',
                     },
@@ -318,37 +345,86 @@ FORMAT_STRING = {
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
                 'key': [
                     {
-                        'key': 'dihedrals/number1',
+                        'key': 'dihedrals/ai',
                         'type': int,
                         'index': ':,0',
                     },
                     {
-                        'key': 'dihedrals/number2',
+                        'key': 'dihedrals/aj',
                         'type': int,
                         'index': ':,1',
                     },
                     {
-                        'key': 'dihedrals/number3',
+                        'key': 'dihedrals/ak',
                         'type': int,
                         'index': ':,2',
                     },
                     {
-                        'key': 'dihedrals/number4',
+                        'key': 'dihedrals/al',
                         'type': int,
                         'index': ':,3',
                     },
                     {
-                        'key': 'dihedrals/residue_number',
+                        'key': 'dihedrals/funct',
                         'type': int,
                         'index': ':,4',
                     },
                     {
-                        'key': 'dihedrals/eq_dihedral',
+                        'key': 'dihedrals/c0',
                         'type': float,
                         'index': ':,5',
                     },
                     {
-                        'key': 'dihedrals/dihedral_force',
+                        'key': 'dihedrals/c1',
+                        'type': float,
+                        'index': ':,6',
+                    },
+                    {
+                        'key': 'dihedrals/c2',
+                        'type': float,
+                        'index': ':,7',
+                    },
+                ],
+            },
+            r"\[ dihedrals \][\s\S]+?\n\n\[ dihedrals \](.+[\s\S]+)$": {
+                # 'debug' : True,
+                'important': False,
+                'selection': 0,
+                'join': '\n',
+                'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key': [
+                    {
+                        'key': 'inversion_dihedrals/ai',
+                        'type': int,
+                        'index': ':,0',
+                    },
+                    {
+                        'key': 'inversion_dihedrals/aj',
+                        'type': int,
+                        'index': ':,1',
+                    },
+                    {
+                        'key': 'inversion_dihedrals/ak',
+                        'type': int,
+                        'index': ':,2',
+                    },
+                    {
+                        'key': 'inversion_dihedrals/al',
+                        'type': int,
+                        'index': ':,3',
+                    },
+                    {
+                        'key': 'inversion_dihedrals/funct',
+                        'type': int,
+                        'index': ':,4',
+                    },
+                    {
+                        'key': 'inversion_dihedrals/c0',
+                        'type': float,
+                        'index': ':,5',
+                    },
+                    {
+                        'key': 'inversion_dihedrals/c1',
                         'type': float,
                         'index': ':,6',
                     },
@@ -357,6 +433,7 @@ FORMAT_STRING = {
         }),
         'synthesized_data': OrderedDict({
         }),
+        'postprocess': itp_postprocess,
     },
 
 }

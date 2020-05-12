@@ -15,7 +15,7 @@ from tornado.ioloop import IOLoop
 from gaseio.app import app
 
 DEFAULT_GASEIO_PORT = 5000
-DEFAULT_GASEIO_MAX_CORE = 4
+DEFAULT_GASEIO_MAX_CORE = 16
 LOCALHOST = '127.0.0.1'
 PORT = os.environ.get("GASEIO_PORT", DEFAULT_GASEIO_PORT)
 MAX_CORE = int(os.environ.get("GASEIO_MAX_CORE", DEFAULT_GASEIO_MAX_CORE))

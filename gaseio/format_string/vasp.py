@@ -16,6 +16,27 @@ def parse_INCAR(data, index):
     return ext_methods.parse_config_content(data, add_header=True)
 
 
+def format_pseudopotential(arrays, for_each_atom=False):
+    # 'equation': lambda arrays: [x for y in [[x]*y for (x, y) in zip(arrays['calc_arrays']['vasp_pot'], arrays['ions_per_type'])] for x in y],
+    # import pdb; pdb.set_trace()
+    vasp_pot = arrays['calc_arrays']['vasp_pot']
+    ions_per_type = arrays['ions_per_type']
+    output = []
+    for p, i in zip(vasp_pot, ions_per_type):
+        functional, symbol, created_date = p.split()
+        res = {
+            'functional': functional,
+            'symbol': symbol,
+            'created_date': created_date,
+        }
+        if for_each_atom:
+            for _ in range(i):
+                output += [res.copy()]
+        else:
+            output += [res]
+    return output
+
+
 FORMAT_STRING = {
     'OUTCAR': {
         'file_format': 'plain_text',
@@ -44,7 +65,7 @@ FORMAT_STRING = {
                 'selection': -1,
                 'type': list,
                 'process': lambda data, arrays:
-                           ext_methods.datablock_to_numpy(data).astype(int).flatten(),
+                ext_methods.datablock_to_numpy(data).astype(int).flatten(),
                 'key': 'ions_per_type',
             },
             r'VRHFIN\s*=\s*(.*?):': {
@@ -56,64 +77,81 @@ FORMAT_STRING = {
             },
             r'POSITION\s*TOTAL-FORCE[\s\S]*?-{2,}\n([\s\S]*?)\n\s+-{2,}': {
                 'important': True,
-                'selection': -1,
+                'selection': 'all',
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
                 'key': [
                     {
-                        'key': 'positions',
+                        'key': 'all_positions',
                         'type': float,
                         'index': ':,:3'
                     },
                     {
-                        'key': 'calc_arrays/forces',
+                        'key': 'calc_arrays/all_forces',
                         'type': float,
                         'index': ':,3:6'
+                    },
+                ],
+            },
+            r'direct lattice vectors                 reciprocal lattice vectors([\s\S]+?)\n\n': {
+                # 'debug': True,
+                'important': False,
+                'selection': -1,
+                'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key': [
+                    {
+                        'key': 'cell',
+                        'type': float,
+                        'index': ':,:3',
+                    },
+                    {
+                        'key': 'reciprocal',
+                        'type': float,
+                        'index': ':,3:6',
                     },
                 ],
             },
             r'FORCES acting on ions[\s\S]*?-{2,}\n([\s\S]*?)\s+-{2,}': {
                 'important': True,
-                'selection': -1,
-                'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
-                'key': [
-                    {
-                        'key': 'calc_arrays/forces_e_ion',
-                        'type': float,
-                        'index': ':,0:3'
-                    },
-                    {
-                        'key': 'calc_arrays/forces_ewald',
-                        'type': float,
-                        'index': ':,3:6'
-                    },
-                    {
-                        'key': 'calc_arrays/forces_nonlocal',
-                        'type': float,
-                        'index': ':,6:9'
-                    },
-                    {
-                        'key': 'calc_arrays/forces_convergence_correction',
-                        'type': float,
-                        'index': ':,9:12'
-                    },
-                ],
+                'selection': 'all',
+                'process': lambda data, arrays: {
+                    'forces_e_ion': ext_methods.datablock_to_numpy(data)[:, 0:3],
+                    'forces_ewald': ext_methods.datablock_to_numpy(data)[:, 3:6],
+                    'forces_nonlocal': ext_methods.datablock_to_numpy(data)[:, 6:9],
+                    'forces_convergence_correction': ext_methods.datablock_to_numpy(data)[:, 9:12],
+                },
+                'key': 'calc_arrays/all_forces_acting_on_ions',
             },
             r'POTCAR: *(.*?) *\n *VRHFIN': {
+                # 'debug': True,
                 'important': True,
                 'selection': 'all',
-                # 'process' : lambda data, arrays: data.strip();
-                'key': 'vasp_pot',
-                'type': ext_types.ExtList,
+                'process': lambda data, arrays: data.strip(),
+                'key': 'calc_arrays/vasp_pot',
+                # 'type': ext_types.ExtList,
             },
         }),
         'synthesized_data': OrderedDict({
             'symbols': {
-                'equation': lambda arrays: arrays['element_types'] * arrays['ions_per_type'],
+                'prerequisite': ['ions_per_type', 'element_types'],
+                'equation': lambda arrays: [x for y in [[x]*y for (x, y) in zip(arrays['element_types'], arrays['ions_per_type'])] for x in y],
                 'delete': ['element_types'],
             },
-            'pseudo': {
-                'equation': lambda arrays: arrays['vasp_pot'] * arrays['ions_per_type'],
-                'delete': ['vasp_pot', 'ions_per_type'],
+            'positions': {
+                'prerequisite': ['all_positions'],
+                'equation': lambda arrays: arrays['all_positions'][-1]
+            },
+            'calc_arrays/pseudopotential': {
+                'prerequisite': ['ions_per_type', 'calc_arrays/vasp_pot'],
+                # 'equation': lambda arrays: [x for y in [[x]*y for (x, y) in zip(arrays['calc_arrays']['vasp_pot'], arrays['ions_per_type'])] for x in y],
+                'equation': lambda arrays: format_pseudopotential(arrays),
+                'delete': [
+                    # 'vasp_pot',
+                    'ions_per_type'
+                ],
+            },
+            'calc_arrays/forces': {
+                'prerequisite': ['calc_arrays/all_forces'],
+                'equation': lambda arrays: arrays['calc_arrays']['all_forces'][-1]
             },
         }),
     },
@@ -136,23 +174,27 @@ FORMAT_STRING = {
             r'^(?:.*\n.*\n)(.*\n.*\n.*\n)': {
                 'important': True,
                 'selection': -1,
+                'prerequisite': ['scaling_factor'],
                 'process': lambda data, arrays:
-                           ext_methods.datablock_to_numpy(data) * arrays['scaling_factor'],
+                ext_methods.datablock_to_numpy(
+                    data) * arrays['scaling_factor'],
                 'key': 'cell',
             },
             r'^(?:.*\n.*\n.*\n.*\n.*\n)(.*)\n': {
                 # 'debug' : True,
                 'important': True,
-                'selection': -1,
+                'selection': 0,
                 'process': lambda data, arrays: ext_types.ExtList(data.strip().split()),
                 'key': 'element_types',
             },
             r'^(?:.*\n.*\n.*\n.*\n.*\n.*\n)(.*)\n': {
+                # 'debug' : True,
                 'important': True,
-                'selection': -1,
+                'selection': 0,
                 'process': lambda data, arrays:
-                           ext_types.ExtList(ext_methods.datablock_to_numpy(data)[0].flatten().tolist()),
-                'key': 'element_number',
+                ext_types.ExtList(ext_methods.datablock_to_numpy(data)[
+                                  0].flatten().tolist()),
+                'key': 'ions_per_type',
                 # 'type' : ext_types.ExtList,
             },
             r'\n(S.*)\n': {
@@ -162,6 +204,7 @@ FORMAT_STRING = {
             },
             # r'\nD\w+\n(?:S.*\n)([\s\S]*?)\n\s*\n' : {
             r'\n[dD]\w+\n(\s*\d+[\s\S]*?)\n(?:\s*\n|$)': {
+                'prerequisite': ['cell'],
                 'important': False,
                 'selection': -1,
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
@@ -183,6 +226,7 @@ FORMAT_STRING = {
             },
             # r'\nC\w+\n(?:S.*\n)([\s\S]*?)\n\s*\n' : {
             r'\n[cC]\w+\n(\s*\d+[\s\S]*?)\n(?:\s*\n|$)': {
+                'prerequisite': ['scaling_factor'],
                 'important': False,
                 'selection': -1,
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
@@ -210,9 +254,10 @@ FORMAT_STRING = {
         },
         'synthesized_data': OrderedDict({
             'symbols': {
-                'prerequisite': ['element_types', 'element_number'],
-                'equation': lambda arrays: arrays['element_types'] * arrays['element_number'],
-                'delete': ['element_types', 'element_number'],
+                # 'debug': True,
+                'prerequisite': ['element_types', 'ions_per_type'],
+                'equation': lambda arrays: [x for y in [[x]*y for (x, y) in zip(arrays['element_types'], arrays['ions_per_type'])] for x in y],
+                'delete': ['element_types', 'ions_per_type'],
             },
         }),
     },
@@ -242,11 +287,13 @@ FORMAT_STRING = {
             '(//structure/varray[@name="positions"])[last()]//v//text()': {
                 'important': True,
                 'join': '\n',
+                'prerequisite': ['cell'],
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy(data).dot(arrays['cell']),
                 'key': 'positions',
                 'type': float,
             },
             '(//structure/varray[@name="positions"])//v//text()': {
+                'prerequisite': ['positions'],
                 'important': True,
                 'join': '\n',
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy(data).astype(float).dot(arrays['cell']).reshape((-1, len(arrays['positions']), 3)),
@@ -279,7 +326,7 @@ FORMAT_STRING = {
                 'selection': 'all',
                 'process': lambda data, arrays: data.strip(),
                 'type': ext_types.ExtList,
-                'key': 'vasp_pot',
+                'key': 'calc_arrays/vasp_pot',
             },
             '(//dos/total)[last()]/array/field/text()': {
                 'important': False,
@@ -323,8 +370,9 @@ FORMAT_STRING = {
             '//varray[@name="forces"]/v/text()': {
                 'important': False,
                 'join': '\n',
+                'prerequisite': ['calc_arrays/forces'],
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy(data).reshape((-1, \
-                                                                                              len(arrays['calc_arrays/forces']), 3)),
+                                                                                              len(arrays['calc_arrays']['forces']), 3)),
                 'type': float,
                 'passerror': True,
                 'key': 'calc_arrays/all_forces',
@@ -339,9 +387,10 @@ FORMAT_STRING = {
             '//varray[@name="stress"]/v/text()': {
                 # 'debug' : True,
                 'important': False,
+                'prerequisite': ['calc_arrays/stress'],
                 'join': '\n',
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy(data).reshape((-1, \
-                                                                                              len(arrays['calc_arrays/stress']), 3)),
+                                                                                              len(arrays['calc_arrays']['stress']), 3)),
                 'type': float,
                 'passerror': True,
                 'key': 'calc_arrays/all_stress',
@@ -396,16 +445,18 @@ FORMAT_STRING = {
             '(//eigenvalues)[last()]/array/set/set[@comment="spin 1"]/set/r/text()': {
                 'important': False,
                 'join': '\n',
+                'prerequisite': ['calc_arrays/spin1_kpoint1_eigen'],
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy(data).reshape(\
-                    tuple([-1] + list(arrays['calc_arrays/spin1_kpoint1_eigen'].shape))),
+                    tuple([-1] + list(arrays['calc_arrays']['spin1_kpoint1_eigen'].shape))),
                 'type': float,
                 'key': 'calc_arrays/spin1_eigen',
             },
             '(//eigenvalues)[last()]/array/set/set[@comment="spin 2"]/set/r/text()': {
                 'important': False,
                 'join': '\n',
+                'prerequisite': ['calc_arrays/spin1_kpoint1_eigen'],
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy(data).reshape(\
-                    tuple([-1] + list(arrays['calc_arrays/spin1_kpoint1_eigen'].shape))),
+                    tuple([-1] + list(arrays['calc_arrays']['spin1_kpoint1_eigen'].shape))),
                 'type': float,
                 'key': 'calc_arrays/spin2_eigen',
             },
@@ -435,34 +486,36 @@ FORMAT_STRING = {
         'synthesized_data': OrderedDict({
             'calc_arrays/dos/partial/spin1': {
                 'prerequisite': ['calc_arrays/dos_partial_header', 'dos_partial_spin1'],
-                'equation': lambda arrays: dict(zip(arrays['calc_arrays/dos_partial_header'], \
+                'equation': lambda arrays: dict(zip(arrays['calc_arrays']['dos_partial_header'], \
                                                     [arrays['dos_partial_spin1'][:, i].reshape((-1, len(arrays['dos_total_spin1']))) \
-                                                     for i in range(len(arrays['calc_arrays/dos_partial_header']))])),
+                                                     for i in range(len(arrays['calc_arrays']['dos_partial_header']))])),
                 'delete': ['dos_partial_spin1'],
             },
             'calc_arrays/dos/partial/spin2': {
                 'prerequisite': ['calc_arrays/dos_partial_header', 'dos_partial_spin2'],
-                'equation': lambda arrays: dict(zip(arrays['calc_arrays/dos_partial_header'], \
+                'equation': lambda arrays: dict(zip(arrays['calc_arrays']['dos_partial_header'], \
                                                     [arrays['dos_partial_spin2'][:, i].reshape((-1, len(arrays['dos_total_spin1']))) \
-                                                     for i in range(len(arrays['calc_arrays/dos_partial_header']))])),
+                                                     for i in range(len(arrays['calc_arrays']['dos_partial_header']))])),
                 'delete': ['dos_partial_spin2'],
             },
             'calc_arrays/dos/total/spin1': {
                 # 'debug' : True,
                 'prerequisite': ['calc_arrays/dos_total_header', 'dos_total_spin1'],
-                'equation': lambda arrays: dict(zip(arrays['calc_arrays/dos_total_header'], \
-                                                    [arrays['dos_total_spin1'][:, i] for i in range(len(arrays['calc_arrays/dos_total_header']))])),
+                'equation': lambda arrays: dict(zip(arrays['calc_arrays']['dos_total_header'], \
+                                                    [arrays['dos_total_spin1'][:, i] for i in range(len(arrays['calc_arrays']['dos_total_header']))])),
                 'delete': ['dos_total_spin1'],
             },
             'calc_arrays/dos/total/spin2': {
                 'prerequisite': ['calc_arrays/dos_total_header', 'dos_total_spin2'],
-                'equation': lambda arrays: dict(zip(arrays['calc_arrays/dos_total_header'], \
-                                                    [arrays['dos_total_spin2'][:, i] for i in range(len(arrays['calc_arrays/dos_total_header']))])),
+                'equation': lambda arrays: dict(zip(arrays['calc_arrays']['dos_total_header'], \
+                                                    [arrays['dos_total_spin2'][:, i] for i in range(len(arrays['calc_arrays']['dos_total_header']))])),
                 'delete': ['dos_total_spin2'],
             },
-            'pseudo': {
-                'equation': lambda arrays: arrays['vasp_pot'] * arrays['ions_per_type'],
-                'delete': ['vasp_pot', 'ions_per_type'],
+            'calc_arrays/pseudopotential': {
+                'prerequisite': ['ions_per_type', 'calc_arrays/vasp_pot'],
+                # 'equation': lambda arrays: [x for y in [[x]*y for (x, y) in zip(arrays['calc_arrays']['vasp_pot'], arrays['ions_per_type'])] for x in y],
+                'equation': lambda arrays: format_pseudopotential(arrays),
+                # 'delete': ['vasp_pot', 'ions_per_type'],
             },
         }),
     },

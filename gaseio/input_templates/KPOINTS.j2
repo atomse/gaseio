@@ -1,0 +1,8 @@
+{% if calc_arrays is defined %}
+{% if 'vasp_kpoints' in calc_arrays %}
+{{ calc_arrays['vasp_kpoints'] }}
+{% elif 'gamma_only' in calc_arrays and calc_arrays['gamma_only'] %}
+{# gamma_only_KPOINTS #}
+{% include 'gamma_only_KPOINTS' %}
+{% endif %}
+{% endif %}

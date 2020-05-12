@@ -71,18 +71,38 @@ def update_items_with_node(root, item_xpath=None, default_type='float', sdict=di
     return sdict
 
 
-def update(orig_dict, new_dict):
+def update_dict(orig_dict, new_dict):
     if isinstance(orig_dict, tuple):
         return copy.copy(orig_dict)
     for key, val in new_dict.items():
         if isinstance(val, collections.Mapping):
-            tmp = update(orig_dict.get(key, {}), val)
+            tmp = update_dict(orig_dict.get(key, {}), val)
             orig_dict[key] = tmp
         elif isinstance(val, list):
             orig_dict[key] = (orig_dict.get(key, []) + val)
         else:
             orig_dict[key] = new_dict[key]
     return orig_dict
+
+
+update = update_dict
+
+
+def update_key(arrays, key, value):
+    res = construct_depth_dict(key, value, )
+    update_dict(arrays, res)
+    return arrays
+
+
+def has_key(arrays, key):
+    keys = key.split('/')
+    for i, k in enumerate(keys):
+        if not k in arrays:
+            return False
+        arrays = arrays[k]
+    if isinstance(arrays, dict):
+        return False
+    return True
 
 
 def xml_parameters(xml_node):

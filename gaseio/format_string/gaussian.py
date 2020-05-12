@@ -214,7 +214,7 @@ def gaussian_extract_second_derivative_matrix(logline, arrays):
         ndim = 3*natoms
     else:
         arrays['hessian_type'] = 'Internal'
-        ndim = len(arrays['calc_arrays/internal_coords'])
+        ndim = len(arrays['calc_arrays']['internal_coords'])
     return parse_diagonal_data(logline, ndim=ndim, max_width=5)
 
 # def second_order_forces_consts(logline, fctype, ndim):
@@ -590,26 +590,26 @@ FORMAT_STRING = {
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy_extend(data),
                 'key': 'gaussian_coord_datablock',
             },
-            # r'Input orientation:[\s\S]*?Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n': {
-            #     # It's possible that this part doesn't show in g09 without nosymm
-            #     # If nosymm is added, this block will show.
-            #     # 'debug': True,
-            #     'important': False,
-            #     'selection': -1,
-            #     'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
-            #     'key': [
-            #         {
-            #             'key': 'numbers',
-            #             'type': int,
-            #             'index': ':,1',
-            #         },
-            #         {
-            #             'key': 'positions',
-            #             'type': float,
-            #             'index': ':,3:',
-            #         }
-            #     ],
-            # },
+            r'Input orientation:[\s\S]*?Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n': {
+                # It's possible that this part doesn't show in g09 without nosymm
+                # If nosymm is added, this block will show.
+                # 'debug': True,
+                'important': False,
+                'selection': -1,
+                'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key': [
+                    {
+                        'key': 'numbers',
+                        'type': int,
+                        'index': ':,1',
+                    },
+                    {
+                        'key': 'positions',
+                        'type': float,
+                        'index': ':,3:',
+                    }
+                ],
+            },
             r'Standard orientation:[\s\S]*?Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n': {
                 'important': False,
                 'selection': -1,
@@ -757,27 +757,27 @@ FORMAT_STRING = {
                 # 'debug': True,
                 'important': False,
                 'selection': -1,
-                # 'process': lambda data, arrays: process_population_analysis(\
-                #     re.sub(r'.*[OV].*\n.*Eigenvalues.*\n', '', data),
-                #     len(arrays['calc_arrays/orbital_basis']), 20, rm_header_regex=r' {20,}\d.*\n'),
-                'process': lambda data, arrays: process_MO_coefficients(data, n_orbital=len(arrays['calc_arrays/orbital_basis'])),
+                'prerequisite': ['calc_arrays/orbital_basis'],
+                'process': lambda data, arrays: process_MO_coefficients(data, n_orbital=len(arrays['calc_arrays']['orbital_basis'])),
                 'key': 'calc_arrays/molecular_orbital',
             },
             r'Density Matrix:\n([\s\S]*?)\n.*Full Mulliken population analysis:': {
                 'important': False,
                 'selection': -1,
+                'prerequisite': ['calc_arrays/orbital_basis'],
                 'process': lambda data, arrays: process_population_analysis(\
                     data,
-                    len(arrays['calc_arrays/orbital_basis']), 20, rm_header_regex=r' {20,}\d.*\n',
+                    len(arrays['calc_arrays']['orbital_basis']), 20, rm_header_regex=r' {20,}\d.*\n',
                     dtype='lower_triangular'),
                 'key': 'calc_arrays/density_matrix'
             },
             r'Full Mulliken population analysis:\n([\s\S]*?)\n.*Gross orbital populations': {
                 'important': False,
                 'selection': -1,
+                'prerequisite': ['calc_arrays/orbital_basis'],
                 'process': lambda data, arrays: process_population_analysis(\
                     data,
-                    len(arrays['calc_arrays/orbital_basis']), 20, rm_header_regex=r' {20,}\d.*\n',
+                    len(arrays['calc_arrays']['orbital_basis']), 20, rm_header_regex=r' {20,}\d.*\n',
                     dtype='lower_triangular'),
                 'key': 'calc_arrays/mulliken_population'
             },
@@ -816,12 +816,13 @@ FORMAT_STRING = {
                               arrays['gaussian_coord_datablock'][:, 1] == -1).all(),
                 'equation': lambda arrays: arrays['gaussian_coord_datablock'][:, 1] == -1,
             },
-            'positions': {
-                # 'debug' : True,
-                'prerequisite': ['gaussian_coord_datablock'],
-                'equation': process_gaussian_coord_datablock_to_positions,
-            },
+            # 'positions': {
+            #     # 'debug' : True,
+            #     'prerequisite': ['gaussian_coord_datablock'],
+            #     'equation': process_gaussian_coord_datablock_to_positions,
+            # },
             'Hessian': {
+                'passerror': True,
                 'prerequisite': ['raw_Hessian', 'positions'],
                 'equation': lambda arrays: gaussian_extract_second_derivative_matrix(arrays['raw_Hessian'], arrays),
                 'delete': ['raw_Hessian'],
@@ -864,6 +865,7 @@ FORMAT_STRING = {
             'gaussian_datablock_geometry': {
                 'prerequisite': ['gaussian_datablock'],
                 'equation': lambda arrays: arrays['gaussian_datablock'][3],
+                # 'delete': ['gaussian_datablock'],
             },
             'calc_arrays/max_memory': {
                 'prerequisite': ['calc_arrays/max_memory'],
@@ -892,7 +894,7 @@ FORMAT_STRING = {
             },
             'calc_arrays/zero_point_energy': {
                 'prerequisite': ['calc_arrays/results/ZeroPoint'],
-                'equation': lambda arrays: float(arrays['calc_arrays/results/ZeroPoint']) *\
+                'equation': lambda arrays: float(arrays['calc_arrays']['results']['ZeroPoint']) *\
                 atomtools.unit.trans_energy('au', 'eV'),
             },
             'charge': {
@@ -926,29 +928,29 @@ FORMAT_STRING = {
         'synthesized_data': OrderedDict({
             'numbers': {
                 'prerequisite': ['calc_arrays/Atomic_numbers'],
-                'equation': lambda arrays: arrays['calc_arrays/Atomic_numbers'],
+                'equation': lambda arrays: arrays['calc_arrays']['Atomic_numbers'],
                 'process': lambda data, arrays: ext_types.ExtList(data.tolist()),
             },
             'charge': {
                 'prerequisite': ['calc_arrays/Charge'],
-                'equation': lambda arrays: arrays['calc_arrays/Charge'],
+                'equation': lambda arrays: arrays['calc_arrays']['Charge'],
             },
             'multiplicity': {
                 'prerequisite': ['calc_arrays/Multiplicity'],
-                'equation': lambda arrays: arrays['calc_arrays/Multiplicity'],
+                'equation': lambda arrays: arrays['calc_arrays']['Multiplicity'],
             },
             'positions': {
                 'prerequisite': ['calc_arrays/Current_cartesian_coordinates'],
-                'equation': lambda arrays: arrays['calc_arrays/Current_cartesian_coordinates'].reshape((-1, 3))\
+                'equation': lambda arrays: arrays['calc_arrays']['Current_cartesian_coordinates'].reshape((-1, 3))\
                 * atomtools.unit.trans_length('au'),
             },
             'calc_arrays/command': {
                 'prerequisite': ['calc_arrays/Route'],
-                'equation': lambda arrays: arrays['calc_arrays/Route'][1:].lower(),
+                'equation': lambda arrays: arrays['calc_arrays']['Route'][1:].lower(),
             },
             # 'calc_arrays/coordinates_of_each_shell' : {
             #     'prerequisite' : ['calc_arrays/Coordinates_of_each_shell'],
-            #     'equation' : lambda arrays: arrays['calc_arrays/Coordinates_of_each_shell'].reshape((-1, 3))\
+            #     'equation' : lambda arrays: arrays['calc_arrays']['Coordinates_of_each_shell'].reshape((-1, 3))\
             #                                 * atomtools.unit.trans_length('au'),
             # },
         }),

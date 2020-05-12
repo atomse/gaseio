@@ -39,7 +39,7 @@ def get_python_version():
 
 if __name__ == '__main__':
     setup(
-        name='gaseio',
+        name='gaseio_src',
         version=get_version(),
         description=(
             'Generalized Atomic Simulation Environment Input/Output',

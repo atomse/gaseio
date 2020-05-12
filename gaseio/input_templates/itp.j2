@@ -1,0 +1,73 @@
+; Topology generated using OBGMX.
+;
+; Please cite:
+; G. Garberoglio. OBGMX: A web-based generator of GROMACS topologies for
+; molecular and periodic systems using the Universal Force Field.
+; J. Comput. Chem. 33 (2012), 2204-2208. doi: 10.1002/jcc.23049
+
+[ moleculetype ]
+; Name       nrexcl
+UFF    3
+
+[ atoms ]
+; nr type  resnr    residue    atom     cgnr    charge       mass 
+{% if atoms is defined %}
+{% for i in range(atoms['number'] | length) %}
+{{ atoms['number'][i] }}   {{ atoms['type'][i] }}  {{ atoms['residue_number'][i] }}  {{ atoms['residue'][i] }}  {{ atoms['atom'][i] }}  {{ atoms['cgnr'][i] }}  {{ atoms['charge'][i] }}  {{ atoms['mass'][i] }}
+{% endfor %}
+{% endif %}
+
+[ bonds ]
+; found 2 unique bond terms
+; [0]    O_3    H_         1        0.0990  468917.5853
+; [1]    O_3    O_3        1        0.1316  645381.8965
+; 1      2       1     0.1316  645381.8965 ; O_3    O_3    type 1
+; 1      3       1     0.0990  468917.5853 ; O_3    H_     type 0
+; 2      4       1     0.0990  468917.5853 ; O_3    H_     type 0
+{% if bonds is defined %}
+{% for i in range(bonds['ai'] | length) %}
+{{ bonds['ai'][i] }}  {{ bonds['aj'][i] }}  {{ bonds['funct'][i] }}  {{ "%.4f" | format(bonds['c0'][i]) }}  {{ "%.4f" | format(bonds['c1'][i]) }}
+{% endfor %}
+{% endif %}
+
+[ pairs ]
+;  ai    aj funct
+{% if pairs is defined %}
+{% for i in range(pairs['ai'] | length) %}
+{{ pairs['ai'][i] }} {{ pairs['aj'][i] }}  {{ pairs['funct'][i] }}
+{% endfor %}
+{% endif %}
+
+
+[ angles ]
+; G96 (cosine) angles
+; found 1 unique angle terms
+; [0]    O_3    O_3    H_        104.5100 1022.1500
+; 2      1      3       2   104.5100  1022.1500 ; O_3    O_3    H_    type 0
+; 1      2      4       2   104.5100  1022.1500 ; O_3    O_3    H_    type 0
+{% if angles is defined %}
+{% for i in range(angles['ai'] | length) %}
+{{ angles['ai'][i] }}  {{ angles['aj'][i] }}  {{ angles['ak'][i] }}  {{ angles['funct'][i] }}  {{ angles['c0'][i] }}  {{ angles['c1'][i] }}
+{% endfor %}
+{% endif %}
+
+[ dihedrals ]
+; proper torsion terms
+; found 1 unique dihedral terms
+; [0] H_     O_3    O_3    H_          2.0000     0.0000    4.1868
+; 3      1      2      4       1     0.0000     4.1868  2 ; H_     O_3    O_3    H_     type 0
+{% if dihedrals is defined %}
+{% for i in range(dihedrals['ai'] | length) %}
+{{ dihedrals['ai'][i] }}  {{ dihedrals['aj'][i] }}  {{ dihedrals['ak'][i] }}  {{ dihedrals['al'][i] }}  {{ dihedrals['funct'][i] }}  {{ dihedrals['c0'][i] }}  {{ dihedrals['c1'][i] }}  {{ dihedrals['c2'][i] }}
+{% endfor %}
+{% endif %}
+
+[ dihedrals ]
+; inversion terms (improper dihedrals)
+; found 1 unique inversion terms
+; [0] C_R    C_R    C_R    H_         2        0.0000     8.3736
+{% if inversion_dihedrals is defined %}
+{% for i in range(inversion_dihedrals['ai'] | length) %}
+{{ inversion_dihedrals['ai'][i] }}  {{ inversion_dihedrals['aj'][i] }}  {{ inversion_dihedrals['ak'][i] }}  {{ inversion_dihedrals['al'][i] }}  {{ inversion_dihedrals['funct'][i] }}  {{ inversion_dihedrals['c0'][i] }}  {{ inversion_dihedrals['c1'][i] }}
+{% endfor %}
+{% endif %}

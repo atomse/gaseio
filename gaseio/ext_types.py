@@ -108,7 +108,8 @@ class ExtDict(dict):
 
     def __getattr__(self, name):
         if name.startswith('__'):
-            return dict.__getitem__(name)
+            # import pdb; pdb.set_trace()
+            return dict.__getitem__(self, name)
         if name.startswith('get_'):
             _name = name[len('get_'):]
             return lambda: self['calc_arrays'].get(_name, None) \

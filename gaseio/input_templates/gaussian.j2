@@ -38,12 +38,16 @@
 "cbsb7"] %}
 {% set INTERNAL_ECP=["lanl2dz", "sdd"] %}
 {% set ALL_BASIS_ECP=get_all_basis_names() %}
-{% if calc_arrays is defined and 'max_core' in calc_arrays %}
+{% if exec_arrays is defined and 'max_core' in exec_arrays %}
+%nproc={{exec_arrays['max_core'] | int}}
+{% elif calc_arrays is defined and 'max_core' in calc_arrays %}
 %nproc={{calc_arrays['max_core'] | int}}
 {% else %}
 %nproc=4
 {% endif %}
-{% if calc_arrays is defined and 'max_memory' in calc_arrays %}
+{% if exec_arrays is defined and 'max_memory' in exec_arrays %}
+%mem={{exec_arrays['max_memory']}}GB
+{% elif calc_arrays is defined and 'max_memory' in calc_arrays %}
 %mem={{calc_arrays['max_memory']}}GB
 {% else %}
 %mem=2GB

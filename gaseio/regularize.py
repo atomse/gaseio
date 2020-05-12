@@ -12,6 +12,7 @@ import logging
 
 import atomtools.geo
 from ase.symbols import Symbols as ASESymbols
+import libmsym.interfaces
 
 
 current_module = sys.modules[__name__]
@@ -105,16 +106,15 @@ def reg_calc_arrays(arrays):
 
 
 def reg_cell(arrays):
-    if not 'cell' in arrays:
-        min_cell_size = arrays.get('min_cell_size', 10)
-        arrays['cell'] = np.array([max(x, min_cell_size)
-                                   for x in arrays['atoms_size']])
+    # if not 'cell' in arrays:
+    #     arrays['cell'] = np.array([max(x, 21) for x in arrays['atoms_size']])
+    #     if not 'celldisp' in arrays:
+    #         arrays['celldisp'] = -1 * arrays['cell']/2
+    if 'cell' in arrays:
+        if arrays['cell'].shape == (3, ):
+            arrays['cell'] = np.diag(arrays['cell'])
         if not 'celldisp' in arrays:
-            arrays['celldisp'] = -1 * arrays['cell']/2
-    if arrays['cell'].shape == (3, ):
-        arrays['cell'] = np.diag(arrays['cell'])
-    if not 'celldisp' in arrays:
-        arrays['celldisp'] = np.zeros((3,))
+            arrays['celldisp'] = np.zeros((3,))
 
 
 def reg_constraints(arrays):
@@ -209,6 +209,14 @@ reg_functions = [
 #                       if inspect.isfunction(o) and o[0].startswith('reg_')])
 
 
+def libmsymm_symmetry(arrays):
+    try:
+        results = libmsym.interfaces.get_symmetry_info(arrays)
+        arrays['#libmsym'] = results
+    except Exception as e:
+        pass
+
+
 def regularize_arrays(arrays):
     if isinstance(arrays, list):
         for arr in arrays:
@@ -216,3 +224,4 @@ def regularize_arrays(arrays):
         return
     for func in reg_functions:
         func(arrays)
+    libmsymm_symmetry(arrays)

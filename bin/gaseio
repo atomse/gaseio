@@ -1,0 +1,19 @@
+#!/bin/bash
+
+inputfile=$1
+outputfile=$2
+format=$3
+if [ "$3" ]; then
+	format='"'$3'"'
+else
+	format=None
+fi
+
+echo convert $inputfile to $outputfile with format:$format
+
+if [ ! -e $inputfile ]; then
+	echo $inputfile not exists
+	exit 1
+fi
+
+python -c 'import gaseio; x = gaseio.read("'$inputfile'"); gaseio.write("'$outputfile'", x, format='$format')'

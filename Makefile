@@ -64,11 +64,11 @@ app:
 
 
 debug_app:
-	bash -c "export GASEIO_PORT=5001; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python gaseio/app.py --debug"
+	bash -c "export GASEIO_PORT=5001; export GASEIO_HOST=0.0.0.0; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python gaseio/app.py --debug"
 
 
 server:
-	bash -c "export GASEIO_PORT=5001; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python -m gaseio.server"
+	bash -c "export GASEIO_PORT=5001; export GASEIO_HOST=0.0.0.0; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python -m gaseio.server"
 
 
 test_chemio:

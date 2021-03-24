@@ -16,12 +16,13 @@ from gaseio.app import app
 
 DEFAULT_GASEIO_PORT = 5000
 DEFAULT_GASEIO_MAX_CORE = 16
-LOCALHOST = '127.0.0.1'
+# LOCALHOST = '127.0.0.1'
+HOSTNAME = os.environ.get('GASEIO_HOST', 'localhost')
 PORT = os.environ.get("GASEIO_PORT", DEFAULT_GASEIO_PORT)
 MAX_CORE = int(os.environ.get("GASEIO_MAX_CORE", DEFAULT_GASEIO_MAX_CORE))
 
 
-def tornado_server(address: str = LOCALHOST, port: int = PORT,
+def tornado_server(address: str = HOSTNAME, port: int = PORT,
                    max_core: int = MAX_CORE):
     http_server = HTTPServer(WSGIContainer(app))
     http_server.listen(port, address)
@@ -34,7 +35,7 @@ def tornado_server(address: str = LOCALHOST, port: int = PORT,
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-a', '--address', type=str, default=LOCALHOST)
+    parser.add_argument('-a', '--address', type=str, default=HOSTNAME)
     parser.add_argument('-p', '--port', type=int, default=PORT)
     parser.add_argument('-n', '--max-core', type=int, default=MAX_CORE)
     parser.add_argument('--debug', action='store_true')

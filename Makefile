@@ -116,7 +116,8 @@ test_env:
 	make test'
 	
 upload:
-	twine upload --repository-url https://pypi.senrea.net dist/*.whl
+	#twine upload --repository-url https://pypi.senrea.net dist/*.whl
+	scp -P5522 dist/gaseio* root@io.autochemistry.com:
 
 clean:
 	rm -rf venv build *.egg-info dist

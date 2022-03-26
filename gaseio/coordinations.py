@@ -41,11 +41,10 @@ def cartesian_to_zmatrix(positions, zmatrix_dict=None,
     zmatrix = np.array([[[-1, -1], [-1, -1], [-1, -1]]]*natoms).tolist()
     same_bond_variables = [''] * len(same_length)
     variables = {}
-    import ase
-    if isinstance(positions, ase.Atoms):
+    if hasattr(positions, 'positions'):
         atoms = positions.copy()
-    else:
-        atoms = ase.Atoms(symbols='X'*natoms, positions=positions)[indices]
+    # else:
+    #     atoms = ase.Atoms(symbols='X'*natoms, positions=positions)[indices]
     for ai in range(len(atoms)):
         if ai == 0:
             continue

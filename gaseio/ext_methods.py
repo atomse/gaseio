@@ -76,7 +76,7 @@ def update_dict(orig_dict, new_dict):
         return copy.copy(orig_dict)
     for key, val in new_dict.items():
         if isinstance(val, collections.Mapping):
-            tmp = update(orig_dict.get(key, {}), val)
+            tmp = update_dict(orig_dict.get(key, {}), val)
             orig_dict[key] = tmp
         elif isinstance(val, list):
             orig_dict[key] = (orig_dict.get(key, []) + val)
@@ -90,7 +90,7 @@ update = update_dict
 
 def update_key(arrays, key, value):
     res = construct_depth_dict(key, value, )
-    update(arrays, res)
+    update_dict(arrays, res)
     return arrays
 
 
@@ -323,7 +323,7 @@ class FileFinder(object):
 
 
 def regularize_symbols(symbols):
-    print(symbols)
+    # print(symbols)
     assert isinstance(symbols, (list, np.ndarray))
     sample = symbols[0]
     if isinstance(sample, (int, float)) or isinstance(sample, str) and sample.isdigit():
@@ -367,3 +367,33 @@ def parse_config_content(data, add_header=False, ignorance=('#',)):
     if add_header:
         arrays = arrays[header]
     return arrays
+
+def convert_memory(mem_string, dest_unit='GB', default_unit='GB'):
+    AVAILABLE_MEMORY_UNITS = ['KB', 'MB', 'GB', 'TB']
+    dest_unit = dest_unit.upper()
+    assert dest_unit in AVAILABLE_MEMORY_UNITS
+    match = re.match(r'(\d+)(\w+)', mem_string)
+    if not match:
+        match = re.match(r'(\d+)', mem_string)
+        if match:
+            number = int(match.group(1))
+            unit = default_unit
+        else:
+            raise ValueError(f"Invalid memory {mem_string}")
+    else:
+        number, unit = match.groups()
+    number = int(number)
+    unit = unit.upper()
+    assert unit[-1] in ['B', 'W']
+    if unit[-1] == 'W':
+        number *= 8
+    unit = unit[:-1]
+    flag_input = flag_output = False
+    for this_unit in ['T', 'G', 'M', 'K']:
+        if unit == this_unit or flag_input:
+            number *= 1024
+            flag_input = True
+        if dest_unit[0] == this_unit or flag_output:
+            number = number // 1024
+            flag_output = True
+    return number

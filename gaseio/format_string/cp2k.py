@@ -157,6 +157,7 @@ FORMAT_STRING = {
             },
             re.compile(r'ATOMIC COORDINATES.*\n+\s+.*Atom\s+Kind\s+Element.*\n+([\s\S]*?)\n{2,}'): {
                 # 'debug' : True,
+                'prerequisite': ['positions'],
                 'important': True,
                 'selection': 'all',
                 # 'join' : '\n',
@@ -186,6 +187,7 @@ FORMAT_STRING = {
                 ],
             },
             re.compile(r'ATOMIC FORCES.*\n+\s+.*Atom\s+Kind\s+Element.*\n+([\s\S]*?)\n.*SUM OF ATOMIC FORCES'): {
+                'prerequisite': ['forces'],
                 'important': False,
                 'selection': 'all',
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
@@ -236,7 +238,11 @@ FORMAT_STRING = {
                 'prerequisite': ['_frequency_data'],
                 'equation': lambda arrays: arrays['_frequency_data'],
                 'delete': ['_frequency_data'],
-            }
+            },
+            'positions': {
+                'prerequisite': ['all_positions'],
+                'equation': lambda arrays: arrays['all_positions'][-1]
+            },
         }),
     },
 }

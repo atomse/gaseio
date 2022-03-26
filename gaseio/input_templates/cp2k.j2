@@ -1,5 +1,30 @@
-{# https://manual.cp2k.org/ #}
-{% set min_cell_size=10.0 %}
+{% set min_cell_size=10.0|int if min_cell_size is not defined else min_cell_size|int %}
+{% set Ry_to_eV = 13.6056980659 | float %}
+{% set local_cutoff=calc_arrays['cutoff']|float / Ry_to_eV if calc_arrays is defined and 'cutoff' in calc_arrays else 280.000000 %}
+###  https://manual.cp2k.org/ 
+###  If you have cp2k/data, then please
+###     ` export CP2K_DATA_DIR=${{CP2K_DATA_DIR}} `
+###  If not, you will have to point the 
+###     * BASIS_SET_FILE_NAME
+###     * POTENTIAL_FILE_NAME
+###    yourself by modifying the related value
+###  
+###  Or you can download the data by
+###     `
+###       git init cp2k_data_dir;
+###       cd cp2k_data_dir
+###       git remote add origin https://github.com/cp2k/cp2k
+###       # or you can use `git remote add origin https://code.aliyun.com/autochemistry/cp2k-fork.git` to speed up
+###       git config core.sparseCheckout true
+###       echo "data/" >> .git/info/sparse-checkout
+###       git pull origin master
+###     `
+###     to download the data from the cp2k github, and export the ENV
+###     ` export CP2K_DATA_DIR=$(realpath cp2k_data_dir) `
+###
+### You can also add cp2k:vim tools
+### mkdir -p ~/.vim/syntax
+### wget -O ~/.vim/syntax/cp2k.vim http://manual.cp2k.org/trunk/cp2k.vim
 &GLOBAL
    PROJECT {{ calc_arrays['project'] if calc_arrays is defined and 'project' in calc_arrays else 'CP2K' }}
    PRINT_LEVEL {{ calc_arrays['print_level'] | upper  if calc_arrays is defined and 'print_level' in calc_arrays else 'MEDIUM' }}
@@ -22,11 +47,12 @@
 &MOTION
    &GEO_OPT
       MAX_ITER  {{calc_arrays['max_geo_number'] | float if calc_arrays is defined and 'max_geo_number' in calc_arrays else 100}}
-      OPTIMIZER LBFGS
+      OPTIMIZER {{calc_arrays['geo_optimizer'] if calc_arrays is defined and 'geo_optimizer' in calc_arrays else 'CG'}}
+      # OPTIMIZER CG/BFGS/LBFGS
       MAX_FORCE {{calc_arrays['max_force'] | float if calc_arrays is defined and 'max_force' in calc_arrays else "6.0E-4"}}
       &CG
          &LINE_SEARCH
-            TYPE 2PNT
+            TYPE 2PNT # WARNING: 3PNT NOT AVAILABLE
          &END LINE_SEARCH
       &END CG
    &END GEO_OPT
@@ -34,13 +60,15 @@
 &FORCE_EVAL
    METHOD QuickStep
    &DFT
-      BASIS_SET_FILE_NAME {{calc_arrays['cp2k_basis_set_filename'] if calc_arrays is defined and 'cp2k_basis_set_filename' in calc_arrays else 'BASIS_SET'}}
+      BASIS_SET_FILE_NAME {{calc_arrays['cp2k_basis_set_filename'] if calc_arrays is defined and 'cp2k_basis_set_filename' in calc_arrays else 'BASIS_MOLOPT'}}
       POTENTIAL_FILE_NAME {{calc_arrays['cp2k_potential_filename'] if calc_arrays is defined and 'cp2k_potential_filename' in calc_arrays else 'POTENTIAL'}}
-      WFN_RESTART_FILE_NAME ./cp2k-RESTART.wfn
+      WFN_RESTART_FILE_NAME ./CP2K-RESTART.wfn
       CHARGE {{charge}}
       MULTIPLICITY {{multiplicity}}
       &MGRID
-         CUTOFF {{calc_arrays['cutoff'] if calc_arrays is defined and 'cutoff' in calc_arrays else 280.000000}}
+         CUTOFF {{ local_cutoff }}
+         NGRIDS {{ calc_arrays['ngrids'] if calc_arrays is defined and 'ngrids' in calc_arrays else 4 if local_cutoff < 500 else 6 }}
+         REL_CUTOFF 50 # 60 if you want it more accurate
       &END MGRID
       &QS
          METHOD {{calc_arrays['method'] | upper if calc_arrays is defined and 'method' in calc_arrays else 'GPW'}}
@@ -48,19 +76,46 @@
       &XC
          &XC_FUNCTIONAL {{calc_arrays['xc'] | upper if calc_arrays is defined and 'xc' in calc_arrays else 'PBE'}}
          &END XC_FUNCTIONAL
+         # default D3 turned on
+         &VDW_POTENTIAL
+            POTENTIAL_TYPE PAIR_POTENTIAL
+            &PAIR_POTENTIAL
+               PARAMETER_FILE_NAME dftd3.dat
+               TYPE DFTD3
+               REFERENCE_FUNCTIONAL PBE
+               # R_CUTOFF [angstrom] 16
+            &END
+        &END VDW_POTENTIAL
       &END XC
       &SCF
          SCF_GUESS {{calc_arrays['scf_guess'] | upper if calc_arrays is defined and 'scf_guess' in calc_arrays else 'RESTART'}}
          MAX_SCF {{calc_arrays['max_scf_step'] | int if calc_arrays is defined and 'max_scf_step' in calc_arrays else 100}}
          EPS_SCF {{calc_arrays['eps_scf'] | float if calc_arrays is defined and 'eps_scf' in calc_arrays else "1.0E-5"}}
+         # CHOLESKY INVERSE
          &OT T
             PRECONDITIONER FULL_ALL
-            MINIMIZER DIIS
-            LINESEARCH 3PNT
+            MINIMIZER {{ calc_arrays['minimizer'] if calc_arrays is defined and 'minimizer' in calc_arrays else 'CG' }}
+            LINESEARCH {{ calc_arrays['lines_search'] if calc_arrays is defined and 'lines_search' in calc_arrays else '2PNT' }}
          &END OT
          &OUTER_SCF ON
             MAX_SCF {{calc_arrays['outer_max_scf_step'] | float if calc_arrays is defined and 'outer_max_scf_step' in calc_arrays else 50}}
          &END OUTER_SCF
+         {% if calc_arrays is defined and 'smear' in calc_arrays and calc_arrays['smear'] %}
+         &SMEAR ON
+            METHOD FERMI_DIRAC
+            ELECTRONIC_TEMPERATURE [K] {{calc_arrays['temperature'] if calc_arrays is defined and 'temperature' in calc_arrays else 300}}
+         &END SMEAR
+         ADDED_MOS 500
+         &DIAGONALIZATION
+            ALGORITHM STANDARD
+         &END DIAGONALIZATION
+         &MIXING
+            METHOD BROYDEN_MIXING
+            ALPHA 0.1
+            BETA 1.5
+            NBROYDEN 8
+         &END MIXING
+         {% endif %}
       &END SCF
    &END DFT
    &SUBSYS

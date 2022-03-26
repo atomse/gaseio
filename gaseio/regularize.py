@@ -12,6 +12,7 @@ import logging
 
 import atomtools.geo
 from ase.symbols import Symbols as ASESymbols
+import libmsym.interfaces
 
 
 current_module = sys.modules[__name__]
@@ -31,6 +32,10 @@ def reg_customized_symbols(arrays):
 def reg_symbols(arrays):
     from . import ext_methods
     arrays['symbols'] = ext_methods.regularize_symbols(arrays['symbols'])
+
+
+def reg_positions(arrays):
+    arrays['positions'] = np.array(arrays['positions']).reshape((-1, 3))
 
 
 def reg_numbers_symbols(arrays):
@@ -115,6 +120,8 @@ def reg_cell(arrays):
 def reg_constraints(arrays):
     if not 'constraints' in arrays:
         arrays['constraints'] = []
+    if isinstance(arrays['constraints'], np.ndarray):
+        arrays['constraints'] = arrays['constraints'].tolist()
 
 
 def reg_tags(arrays):
@@ -148,9 +155,39 @@ def reg_velocities(arrays):
         natoms = len(arrays['numbers'])
         arrays['velocities'] = np.zeros((natoms, 3))
 
+
+def num_unit(target, dest):
+    num_map = {
+        'B': 1,
+        'KB': 2**10,
+        'MB': 2**20,
+        'GB': 2**30,
+        'TB': 2**40,
+    }
+    return num_map[target.upper()] / num_map[dest.upper()]
+
+
+def reg_memory(arrays):
+    if 'calc_arrays' in arrays and 'max_memory' in arrays['calc_arrays']:
+        max_memory = arrays['calc_arrays']['max_memory']
+        if isinstance(max_memory, str):
+            if max_memory.isdigit():
+                max_memory = int(max_memory)
+            elif max_memory.lower().endswith('b'):
+                max_memory = int(
+                    int(max_memory[:-2]) * num_unit(max_memory[-2:], 'GB'))
+                if max_memory < 1:
+                    max_memory = 1
+            else:
+                raise ValueError(
+                    'max_memory must be an integer or integer+KB/MB/GB')
+            arrays['calc_arrays']['max_memory'] = max_memory
+
+
 reg_functions = [
     reg_customized_symbols,
     reg_numbers_symbols,
+    reg_positions,
     reg_masses,
     reg_charge,
     reg_spin,
@@ -164,6 +201,7 @@ reg_functions = [
     reg_initial_things,
     reg_info,
     reg_energy,
+    reg_memory,
 ]
 
 # all_functions = inspect.getmembers(current_module)
@@ -171,12 +209,12 @@ reg_functions = [
 #                       if inspect.isfunction(o) and o[0].startswith('reg_')])
 
 
-def _setdebug():
-    logger.setLevel(logging.DEBUG)
-    # logger.debug(__name__)
-    # all_functions = inspect.getmembers(mod)
-    # logger.debug(all_functions)
-    logger.debug(reg_functions)
+def libmsymm_symmetry(arrays):
+    try:
+        results = libmsym.interfaces.get_symmetry_info(arrays)
+        arrays['#libmsym'] = results
+    except Exception as e:
+        pass
 
 
 def regularize_arrays(arrays):
@@ -186,3 +224,4 @@ def regularize_arrays(arrays):
         return
     for func in reg_functions:
         func(arrays)
+    libmsymm_symmetry(arrays)

@@ -5,32 +5,33 @@ format parser from gase
 
 import os
 import re
-import configparser
 import numpy as np
+import time
+
+
+import modlog
 import atomtools.fileutil
 import atomtools.filetype
+
+
+from .ext_types import ExtList, ExtDict
 import logging
 import json_tricks
 import dill as dill_pickle
 
 # from .ext_types import ExtList
 from .ext_types import ExtDict
-from .ext_methods import astype, xml_parameters, datablock_to_numpy,\
-    datablock_to_numpy, construct_depth_dict, \
-    get_depth_dict, FileFinder, update_key, update_dict, has_key
+from .ext_methods import construct_depth_dict, \
+    FileFinder, update_key, update_dict, has_key
 from . import ext_methods
 from .regularize import regularize_arrays
 
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
+logger = modlog.getLogger(__name__)
 
 
-logging.basicConfig()
-logger = logging.getLogger(__name__)
-# logger.setLevel(logging.DEBUG)
-
-
-def read(fileobj, index=-1, format=None, warning=False, debug=False):
+def read(fileobj, index=-1, format=None):
     from .format_string import FORMAT_STRING
     assert isinstance(index, int) or isinstance(index, slice)
     orig_index = index
@@ -62,6 +63,9 @@ def read(fileobj, index=-1, format=None, warning=False, debug=False):
             format, fileobj, file_format)
 
     format_dict = FORMAT_STRING.get(file_format, None)
+    logger.debug(f"format_string: {FORMAT_STRING}")
+    logger.debug(f"file_format: {file_format}")
+    logger.debug(f"format_dict: {format_dict}")
     if format_dict is None:
         raise NotImplementedError(f"{file_format} not available now")
 
@@ -94,11 +98,13 @@ def read(fileobj, index=-1, format=None, warning=False, debug=False):
                 filename) if filename else None
             arrays['frame_i'] = frame_i
             process_primitive_data(arrays, file_string,
-                                   format_dict, warning, debug)
+                                   format_dict)
             if format_dict.get('primitive_data_function', None):
                 format_dict.get('primitive_data_function')(file_string, arrays)
-            process_synthesized_data(arrays, format_dict, debug)
-            process_calculator(arrays, format_dict, debug)
+            process_synthesized_data(arrays, format_dict)
+            if format_dict.get('postprocess', None):
+                format_dict.get('postprocess')(arrays)
+            process_calculator(arrays, format_dict)
             # if not show_file_content:
             #     del arrays['absfilename'], arrays['basedir']
             all_arrays.append(arrays)
@@ -116,20 +122,24 @@ def read(fileobj, index=-1, format=None, warning=False, debug=False):
     return arrays
 
 
-def process_pattern(pattern, pattern_property, arrays, finder, warning=False, debug=False):
+def process_pattern(pattern, pattern_property, arrays, finder, singlethreading=False):
     """
 
     """
     # decode pattern_property
+    t0 = time.time()
     if isinstance(pattern_property, bytes):
         pattern_property = dill_pickle.loads(pattern_property)
+    if isinstance(finder, dict):
+        finder = FileFinder(**finder)
 
     key = pattern_property['key']
     important = pattern_property.get('important', False)
-    selection = pattern_property.get('selection', -1)  # default select the last one
+    selection = pattern_property.get(
+        'selection', -1)  # default select the last one
     results = {}
 
-    if pattern_property.get('debug', False):
+    if singlethreading and pattern_property.get('debug', False):
         import pdb
         pdb.set_trace()
     select_all = selection == 'all'
@@ -141,9 +151,8 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
     if not match:
         if important:
             raise ValueError(key, 'not match, however important')
-        elif warning:
-            print(' WARNING: ', key, 'not matched', '\n')
-        return None
+        logger.debug(f'{key} not matched')
+        return pattern, None
 
     if pattern_property.get('join', None):
         match = [pattern_property['join'].join(match)]
@@ -172,7 +181,6 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
                 data = eval('data[{0}]'.format(index))
             except IndexError:
                 return None
-            # print(all(data.shape))
             if isinstance(data, np.ndarray) and not all(data.shape):  # if contains no data
                 return None
             if dtype is not None:
@@ -188,6 +196,7 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
                 value = np_select(match[0], dtype, index)
             else:
                 value = [np_select(data, dtype, index) for data in match]
+            logger.debug(f'{value}')
             if value is None:
                 continue
             if key_group.get('process', None):
@@ -196,13 +205,22 @@ def process_pattern(pattern, pattern_property, arrays, finder, warning=False, de
                 continue
             # results.update(construct_depth_dict(key, value, arrays))
             update_key(results, key, value)
-    return results
+    t1 = time.time()
+    logger.debug(f'pattern: {pattern}, time: {t1-t0}')
+    return pattern, results
 
 
-def process_primitive_data(arrays, file_string, formats, warning=False, debug=False):
-    from multiprocessing import Pool
+def pattern_disallow(pattern_property, completed_keys):
+    prerequisite = pattern_property.get('prerequisite', None)
+    if not prerequisite:
+        return False
+    for _ in prerequisite:
+        if not _ in completed_keys:
+            return True
+    return False
 
-    warning = warning or debug
+
+def process_primitive_data_singlethreading(arrays, file_string, formats):
     primitive_data, ignorance = formats['primitive_data'], formats.get(
         'ignorance', None)
     if isinstance(ignorance, tuple):
@@ -210,49 +228,116 @@ def process_primitive_data(arrays, file_string, formats, warning=False, debug=Fa
                                  if not (line.strip() and line.strip()[0] in ignorance)])
     # elif isinstance(ignorance, )
     file_format = formats.get('file_format', 'plain_text')
-    finder = FileFinder(file_string, file_format=file_format)
+    if file_format == 'lxml':
+        finder = {
+            'fileobj': file_string,
+            'file_format': 'lxml',
+        }
+    else:
+        finder = FileFinder(file_string, file_format=file_format)
+    completed_keys = []
+    completed_pattern = []
+    while len(completed_pattern) < len(primitive_data.keys()):
+        handles = []
+        logger.debug(
+            f'{set(primitive_data.keys()).difference(set(completed_pattern))}')
+        for pattern, pattern_property in primitive_data.items():
+            if pattern in completed_pattern:
+                continue
+            if pattern_disallow(pattern_property, completed_keys):
+                continue
+            completed_pattern.append(pattern)
+            logger.debug(f'pattern {pattern} started')
+            args = (pattern, dill_pickle.dumps(pattern_property),
+                    arrays, finder, True)
+            if pattern_property.get("passerror", False):
+                try:
+                    pattern, results = process_pattern(*args)
+                except:
+                    pass
+            else:
+                pattern, results = process_pattern(*args)
+            logger.debug(f'pattern {pattern} finished')
+            # import pdb; pdb.set_trace()
+            # arrays.update(results)
+            if results is not None:
+                update_dict(arrays, results)
+            keys = primitive_data[pattern]['key']
+            if isinstance(keys, list):
+                keys = [_['key'] for _ in keys]
+            elif isinstance(keys, str):
+                keys = [keys]
+            else:
+                raise ValueError(keys, 'not a list or string')
+            completed_keys += keys
+
+
+def process_primitive_data_multiprocessing(arrays, file_string, formats):
+    from multiprocessing import Pool
+
+    primitive_data, ignorance = formats['primitive_data'], formats.get(
+        'ignorance', None)
+    if isinstance(ignorance, tuple):
+        file_string = '\n'.join([line for line in file_string.split('\n')
+                                 if not (line.strip() and line.strip()[0] in ignorance)])
+    # elif isinstance(ignorance, )
+    file_format = formats.get('file_format', 'plain_text')
+    if file_format == 'lxml':
+        finder = {
+            'fileobj': file_string,
+            'file_format': 'lxml',
+        }
+    else:
+        finder = FileFinder(file_string, file_format=file_format)
     completed_keys = []
     completed_pattern = []
 
-
-    def pattern_disallow(pattern_property, completed_keys):
-        prerequisite = pattern_property.get('prerequisite', None)
-        if not prerequisite:
-            return False
-        for _ in prerequisite:
-            if not _ in completed_keys:
-                return True
-        return False
-
-
-    processes = 4
+    processes = int(os.environ.get("GASEIO_MAX_CORE", 4))
     with Pool(processes=processes) as executor:
-        handles = []
         while len(completed_pattern) < len(primitive_data.keys()):
+            handles = []
+            logger.debug(
+                f'{set(primitive_data.keys()).difference(set(completed_pattern))}')
             for pattern, pattern_property in primitive_data.items():
                 if pattern in completed_pattern:
                     continue
                 if pattern_disallow(pattern_property, completed_keys):
                     continue
                 completed_pattern.append(pattern)
+                logger.debug(f'pattern {pattern} started')
                 args = (pattern, dill_pickle.dumps(pattern_property),
-                        arrays, finder, warning, debug)
+                        arrays, finder)
                 if pattern_property.get("passerror", False):
                     try:
-                        handles.append(executor.apply_async(process_pattern, args))
+                        handles.append(executor.apply_async(
+                            process_pattern, args))
                     except:
                         pass
                 else:
                     handles.append(executor.apply_async(process_pattern, args))
             for hdl in handles:
-                results = hdl.get()
+                pattern, results = hdl.get()
+                logger.debug(f'pattern {pattern} finished')
                 # import pdb; pdb.set_trace()
                 # arrays.update(results)
                 if results:
                     update_dict(arrays, results)
+                keys = primitive_data[pattern]['key']
+                if isinstance(keys, list):
+                    keys = [_['key'] for _ in keys]
+                elif isinstance(keys, str):
+                    keys = [keys]
+                else:
+                    raise ValueError(keys, 'not a list or string')
+                completed_keys += keys
+            time.sleep(0.01)
 
 
-def process_synthesized_data(arrays, formats, debug=False):
+process_primitive_data = process_primitive_data_multiprocessing
+process_primitive_data = process_primitive_data_singlethreading
+
+
+def process_synthesized_data(arrays, formats):
     """
     Process synthesized data
     """
@@ -284,22 +369,25 @@ def process_synthesized_data(arrays, formats, debug=False):
             cannot_synthesize = True
         if not cannot_synthesize:
             equation = key_property['equation']
-            value = equation(arrays)
-            if key_property.get('process', None):
-                value = key_property.get('process')(value, arrays)
-            arrays.update(construct_depth_dict(key, value, arrays))
+            if key_property.get('passerror', False):
+                try:
+                    value = equation(arrays)
+                except:
+                    value = None
+            else:
+                value = equation(arrays)
+            if value is not None:
+                if key_property.get('process', None):
+                    value = key_property.get('process')(value, arrays)
+                arrays.update(construct_depth_dict(key, value, arrays))
         if key_property.get('delete', None):
             for item in key_property.get('delete'):
                 if item in arrays:
                     del arrays[item]
 
 
-def process_calculator(arrays, formats_dict, debug=False):
+def process_calculator(arrays, formats_dict):
     if 'calculator' in formats_dict:
         if not 'calc_arrays' in arrays:
             arrays['calc_arrays'] = dict()
         arrays['calc_arrays']['name'] = formats_dict.get('calculator')
-
-
-def setdebug():
-    logger.setLevel(logging.DEBUG)

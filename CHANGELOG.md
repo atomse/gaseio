@@ -5,6 +5,22 @@
 * add ADF-logfile support
 * add 4 core multiprocessing
 
+## 2.7.5
+
+* add pubchem sdf, pubchem-json
+* support pubchem name fetch with `/get_molecule` and id, type in form
+
+## 2.7.4
+
+* add code encryption
+
+
+
+## 2.7.3
+
+
+* add multi-processing support
+
 
 ## 2.7.0
 

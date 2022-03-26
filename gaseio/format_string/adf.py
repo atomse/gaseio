@@ -18,6 +18,7 @@ def remove_head_numbers(data):
     data = re.sub(p2, '\n', data)
     return data
 
+RE_GEOMETRY = re.compile('GEOMETRY\s*\n([\s\S]+?)\n\s*END', flags=re.IGNORECASE)
 
 ADF_FORMAT_STRING = {
     'calculator': 'ADF',
@@ -66,10 +67,9 @@ ADF_FORMAT_STRING = {
             'type': int,
             'key': 'charge'
         },
-        re.compile('GEOMETRY\s*\n([\s\S]*?)\n\s*END', flags=re.IGNORECASE): {
+        RE_GEOMETRY: {
             'important': False,
             'selection': 0,
-            # 'type' :ext_types.ExtDict,
             'key': 'calc_arrays/geometry',
         },
         re.compile('SCF\s*\n([\s\S]*?)\n\s*END', flags=re.IGNORECASE): {
@@ -121,6 +121,8 @@ ADF_FORMAT_STRING = {
 
 
 ADF_OUT_FORMAT_STRING = ADF_FORMAT_STRING.copy()
+ADF_OUT_FORMAT_STRING['primitive_data'] = ADF_FORMAT_STRING['primitive_data'].copy()
+del ADF_OUT_FORMAT_STRING['primitive_data'][RE_GEOMETRY]
 
 ext_methods.update(ADF_OUT_FORMAT_STRING, {
     'primitive_data': OrderedDict({
@@ -135,8 +137,13 @@ ext_methods.update(ADF_OUT_FORMAT_STRING, {
                                                              index_length=5),
             'key': 'calc_arrays/SPIN_Eigenvectors',
         },
+        re.compile('GEOMETRY\s*\n([\s\S]+?)\n\s*END'): {
+            'important': False,
+            'selection': 0,
+            'key': 'calc_arrays/geometry',
+        },
         r'Coordinates \(Cartesian\)[\s\S]+?-{50,}\n([\s\S]+?)-{50,}': {
-            'important': True,
+            'important': False,
             'selection': 'all',
             'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
             'key': [

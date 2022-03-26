@@ -22,6 +22,7 @@ from .ext_types import ExtList, ExtDict
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 INPUT_TEMPLATE_DIR = 'input_templates'
 INPUT_TEMPLATE_DIR = os.path.join(BASEDIR, INPUT_TEMPLATE_DIR)
+NON_REGULARIZE = ['itp']
 
 
 def islist(value):
@@ -82,9 +83,12 @@ def generate_input_content(arrays, filetype):
         # if module_name == 'ase.atoms':
         else:  # gase
             arrays = arrays.arrays
-    regularize_arrays(arrays)
+    if not filetype in NON_REGULARIZE:
+        regularize_arrays(arrays)
+
     if not atomtools.filetype.support_multiframe(filetype) and isinstance(arrays, (list, tuple)):
         arrays = arrays[-1]
+    # print(arrays)
     if isinstance(arrays, list):
         output = template.render(arrays=arrays, arrays_json=json_tricks.dumps(arrays, allow_nan=True),
                                  qcdata_dir=qcdata_dir,

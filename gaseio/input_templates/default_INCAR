@@ -5,7 +5,7 @@
 #numbers of cores per compute node
 # TPAR = 1
 # KPAR = 2
-NPAR = 2
+NPAR = 4
 
 
 ########## General Parameters #########
@@ -42,7 +42,7 @@ NELM = 3   #maxcycle of SCF
 EDIFF = 1E-05   #error in energy,-05 is very accurate, -07 is when TS and Freq
 ISMEAR = 0   #method of partial occ. 0 when metal conducter,-5 when semi- or non-conducter,1 when gamma point 1 1 1
 SIGMA  = 0.2    #width of the smearing in eV, 0.1 to 0.2
-KSPACING  = 0.09
+KSPACING  = 0.5
 
 ########## DFT Fucntional #############
 GGA = PE   #PBE, 91 is PW91, empty is LDA

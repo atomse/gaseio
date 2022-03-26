@@ -5,7 +5,14 @@ pes_parent_dir:=$(shell dirname $(pes_parent_dir))
 
 Project=$(shell basename $(pes_parent_dir))
 GASEIO_CONTINUE_FILE=/tmp/gaseio_continue_file
+PythonVersion := $(shell python -V 2>&1 | awk '{print $$2}' | cut -d \. -f 1-2 | sed "s/\.//g" | sed 's/^/py/')
+CPythonVersion := $(shell python -V 2>&1 | awk '{print $$2}' | cut -d \. -f 1-2 | sed "s/\.//g" | sed 's/^/cp/' | sed 's/$$/m/')
+BUILD_DIR := build/$(PythonVersion)
 
+
+version:
+	echo python: $(PythonVersion)
+	echo cython: $(CPythonVersion)
 
 all:
 	make reqs
@@ -24,9 +31,16 @@ reqs:
 	cat requirements.txt 
 
 build:
+	pip install cython twine
 	rm -rf build/ sdist/ dist/ $(Project)-*/ $(Project).egg-info/
-	python setup.py sdist build
-	python setup.py bdist_wheel --universal
+	mkdir -p dist/
+	# python Encrypt.py -j4 --build-dir $(BUILD_DIR)
+	# cd $(BUILD_DIR) && 
+	make build_base && make test_build && cp -r dist/*.whl ../../dist
+
+build_base:
+	rm -rf build/ sdist/ dist/ $(Project)-*/ $(Project).egg-info/
+	python setup.py bdist_wheel --python-tag=$(PythonVersion) --py-limited-api=$(CPythonVersion)
 	twine check dist/*
 
 install:
@@ -42,17 +56,19 @@ test:
 	coverage report -m > coverage.log
 	cat coverage.log
 
+test_build:
+	bash -c "export GASEIO_LOGLEVEL=debug; export PYTHONPATH="$(PYTHONPATH):$(pes_parent_dir)"; export GASEIO_CONTINUE_FILE="$(GASEIO_CONTINUE_FILE)"; python ./tests/test.py"
 
 app:
 	bash -c "export GASEIO_PORT=5001; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python gaseio/app.py"
 
 
 debug_app:
-	bash -c "export GASEIO_PORT=5001; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python gaseio/app.py --debug"
+	bash -c "export GASEIO_PORT=5001; export GASEIO_HOST=0.0.0.0; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python gaseio/app.py --debug"
 
 
 server:
-	bash -c "export GASEIO_PORT=5001; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python -m gaseio.server"
+	bash -c "export GASEIO_PORT=5001; export GASEIO_HOST=0.0.0.0; export PYTHONPATH=$(pes_parent_dir):$(PYTHONPATH); python -m gaseio.server"
 
 
 test_chemio:
@@ -100,7 +116,8 @@ test_env:
 	make test'
 	
 upload:
-	echo "\033[41;37m This Project is not allowed to upload to pypi! \033[0m"
+	#twine upload --repository-url https://pypi.senrea.net dist/*.whl
+	scp -P5522 dist/gaseio* root@io.autochemistry.com:
 
 clean:
 	rm -rf venv build *.egg-info dist

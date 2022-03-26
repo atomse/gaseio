@@ -22,6 +22,7 @@ BASEDIR = os.path.dirname(os.path.abspath(__file__))
 def read(fileobj, index=-1, format=None, parallel=True, force_ase=False,
          force_gase=False, **kwargs):
     logger.debug(f"fileobj: {fileobj}")
+    # if not isinstance(fileobj, (dict, list)):
     fileobj = atomtools.fileutil.get_uncompressed_fileobj(fileobj)
     _filetype = format or atomtools.filetype.filetype(fileobj)
     assert isinstance(index, int) or \
@@ -81,7 +82,7 @@ def write(fileobj, images, format=None, parallel=True, append=False, force_ase=F
 def get_write_content(fileobj, images, format=None, parallel=True, append=False,
                       force_ase=False, force_gase=False, preview=False, **kwargs):
     _filetype = format or atomtools.filetype.filetype(fileobj)
-    print(_filetype)
+    logger.debug(_filetype)
     if force_gase:
         return gase_writer_content(images, _filetype)
     elif force_ase:

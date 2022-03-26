@@ -14,6 +14,7 @@ from io import StringIO
 import math
 import numpy as np
 import pandas as pd
+import pdb
 
 import chemdata
 
@@ -37,7 +38,7 @@ ENERGY_ORDER = [
     r"MP3",
     r"MP2",
     r"HF",
-],
+]
 
 
 # def std_force_to_inp_force(std_positions, inp_positions, std_forces):
@@ -48,6 +49,7 @@ ENERGY_ORDER = [
 
 
 def get_value_by_order(properties, order):
+    # pdb.set_trace()
     if properties is None:
         return None
     for _ord in order:
@@ -95,7 +97,7 @@ def gaussian_extract_frequency(logline, arrays):
         #    3     2     6          0.16741  -0.01933  -0.14943   0.00000   0.23508
 
         """
-        assert mode in [3, 5]
+        assert mode in [3, 5], f"{__name__} mode must be [3,5]"
         item_dict = {
             'Frequencies': 'frequency',
             'Red. masses': 'reduced_mass',
@@ -214,7 +216,7 @@ def gaussian_extract_second_derivative_matrix(logline, arrays):
         ndim = 3*natoms
     else:
         arrays['hessian_type'] = 'Internal'
-        ndim = len(arrays['calc_arrays/internal_coords'])
+        ndim = len(arrays['calc_arrays']['internal_coords'])
     return parse_diagonal_data(logline, ndim=ndim, max_width=5)
 
 # def second_order_forces_consts(logline, fctype, ndim):
@@ -235,7 +237,7 @@ def process_MO_coefficients(data, n_orbital):
     col_extra = 19
     n_block = n_orbital + 3
     lines = data.split('\n')
-    assert len(lines) % n_block == 0
+    assert len(lines) % n_block == 0, f"process_MO_coefficients error"
     for i in range(len(lines)):
         lines[i] = lines[i][col_extra:]
     # merge lines
@@ -485,7 +487,7 @@ FORMAT_STRING = {
                 'type': str,
                 'key': '_connectivity',
             },
-            r'#[\s\S]*?[ /]gen(?:ecp| )[\s\S]*?\n *\n[\s\S]*?\n *\n\s*[+-]?[0-9 ]+[\s\S]*?\n\s*\n *((?:[A-Z][ a-z]|[0-9 ]+ 0\n)[\s\S]*?(?:\n *\n(?:[A-Z][ a-z]|[0-9 ]+ 0\n)[\s\S]*?|))\n *\n': {
+            r'#[\s\S]*?[ /]gen(?:ecp| )[\s\S]*?\n *\n[\s\S]*?\n *\n\s*[+-]?[0-9 ]+[\s\S]*?\n\s*\n *((?:[A-Z][ a-z]|[0-9 ]+ 0\n)[\s\S]*?(?:\n *\n(?:[A-Z][ a-z]|[0-9 ]+ 0\n)[\s\S]*?|))(?:\n *\n|\n$|$)': {
                 # 'debug' : True,
                 'important': False,
                 'selection': -1,
@@ -543,6 +545,10 @@ FORMAT_STRING = {
                 'prerequisite': ['calc_arrays/genecp'],
                 'equation': lambda arrays: process_genecp_ecp(arrays['calc_arrays']['genecp'], arrays),
             },
+            'calc_arrays/max_memory': {
+                'prerequisite': ['calc_arrays/max_memory'],
+                'equation': lambda arrays: ext_methods.convert_memory(arrays['calc_arrays']['max_memory'], 'GB'),
+            },
         }),
     },
     'gaussian-out': {
@@ -586,25 +592,26 @@ FORMAT_STRING = {
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy_extend(data),
                 'key': 'gaussian_coord_datablock',
             },
-            # r'Input orientation:[\s\S]*?Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n': {
-            # # It's possible that this part doesn't show in g09 without nosymm
-            # # If nosymm is added, this block will show.
-            #     'important': False,
-            #     'selection': -1,
-            #     'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
-            #     'key': [
-            #         {
-            #             'key': 'numbers',
-            #             'type': int,
-            #             'index': ':,1',
-            #         },
-            #         {
-            #             'key': 'positions',
-            #             'type': float,
-            #             'index': ':,3:',
-            #         }
-            #     ],
-            # },
+            r'Input orientation:[\s\S]*?Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n': {
+                # It's possible that this part doesn't show in g09 without nosymm
+                # If nosymm is added, this block will show.
+                # 'debug': True,
+                'important': False,
+                'selection': -1,
+                'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
+                'key': [
+                    {
+                        'key': 'numbers',
+                        'type': int,
+                        'index': ':,1',
+                    },
+                    {
+                        'key': 'positions',
+                        'type': float,
+                        'index': ':,3:',
+                    }
+                ],
+            },
             r'Standard orientation:[\s\S]*?Center.* Atomic *Atomic *Coordinates.*\(.*\).*\n.*\n\s*-*\s*\n([\s\S]*?)\n\s*-+\s*\n': {
                 'important': False,
                 'selection': -1,
@@ -693,8 +700,7 @@ FORMAT_STRING = {
             r' The second derivative matrix:\n([\s\S]*?)\n ITU': {
                 'important': False,
                 'selection': -1,
-                'process': lambda data, arrays: gaussian_extract_second_derivative_matrix(data, arrays),
-                'key': 'Hessian',
+                'key': 'raw_Hessian',
             },
             r'Normal termination': {
                 'important': False,
@@ -707,6 +713,7 @@ FORMAT_STRING = {
                 'key': 'error_termination',
             },
             r'SCF Done:  E\(.*?\)\s=\s*([+-]?\d+\.\d+E?[+-]?[0-9]*)\s+': {
+                # 'debug': True,
                 'important': False,
                 'selection': -1,
                 'key': 'possible_potential_energy',
@@ -753,27 +760,27 @@ FORMAT_STRING = {
                 # 'debug': True,
                 'important': False,
                 'selection': -1,
-                # 'process': lambda data, arrays: process_population_analysis(\
-                #     re.sub(r'.*[OV].*\n.*Eigenvalues.*\n', '', data),
-                #     len(arrays['calc_arrays/orbital_basis']), 20, rm_header_regex=r' {20,}\d.*\n'),
-                'process': lambda data, arrays: process_MO_coefficients(data, n_orbital=len(arrays['calc_arrays/orbital_basis'])),
+                'prerequisite': ['calc_arrays/orbital_basis'],
+                'process': lambda data, arrays: process_MO_coefficients(data, n_orbital=len(arrays['calc_arrays']['orbital_basis'])),
                 'key': 'calc_arrays/molecular_orbital',
             },
             r'Density Matrix:\n([\s\S]*?)\n.*Full Mulliken population analysis:': {
                 'important': False,
                 'selection': -1,
+                'prerequisite': ['calc_arrays/orbital_basis'],
                 'process': lambda data, arrays: process_population_analysis(\
                     data,
-                    len(arrays['calc_arrays/orbital_basis']), 20, rm_header_regex=r' {20,}\d.*\n',
+                    len(arrays['calc_arrays']['orbital_basis']), 20, rm_header_regex=r' {20,}\d.*\n',
                     dtype='lower_triangular'),
                 'key': 'calc_arrays/density_matrix'
             },
             r'Full Mulliken population analysis:\n([\s\S]*?)\n.*Gross orbital populations': {
                 'important': False,
                 'selection': -1,
+                'prerequisite': ['calc_arrays/orbital_basis'],
                 'process': lambda data, arrays: process_population_analysis(\
                     data,
-                    len(arrays['calc_arrays/orbital_basis']), 20, rm_header_regex=r' {20,}\d.*\n',
+                    len(arrays['calc_arrays']['orbital_basis']), 20, rm_header_regex=r' {20,}\d.*\n',
                     dtype='lower_triangular'),
                 'key': 'calc_arrays/mulliken_population'
             },
@@ -812,10 +819,16 @@ FORMAT_STRING = {
                               arrays['gaussian_coord_datablock'][:, 1] == -1).all(),
                 'equation': lambda arrays: arrays['gaussian_coord_datablock'][:, 1] == -1,
             },
-            'positions': {
-                # 'debug' : True,
-                'prerequisite': ['gaussian_coord_datablock'],
-                'equation': process_gaussian_coord_datablock_to_positions,
+            # 'positions': {
+            #     # 'debug' : True,
+            #     'prerequisite': ['gaussian_coord_datablock'],
+            #     'equation': process_gaussian_coord_datablock_to_positions,
+            # },
+            'Hessian': {
+                'passerror': True,
+                'prerequisite': ['raw_Hessian', 'positions'],
+                'equation': lambda arrays: gaussian_extract_second_derivative_matrix(arrays['raw_Hessian'], arrays),
+                'delete': ['raw_Hessian'],
             },
             'tags': {
                 'prerequisite': ['gaussian_coord_datablock'],
@@ -855,6 +868,11 @@ FORMAT_STRING = {
             'gaussian_datablock_geometry': {
                 'prerequisite': ['gaussian_datablock'],
                 'equation': lambda arrays: arrays['gaussian_datablock'][3],
+                # 'delete': ['gaussian_datablock'],
+            },
+            'calc_arrays/max_memory': {
+                'prerequisite': ['calc_arrays/max_memory'],
+                'equation': lambda arrays: ext_methods.convert_memory(arrays['calc_arrays']['max_memory'], 'GB'),
             },
             'calc_arrays/condense_to_atoms': {
                 'prerequisite': ['raw_condense_to_atoms'],
@@ -868,18 +886,18 @@ FORMAT_STRING = {
                 'delete': ['gaussian_datastring'],
             },
             'calc_arrays/potential_energy': {
-                # 'debug' : True,
+                # 'debug': True,
                 # 'prerequisite' : ['possible_potential_energy'],
-                'condition': lambda arrays: arrays.get('calc_arrays/results', None) is not None or\
+                'condition': lambda arrays: arrays['calc_arrays'].get('results', None) is not None or\
                 arrays.get('possible_potential_energy', None) is not None,
-                'equation': lambda arrays: float(get_value_by_order(arrays.get('calc_arrays/results', None), \
+                'equation': lambda arrays: float(get_value_by_order(arrays['calc_arrays'].get('results', None), \
                                                                     ENERGY_ORDER) or arrays.get('possible_potential_energy', None))\
                 * atomtools.unit.trans_energy('au', 'eV'),
-                'delete': ['possible_potential_energy'],
+                # 'delete': ['possible_potential_energy'],
             },
             'calc_arrays/zero_point_energy': {
                 'prerequisite': ['calc_arrays/results/ZeroPoint'],
-                'equation': lambda arrays: float(arrays['calc_arrays/results/ZeroPoint']) *\
+                'equation': lambda arrays: float(arrays['calc_arrays']['results']['ZeroPoint']) *\
                 atomtools.unit.trans_energy('au', 'eV'),
             },
             'charge': {
@@ -913,25 +931,29 @@ FORMAT_STRING = {
         'synthesized_data': OrderedDict({
             'numbers': {
                 'prerequisite': ['calc_arrays/Atomic_numbers'],
-                'equation': lambda arrays: arrays['calc_arrays/Atomic_numbers'],
+                'equation': lambda arrays: arrays['calc_arrays']['Atomic_numbers'],
                 'process': lambda data, arrays: ext_types.ExtList(data.tolist()),
             },
             'charge': {
                 'prerequisite': ['calc_arrays/Charge'],
-                'equation': lambda arrays: arrays['calc_arrays/Charge'],
+                'equation': lambda arrays: arrays['calc_arrays']['Charge'],
             },
             'multiplicity': {
                 'prerequisite': ['calc_arrays/Multiplicity'],
-                'equation': lambda arrays: arrays['calc_arrays/Multiplicity'],
+                'equation': lambda arrays: arrays['calc_arrays']['Multiplicity'],
             },
             'positions': {
                 'prerequisite': ['calc_arrays/Current_cartesian_coordinates'],
-                'equation': lambda arrays: arrays['calc_arrays/Current_cartesian_coordinates'].reshape((-1, 3))\
+                'equation': lambda arrays: arrays['calc_arrays']['Current_cartesian_coordinates'].reshape((-1, 3))
                 * atomtools.unit.trans_length('au'),
+            },
+            'calc_arrays/command': {
+                'prerequisite': ['calc_arrays/Route'],
+                'equation': lambda arrays: arrays['calc_arrays']['Route'][1:].lower(),
             },
             # 'calc_arrays/coordinates_of_each_shell' : {
             #     'prerequisite' : ['calc_arrays/Coordinates_of_each_shell'],
-            #     'equation' : lambda arrays: arrays['calc_arrays/Coordinates_of_each_shell'].reshape((-1, 3))\
+            #     'equation' : lambda arrays: arrays['calc_arrays']['Coordinates_of_each_shell'].reshape((-1, 3))\
             #                                 * atomtools.unit.trans_length('au'),
             # },
         }),
@@ -962,7 +984,7 @@ FORMAT_STRING = {
                 'selection': -1,
                 'key': 'nao_in_ao_basis',
                 'type': float,
-                'process': lambda data, arrays: ext_methods.datablock_to_numpy(\
+                'process': lambda data, arrays: ext_methods.datablock_to_numpy(
                     re.sub(r'\s+', '\n', data.strip())).flatten(),
             },
             r'NAOs in the AO basis:\n -{10,}\n[\s\S]*?\n([ 0-9]+\n[\s\S]*?)\n.*\n PNAO overlap matrix': {
@@ -970,14 +992,14 @@ FORMAT_STRING = {
                 'selection': -1,
                 'key': 'nao_in_ao_basis_appendix',
                 'type': int,
-                'process': lambda data, arrays: ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n', \
+                'process': lambda data, arrays: ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n',
                                                                                       data.strip())).flatten(),
             },
             r' PNAO overlap matrix:\n -{10,}\n([\s\S]*?)\n.*\n NAO density matrix': {
                 'important': True,
                 'selection': -1,
                 'key': 'pnao_overlap_matrix',
-                'process': lambda data, arrays: ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n', \
+                'process': lambda data, arrays: ext_methods.datablock_to_numpy(re.sub(r'\s+', '\n',
                                                                                       data.strip())).flatten(),
             },
             r' NAO density matrix:\n -{10,}(?:\n ALPHA SPIN\n|\n)([\s\S]*?)\n.*\n NAO Fock matrix:': {

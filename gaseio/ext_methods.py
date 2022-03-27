@@ -127,7 +127,7 @@ def datablock_to_dataframe(datablock, sep=r'\s+', header=None):
     """
     assert isinstance(datablock, str)
     return pd.read_csv(StringIO(datablock), header=header, sep=sep, index_col=None,
-                       error_bad_lines=False, on_bad_lines=False)
+                       on_bad_lines='skip')
 
 
 def datablock_to_numpy(datablock, sep=r'\s+', header=None):

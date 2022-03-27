@@ -8,9 +8,11 @@ import re
 import logging
 
 
+import ase
 import atomtools.fileutil
 import atomtools.name
 import atomtools.filetype
+from .regularize import regularize_arrays
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -22,7 +24,17 @@ BASEDIR = os.path.dirname(os.path.abspath(__file__))
 def read(fileobj, index=-1, format=None, parallel=True, force_ase=False,
          force_gase=False, **kwargs):
     logger.debug(f"fileobj: {fileobj}")
-    # if not isinstance(fileobj, (dict, list)):
+    if isinstance(fileobj, (dict, list, ase.Atoms)):
+        arrays = fileobj
+        # if isinstance(fileobj, ase.Atoms):
+        if hasattr(fileobj, 'get_positions'):
+            arrays = fileobj.arrays
+        if isinstance(arrays, dict):
+            regularize_arrays(arrays)
+        elif isinstance(arrays, list):
+            for arr in arrays:
+                regularize_arrays(arr)
+        return arrays
     fileobj = atomtools.fileutil.get_uncompressed_fileobj(fileobj)
     _filetype = format or atomtools.filetype.filetype(fileobj)
     assert isinstance(index, int) or \

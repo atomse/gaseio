@@ -333,7 +333,7 @@ def regularize_symbols(symbols):
         symbols = [symbol[0].upper() + symbol[1].lower() if len(symbol) >= 2 and symbol[:2].lower() in
                    [_.lower() for _ in chemdata.chemical_symbols]
                    else symbol[0].upper() for symbol in symbols]
-    return symbols
+    return np.array(symbols)
 
 
 def reshape_to_square(array):

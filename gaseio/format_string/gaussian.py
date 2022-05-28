@@ -597,16 +597,16 @@ FORMAT_STRING = {
                 # If nosymm is added, this block will show.
                 # 'debug': True,
                 'important': False,
-                'selection': -1,
+                'selection': 'all',
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy(data),
                 'key': [
                     {
-                        'key': 'numbers',
+                        'key': 'calc_arrays/all_numbers',
                         'type': int,
                         'index': ':,1',
                     },
                     {
-                        'key': 'positions',
+                        'key': 'calc_arrays/all_positions',
                         'type': float,
                         'index': ':,3:',
                     }
@@ -798,11 +798,12 @@ FORMAT_STRING = {
                 #                                                             len(arrays['positions']), 12, rm_header_regex=r' {12,}\d.*\n'),
                 'key': 'raw_condense_to_atoms'
             },
-            r'Mulliken charges:([\s\S]*?)\n.*Sum of Mulliken charges': {
+            r'Mulliken charges[^h]*:.*\n.*([\s\S]*?)\n.*Sum of Mulliken charges': {
+                # 'debug': True,
                 'important': False,
                 'selection': -1,
                 'process': lambda data, arrays: ext_methods.datablock_to_numpy(\
-                    re.sub(r'\n.{10}', '\n', data)[data.index('\n'):]).flatten(),
+                    re.sub(r'\n.{10}', '\n', data)[data.index('\n'):])[:,0].flatten(),
                 'key': 'calc_arrays/mulliken_charge'
             },
         }),
@@ -819,11 +820,15 @@ FORMAT_STRING = {
                               arrays['gaussian_coord_datablock'][:, 1] == -1).all(),
                 'equation': lambda arrays: arrays['gaussian_coord_datablock'][:, 1] == -1,
             },
-            # 'positions': {
-            #     # 'debug' : True,
-            #     'prerequisite': ['gaussian_coord_datablock'],
-            #     'equation': process_gaussian_coord_datablock_to_positions,
-            # },
+            'numbers': {
+                'equation': lambda arrays: arrays['calc_arrays']['all_numbers'][-1]
+            },
+            'positions': {
+                # 'debug' : True,
+                # 'prerequisite': ['gaussian_coord_datablock'],
+                # 'equation': process_gaussian_coord_datablock_to_positions,
+                'equation': lambda arrays: arrays['calc_arrays']['all_positions'][-1]
+            },
             'Hessian': {
                 'passerror': True,
                 'prerequisite': ['raw_Hessian', 'positions'],

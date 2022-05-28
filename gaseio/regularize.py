@@ -12,7 +12,6 @@ import logging
 
 import atomtools.geo
 from ase.symbols import Symbols as ASESymbols
-import libmsym.interfaces
 
 
 current_module = sys.modules[__name__]
@@ -91,8 +90,11 @@ def reg_atoms_size(arrays):
 
 def reg_pbc(arrays):
     if not 'pbc' in arrays:
-        arrays['pbc'] = np.array([False] * 3)
-    elif isinstance(arrays['pbc'], bool):
+        if not 'cell' in arrays or (arrays['cell'] == 0).all():
+            arrays['pbc'] = np.array([False] * 3)
+        else:
+            arrays['pbc'] = np.array([True] * 3)
+    if isinstance(arrays['pbc'], bool):
         arrays['pbc'] = np.array([arrays['pbc']] * 3)
     else:
         assert isinstance(arrays['pbc'], (tuple, list, np.ndarray))
@@ -211,9 +213,10 @@ reg_functions = [
 
 def libmsymm_symmetry(arrays):
     try:
+        import libmsym.interfaces
         results = libmsym.interfaces.get_symmetry_info(arrays)
         arrays['#libmsym'] = results
-    except Exception as e:
+    except:
         pass
 
 

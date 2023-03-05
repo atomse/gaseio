@@ -119,6 +119,14 @@ def reg_cell(arrays):
             arrays['celldisp'] = np.zeros((3,))
 
 
+def reg_fixed_atoms(arrays):
+    if not 'fixed_atoms' in arrays:
+        arrays['fixed_atoms'] = [] # [False] * len(arrays['numbers'])
+    fixed_atoms = np.array(arrays['fixed_atoms'])
+    if fixed_atoms.dtype is bool:
+        arrays['fixed_atoms'] = np.arange(len(arrays['numbers']))[arrays['fixed_atoms'].tolist()]
+
+
 def reg_constraints(arrays):
     if not 'constraints' in arrays:
         arrays['constraints'] = []
@@ -198,6 +206,7 @@ reg_functions = [
     reg_cell,
     reg_pbc,
     reg_calc_arrays,
+    reg_fixed_atoms,
     reg_constraints,
     reg_tags,
     reg_initial_things,

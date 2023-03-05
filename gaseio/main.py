@@ -6,6 +6,7 @@ gaseio
 import os
 import re
 import logging
+import pdb
 
 
 import ase
@@ -22,39 +23,42 @@ BASEDIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def read(fileobj, index=-1, format=None, parallel=True, force_ase=False,
-         force_gase=False, **kwargs):
+         force_gase=False, regularize=True, **kwargs):
     logger.debug(f"fileobj: {fileobj}")
+    # pdb.set_trace()
     if isinstance(fileobj, (dict, list, ase.Atoms)):
         arrays = fileobj
-        # if isinstance(fileobj, ase.Atoms):
         if hasattr(fileobj, 'get_positions'):
             arrays = fileobj.arrays
+    else:
+        fileobj = atomtools.fileutil.get_uncompressed_fileobj(fileobj)
+        _filetype = format or atomtools.filetype.filetype(fileobj)
+        assert isinstance(index, int) or \
+            re.match(r'^[+-:0-9]+$', str(index))
+        if isinstance(index, str):
+            if not ':' in index:
+                index = int(index)
+            else:
+                start, stop, step = ([None if not _ else int(_)
+                                      for _ in index.split(':')] + [None, None, None])[:3]
+                index = slice(start, stop, step)
+        if force_gase:
+            arrays=gase_reader(fileobj, index, _filetype, parallel, **kwargs)
+        elif force_ase:
+            arrays=ase_reader(fileobj, index, format, parallel, **kwargs)
+        else:
+            try:
+                arrays=gase_reader(fileobj, index, _filetype, parallel, **kwargs)
+            except:
+                arryas=ase_reader(fileobj, index, format, parallel, **kwargs)
+    # if isinstance(fileobj, ase.Atoms):
+    if regularize:
         if isinstance(arrays, dict):
             regularize_arrays(arrays)
         elif isinstance(arrays, list):
             for arr in arrays:
                 regularize_arrays(arr)
-        return arrays
-    fileobj = atomtools.fileutil.get_uncompressed_fileobj(fileobj)
-    _filetype = format or atomtools.filetype.filetype(fileobj)
-    assert isinstance(index, int) or \
-        re.match(r'^[+-:0-9]+$', str(index))
-    if isinstance(index, str):
-        if not ':' in index:
-            index = int(index)
-        else:
-            start, stop, step = ([None if not _ else int(_)
-                                  for _ in index.split(':')] + [None, None, None])[:3]
-            index = slice(start, stop, step)
-    if force_gase:
-        return gase_reader(fileobj, index, _filetype, parallel, **kwargs)
-    elif force_ase:
-        return ase_reader(fileobj, index, format, parallel, **kwargs)
-    else:
-        try:
-            return gase_reader(fileobj, index, _filetype, parallel, **kwargs)
-        except:
-            return ase_reader(fileobj, index, format, parallel, **kwargs)
+    return arrays
 
 
 def ase_reader(fileobj, index=None, format=None, parallel=True, **kwargs):
@@ -98,18 +102,19 @@ def get_write_content(fileobj, images, format=None, parallel=True, append=False,
     if force_gase:
         return gase_writer_content(images, _filetype)
     elif force_ase:
-        return ase_writer_content(images, format, parallel, append, **kwargs)
+        return ase_writer_content(images, format, parallel, append, filename=fileobj, **kwargs)
     else:
         try:
             return gase_writer_content(images, _filetype)
         except Exception as e:
-            return ase_writer_content(images, format, parallel, append, **kwargs)
+            return ase_writer_content(images, format, parallel, append, filename=fileobj, **kwargs)
 
 
 def ase_writer_content(images, format=None, parallel=True, append=False,
-                       force_ase=False, force_gase=False, preview=False, **kwargs):
+                       force_ase=False, force_gase=False, preview=False, 
+                       filename = None, **kwargs):
     from ase.io import write
-    _tmp_filename = '/tmp/%s' % (atomtools.name.randString())
+    _tmp_filename = filename or '/tmp/%s' % (atomtools.name.randString())
     write(_tmp_filename, images, format, parallel, append, **kwargs)
     with open(_tmp_filename) as fd:
         string = fd.read()

@@ -112,14 +112,16 @@ def generate_input_content(arrays, filetype):
     if not filetype in NON_REGULARIZE:
         regularize_arrays(arrays)
 
-    constraints = arrays.get('constraints', None)
-    natoms = len(arrays['numbers'])
-    newconstraints = np.zeros(natoms, bool)
-    if constraints is not None:
-        for c in constraints:
-            if c.__class__.__name__ == 'FixAtoms':
-                newconstraints[c.index.tolist()] = True
-    arrays['constraints'] = newconstraints
+    # if isinstance(arrays, dict):
+    #     fixed_atoms = arrays.get('fixed_atoms', None)
+    #     if fixed_atoms is None:
+    #     natoms = len(arrays['numbers'])
+    #     newfixed_atoms = np.zeros(natoms, bool)
+    #     if fixed_atoms is not None:
+    #         for c in fixed_atoms:
+    #             if c.__class__.__name__ == 'FixAtoms':
+    #                 newfixed_atoms[c.index.tolist()] = True
+    #     arrays['fixed_atoms'] = newfixed_atoms
     if not atomtools.filetype.support_multiframe(filetype) and isinstance(arrays, (list, tuple)):
         arrays = arrays[-1]
     # print(arrays)

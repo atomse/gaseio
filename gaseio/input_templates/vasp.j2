@@ -22,17 +22,17 @@
 {{ExtList(symbols).contract_items("string")}}
 {{ExtList(symbols).contract_numbers("string")}}
 {% endif %}
-{% if constraints is defined %}
+{% if fixed_atoms is defined %}
 Selective Dynamics
 {% endif %}
 Cartesian
 {% for i in range(positions|length) %}
     {% if vasp_POSCAR_deep_contract is not defined or not vasp_POSCAR_deep_contract %}
-        {# {% if constraints is defined %} #}
+        {# {% if fixed_atoms is defined %} #}
             {% if cell is defined %}
- {{"%12.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][0])}}   {{"%12.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][1])}}   {{"%12.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][2])}}  {{"False  False  False" if constraints[ExtList(symbols).deep_contract_index()[i]] and constraints is defined else " True   True   True"}}
+ {{"%12.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][0])}}   {{"%12.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][1])}}   {{"%12.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][2])}}  {{"False  False  False" if fixed_atoms[ExtList(symbols).deep_contract_index()[i]] and fixed_atoms is defined else " True   True   True"}}
             {% else %}
- {{"%12.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][0] + atoms_size[0])}}   {{"%12.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][1] + atoms_size[1])}}   {{"%12.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][2] + atoms_size[2])}}  {{"False  False  False" if constraints[ExtList(symbols).deep_contract_index()[i]] and constraints is defined else " True   True   True"}}
+ {{"%12.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][0] + atoms_size[0])}}   {{"%12.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][1] + atoms_size[1])}}   {{"%12.6f" | format(positions[ExtList(symbols).deep_contract_index()[i]][2] + atoms_size[2])}}  {{"False  False  False" if fixed_atoms[ExtList(symbols).deep_contract_index()[i]] and fixed_atoms is defined else " True   True   True"}}
             {% endif %}
 {#         {% else %}
             {% if cell is defined %}
@@ -42,11 +42,11 @@ Cartesian
             {% endif %}
         {% endif %} #}
     {% else %}
-        {# {% if constraints is defined %} #}
+        {# {% if fixed_atoms is defined %} #}
             {% if cell is defined %}
- {{"%12.6f" | format(positions[i][0])}}   {{"%12.6f" | format(positions[i][1])}}   {{"%12.6f" | format(positions[i][2])}}  {{not constraints[i] if constraints is defined else ""}}  {{not constraints[i] if constraints is defined else ""}}  {{not constraints[i] if constraints is defined else ""}}
+ {{"%12.6f" | format(positions[i][0])}}   {{"%12.6f" | format(positions[i][1])}}   {{"%12.6f" | format(positions[i][2])}}  {{not fixed_atoms[i] if fixed_atoms is defined else ""}}  {{not fixed_atoms[i] if fixed_atoms is defined else ""}}  {{not fixed_atoms[i] if fixed_atoms is defined else ""}}
             {% else %}
- {{"%12.6f" | format(positions[i][0] + atoms_size[0])}}   {{"%12.6f" | format(positions[i][1] + atoms_size[1])}}   {{"%12.6f" | format(positions[i][2] + atoms_size[2])}}  {{not constraints[i] if constraints is defined else ""}}  {{not constraints[i] if constraints is defined else ""}}  {{not constraints[i] if constraints is defined else ""}}
+ {{"%12.6f" | format(positions[i][0] + atoms_size[0])}}   {{"%12.6f" | format(positions[i][1] + atoms_size[1])}}   {{"%12.6f" | format(positions[i][2] + atoms_size[2])}}  {{not fixed_atoms[i] if fixed_atoms is defined else ""}}  {{not fixed_atoms[i] if fixed_atoms is defined else ""}}  {{not fixed_atoms[i] if fixed_atoms is defined else ""}}
             {% endif %}
 {#         {% else %}
             {% if cell is defined %}

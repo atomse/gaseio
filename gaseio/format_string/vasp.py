@@ -217,10 +217,11 @@ FORMAT_STRING = {
                         'process': lambda data, arrays: data.dot(arrays['cell']),
                     },
                     {
-                        'key': 'constraints',
+                        'key': 'fixed_atoms',
                         'index': ':,3:',
-                        # 'type' : bool,
-                        'process': lambda data, arrays: np.any(np.logical_or(data == 'F', data == 'False'), axis=1),
+                        'type': None,  # as string
+                        'process': lambda data, arrays: np.any(
+                            np.array([[str(__)[0].lower() for __ in _] for _ in data.tolist()]) == 'f', axis=1),
                     },
                 ],
             },
@@ -238,10 +239,11 @@ FORMAT_STRING = {
                         'process': lambda data, arrays: data * arrays['scaling_factor'],
                     },
                     {
-                        'key': 'constraints',
+                        'key': 'fixed_atoms',
                         'index': ':,3:',
-                        'process': lambda data, arrays: np.any(np.logical_or(data == 'F', data == 'False'), axis=1),
-                        # 'type' : bool,
+                        'type': None,  # as string
+                        'process': lambda data, arrays: np.any(
+                            np.array([[str(__)[0].lower() for __ in _] for _ in data.tolist()]) == 'f', axis=1),
                     },
                 ],
             },
